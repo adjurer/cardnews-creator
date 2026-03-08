@@ -381,8 +381,12 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
         {/* Dynamic typography — based on selected element */}
         {(() => {
           const el = selectedElement;
+          if (!el || el === "image" || el === "logo") {
+            return (
+              <p className="text-[10px] text-muted-foreground text-center py-3">캔버스에서 요소를 선택하면 스타일을 편집할 수 있습니다</p>
+            );
+          }
           
-          // Per-element size config
           const sizeConfig: Record<string, { field: keyof SlideTypography; fallback: number; min: number; max: number }> = {
             title:       { field: "titleSize",       fallback: 28, min: 14, max: 60 },
             highlight:   { field: "highlightSize",   fallback: typo.bodySize ?? 16, min: 10, max: 48 },
@@ -395,36 +399,25 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
           };
 
           const isTitleLevel = el === "title" || el === "highlight";
-          const isBodyLevel = el && !isTitleLevel && el !== "image" && el !== "logo";
+          const cfg = sizeConfig[el];
 
           return (
             <div className="space-y-2">
-              {el && el !== "image" && el !== "logo" && (
-                <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-medium">{el}</span>
-                  <span className="text-[9px] text-muted-foreground">선택됨</span>
-                </div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-medium">{el}</span>
+                <span className="text-[9px] text-muted-foreground">선택됨</span>
+              </div>
+              {cfg && (
+                <Range label="크기" value={(typo as any)[cfg.field] ?? cfg.fallback} min={cfg.min} max={cfg.max} step={1} onChange={v => updateTypo({ [cfg.field]: v })} unit="px" />
               )}
-              {/* When an element is selected, show only its size */}
-              {el && sizeConfig[el] && (
-                <Range label="크기" value={(typo as any)[sizeConfig[el].field] ?? sizeConfig[el].fallback} min={sizeConfig[el].min} max={sizeConfig[el].max} step={1} onChange={v => updateTypo({ [sizeConfig[el].field]: v })} unit="px" />
-              )}
-              {/* Title-level: show title weight/line-height/spacing */}
-              {(!el || isTitleLevel) && (
+              {isTitleLevel ? (
                 <>
-                  {!el && <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">제목</span>}
-                  {!el && <Range label="크기" value={typo.titleSize ?? 28} min={14} max={60} step={1} onChange={v => updateTypo({ titleSize: v })} unit="px" />}
                   <Range label="굵기" value={typo.titleWeight ?? 700} min={300} max={900} step={100} onChange={v => updateTypo({ titleWeight: v })} />
                   <Range label="줄간격" value={typo.titleLineHeight ?? 1.3} min={0.8} max={2.0} step={0.05} onChange={v => updateTypo({ titleLineHeight: v })} />
                   <Range label="자간" value={typo.titleLetterSpacing ?? 0} min={-0.1} max={0.2} step={0.01} onChange={v => updateTypo({ titleLetterSpacing: v })} unit="em" />
                 </>
-              )}
-              {/* Body-level: show body weight/line-height/spacing */}
-              {(!el || isBodyLevel) && (
+              ) : (
                 <>
-                  {!el && <div className="pt-3 border-t border-border" />}
-                  {!el && <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">본문</span>}
-                  {!el && <Range label="크기" value={typo.bodySize ?? 16} min={10} max={32} step={1} onChange={v => updateTypo({ bodySize: v })} unit="px" />}
                   <Range label="굵기" value={typo.bodyWeight ?? 400} min={300} max={700} step={100} onChange={v => updateTypo({ bodyWeight: v })} />
                   <Range label="줄간격" value={typo.bodyLineHeight ?? 1.6} min={1.0} max={2.5} step={0.05} onChange={v => updateTypo({ bodyLineHeight: v })} />
                   <Range label="자간" value={typo.bodyLetterSpacing ?? 0} min={-0.05} max={0.15} step={0.01} onChange={v => updateTypo({ bodyLetterSpacing: v })} unit="em" />
