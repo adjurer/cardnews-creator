@@ -152,7 +152,11 @@ export default function EditorPage() {
       const cfg = sizeMap[key];
       if (cfg) {
         const currentSize = (typo as any)[cfg.field] ?? cfg.fallback;
-        const delta = Math.round(dh * 0.5);
+        // For inline elements like highlight, use the larger delta axis
+        const rawDelta = key === "highlight" || key === "cta" 
+          ? (Math.abs(dw) > Math.abs(dh) ? dw * 0.5 : dh * 0.5)
+          : dh * 0.5;
+        const delta = Math.round(rawDelta);
         if (delta !== 0) {
           const newSize = Math.max(cfg.min, Math.min(cfg.max, currentSize + delta));
           updateSlide(slide.id, { typography: { ...typo, [cfg.field]: newSize } });
