@@ -114,7 +114,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
     <div className="space-y-1">
       <div className="flex items-center justify-between">
         <span className="text-[10px] text-muted-foreground">{label}</span>
-        <span className="text-[10px] text-foreground tabular-nums">{value}{unit}</span>
+        <span className="text-[10px] text-foreground tabular-nums">{parseFloat(value.toFixed(4))}{unit}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <button onClick={() => onChange(Math.max(min, +(value - step).toFixed(4)))} className="p-0.5 rounded hover:bg-surface text-muted-foreground"><Minus className="w-3 h-3" /></button>
@@ -442,7 +442,40 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
                 <span className="text-[10px] text-muted-foreground">현재 이미지</span>
                 <button onClick={() => onUpdate({ image: undefined })} className="text-[10px] text-destructive hover:underline">제거</button>
               </div>
-              <div className="w-full h-16 rounded-lg overflow-hidden"><img src={slide.image.url} alt="" className="w-full h-full object-cover" /></div>
+              {/* Draggable image preview */}
+              <div
+                className="w-full aspect-[4/3] rounded-lg overflow-hidden relative cursor-grab active:cursor-grabbing bg-card border border-border group"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  const startX = e.clientX;
+                  const startY = e.clientY;
+                  const startPosX = slide.image!.posX ?? 0;
+                  const startPosY = slide.image!.posY ?? 0;
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const onMove = (ev: MouseEvent) => {
+                    const dx = ((ev.clientX - startX) / rect.width) * 100;
+                    const dy = ((ev.clientY - startY) / rect.height) * 100;
+                    const newX = Math.max(-50, Math.min(50, Math.round(startPosX + dx)));
+                    const newY = Math.max(-50, Math.min(50, Math.round(startPosY + dy)));
+                    onUpdate({ image: { ...slide.image!, posX: newX, posY: newY } });
+                  };
+                  const onUp = () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
+                  window.addEventListener("mousemove", onMove);
+                  window.addEventListener("mouseup", onUp);
+                }}
+              >
+                <img
+                  src={slide.image.url} alt="" draggable={false}
+                  className="w-full h-full object-cover pointer-events-none"
+                  style={{
+                    objectPosition: `${50 + (slide.image.posX ?? 0)}% ${50 + (slide.image.posY ?? 0)}%`,
+                    transform: `scale(${slide.image.scale ?? 1})`,
+                  }}
+                />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 pointer-events-none">
+                  <span className="text-[10px] text-white bg-black/50 px-2 py-0.5 rounded">드래그하여 위치 조절</span>
+                </div>
+              </div>
               <div className="p-3 bg-surface rounded-lg space-y-2.5">
                 <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">이미지 조절</span>
                 <Range label="X 위치" value={slide.image.posX ?? 0} min={-50} max={50} step={1} onChange={v => onUpdate({ image: { ...slide.image!, posX: v } })} unit="%" />
