@@ -1,7 +1,17 @@
 import { useState, useCallback } from "react";
 import { Eye, EyeOff, Lock, Unlock, GripVertical, Type, Image as ImageIcon, Tag, Quote, ListOrdered, MousePointer } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Slide, ElementKey, ElementOverride } from "@/types/project";
+import type { Slide, ElementKey, ElementOverride, SlideVisibility } from "@/types/project";
+
+const VIS_MAP: Partial<Record<ElementKey, keyof SlideVisibility>> = {
+  category: "showCategory",
+  subtitle: "showSubtitle",
+  highlight: "showHighlight",
+  body: "showBody",
+  bullets: "showBullets",
+  cta: "showCta",
+  sourceLabel: "showSourceLabel",
+};
 
 interface Props {
   slide: Slide;
@@ -9,6 +19,7 @@ interface Props {
   onSelectElement: (key: ElementKey | null) => void;
   onUpdateOverride: (key: ElementKey, updates: Partial<ElementOverride>) => void;
   onBatchUpdateOverrides: (updates: Record<ElementKey, Partial<ElementOverride>>) => void;
+  onToggleVisibility?: (updates: Partial<SlideVisibility>) => void;
 }
 
 const ELEMENT_DEFS: { key: ElementKey; label: string; icon: any; getContent: (s: Slide) => string | undefined }[] = [
@@ -24,12 +35,13 @@ const ELEMENT_DEFS: { key: ElementKey; label: string; icon: any; getContent: (s:
   { key: "sourceLabel", label: "출처", icon: Quote, getContent: s => s.sourceLabel },
 ];
 
-export function LayerPanel({ slide, selectedElement, onSelectElement, onUpdateOverride, onBatchUpdateOverrides }: Props) {
+export function LayerPanel({ slide, selectedElement, onSelectElement, onUpdateOverride, onBatchUpdateOverrides, onToggleVisibility }: Props) {
   const overrides = slide.elementOverrides || {};
+  const vis = slide.visibility || {};
   const [dragKey, setDragKey] = useState<ElementKey | null>(null);
-  // dropLine = insertion index (line appears BEFORE this index)
   const [dropLine, setDropLine] = useState<number | null>(null);
 
+  // Show all elements that have content OR are always-present (title, image, logo)
   const visibleElements = ELEMENT_DEFS.filter(e => {
     const content = e.getContent(slide);
     return content !== undefined && content !== "";
@@ -40,6 +52,26 @@ export function LayerPanel({ slide, selectedElement, onSelectElement, onUpdateOv
     const zB = overrides[b.key]?.zIndex ?? 0;
     return zB - zA;
   });
+
+  // Check if element is hidden (via visibility OR override)
+  const isElementHidden = (key: ElementKey): boolean => {
+    const visKey = VIS_MAP[key];
+    if (visKey && vis[visKey] === false) return true;
+    return overrides[key]?.hidden === true;
+  };
+
+  const toggleElementVisibility = (key: ElementKey) => {
+    const visKey = VIS_MAP[key];
+    if (visKey && onToggleVisibility) {
+      // Use visibility system for text elements
+      const currentlyHidden = vis[visKey] === false;
+      onToggleVisibility({ [visKey]: currentlyHidden ? true : false });
+    } else {
+      // Use override hidden for image/logo/title
+      const ovr = overrides[key] || {};
+      onUpdateOverride(key, { hidden: !ovr.hidden });
+    }
+  };
 
   const handleDragStart = useCallback((e: React.DragEvent, key: ElementKey) => {
     setDragKey(key);
@@ -104,10 +136,9 @@ export function LayerPanel({ slide, selectedElement, onSelectElement, onUpdateOv
       </div>
       <div onDragLeave={handleDragLeave}>
         {sorted.map((el, idx) => {
-          const ovr = overrides[el.key] || {};
           const isSelected = selectedElement === el.key;
-          const isHidden = ovr.hidden;
-          const isLocked = ovr.locked;
+          const isHidden = isElementHidden(el.key);
+          const isLocked = overrides[el.key]?.locked;
           const isDragging = dragKey === el.key;
           const Icon = el.icon;
           const showLineBefore = dropLine === idx && dragKey !== null && dragKey !== el.key;
@@ -142,7 +173,7 @@ export function LayerPanel({ slide, selectedElement, onSelectElement, onUpdateOv
                   {isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); onUpdateOverride(el.key, { hidden: !isHidden }); }}
+                  onClick={(e) => { e.stopPropagation(); toggleElementVisibility(el.key); }}
                   className={cn("w-5 h-5 flex items-center justify-center rounded hover:bg-muted/50",
                     isHidden ? "text-destructive" : "text-muted-foreground/40 opacity-0 group-hover:opacity-100"
                   )}
@@ -150,7 +181,6 @@ export function LayerPanel({ slide, selectedElement, onSelectElement, onUpdateOv
                   {isHidden ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                 </button>
               </div>
-              {/* Show line after last item */}
               {idx === sorted.length - 1 && dropLine === sorted.length && dragKey !== null && <DropIndicator />}
             </div>
           );
