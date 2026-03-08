@@ -155,8 +155,8 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
 
       <div
         ref={containerRef}
-        className="relative w-full rounded-lg overflow-hidden bg-card border border-border"
-        style={{ aspectRatio: `${imgW}/${imgH}`, maxHeight: "220px" }}
+        className="relative rounded-lg overflow-hidden bg-card border border-border mx-auto"
+        style={{ aspectRatio: `${imgW}/${imgH}`, maxHeight: "220px", maxWidth: "100%" }}
       >
         {/* Dimmed full image */}
         <img src={image.url} alt="" draggable={false} onLoad={handleImgLoad}
@@ -172,8 +172,8 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
 
             {/* Viewport frame - positioned in image-space % with export aspect ratio */}
             <ViewportFrame
-              imgAspect={imgAspect}
-              exportAspect={exportAspect}
+              exportW={expW}
+              exportH={expH}
               vpLeftImg={vpLeftImg}
               vpTopImg={vpTopImg}
               vpWImg={vpWImg}
@@ -193,10 +193,13 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
   );
 }
 
-// Separate component to render viewport frame with correct aspect ratio
+function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b);
+}
+
 function ViewportFrame({
-  imgAspect,
-  exportAspect,
+  exportW,
+  exportH,
   vpLeftImg,
   vpTopImg,
   vpWImg,
@@ -204,8 +207,8 @@ function ViewportFrame({
   dragging,
   onMouseDown,
 }: {
-  imgAspect: number;
-  exportAspect: number;
+  exportW: number;
+  exportH: number;
   vpLeftImg: number;
   vpTopImg: number;
   vpWImg: number;
@@ -213,14 +216,8 @@ function ViewportFrame({
   dragging: boolean;
   onMouseDown: (e: React.MouseEvent) => void;
 }) {
-  // The viewport in image-space has vpWImg% width and vpHImg% height.
-  // But we want the VISUAL box to maintain the export aspect ratio.
-  // 
-  // The actual aspect ratio of the viewport in image-space is:
-  // viewportAspectInImageSpace = (vpWImg / 100 * imgW) / (vpHImg / 100 * imgH)
-  //                            = (vpWImg * imgAspect) / vpHImg
-  //
-  // This should equal exportAspect by construction. Let's just use the computed values directly.
+  const g = gcd(exportW, exportH);
+  const ratioLabel = `${exportW / g}:${exportH / g}`;
 
   return (
     <div
@@ -236,18 +233,15 @@ function ViewportFrame({
         height: `${vpHImg}%`,
       }}
     >
-      {/* Corner handles */}
       {["-top-0.5 -left-0.5", "-top-0.5 -right-0.5", "-bottom-0.5 -left-0.5", "-bottom-0.5 -right-0.5"].map((pos, i) => (
         <div key={i} className={`absolute ${pos} w-1.5 h-1.5 bg-primary rounded-full`} />
       ))}
-      {/* Center crosshair */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="w-4 h-[1px] bg-primary/40" />
         <div className="absolute w-[1px] h-4 bg-primary/40" />
       </div>
-      {/* Aspect ratio indicator */}
       <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[7px] text-primary/60 whitespace-nowrap">
-        {exportAspect < 1 ? `${Math.round(exportAspect * 10)}:${10}` : exportAspect === 1 ? "1:1" : `${10}:${Math.round(10 / exportAspect)}`}
+        {ratioLabel}
       </div>
     </div>
   );
