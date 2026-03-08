@@ -490,6 +490,11 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
                 <Range label="Y 위치" value={slide.image.posY ?? 0} min={-50} max={50} step={1} onChange={v => updateImage({ posY: v })} unit="%" />
                 <Range label="확대/축소" value={slide.image.scale ?? 1} min={0.5} max={2.5} step={0.05} onChange={v => updateImage({ scale: v })} unit="x" />
                 <Range label="오버레이" value={slide.image.overlayOpacity ?? 0.5} min={0} max={1} step={0.05} onChange={v => updateImage({ overlayOpacity: v })} />
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground">오버레이 방향</span>
+                  <OverlayDirectionGrid value={slide.image.overlayDirection ?? "center"} onChange={v => updateImage({ overlayDirection: v })} />
+                </div>
+                <Range label="오버레이 블러" value={slide.image.overlayBlur ?? 0} min={0} max={40} step={1} onChange={v => updateImage({ overlayBlur: v })} unit="px" />
                 <Range label="둥글기" value={slide.image.borderRadius ?? 0} min={0} max={32} step={1} onChange={v => updateImage({ borderRadius: v })} unit="px" />
               </div>
 
