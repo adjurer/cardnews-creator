@@ -5,6 +5,7 @@ import { MOCK_IMAGE_RESULTS } from "@/mocks/data";
 import { LayerPanel } from "./LayerPanel";
 import { FontManager } from "./FontManager";
 import { ImageCropPreview } from "./ImageCropPreview";
+import { OverlayDirectionGrid } from "./OverlayDirectionGrid";
 import { cn } from "@/lib/utils";
 import { useFontStore } from "@/store/useFontStore";
 import { AUTO_LAYOUT_PRESETS, applyAutoLayout } from "@/lib/autoLayout";
