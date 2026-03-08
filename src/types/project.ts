@@ -20,6 +20,11 @@ export interface SlideImage {
   borderRadius?: number;
   blur?: number;
   brightness?: number;
+  contrast?: number;
+  saturate?: number;
+  grayscale?: number;
+  sepia?: number;
+  hueRotate?: number;
 }
 
 export interface SlideTypography {
