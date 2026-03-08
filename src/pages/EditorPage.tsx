@@ -137,27 +137,26 @@ export default function EditorPage() {
       const currentScale = img.scale ?? 1;
       const delta = (handle.includes("e") || handle.includes("w")) ? dw * 0.002 : dh * 0.002;
       updateSlide(slide.id, { image: { ...img, scale: Math.max(1, Math.min(3, currentScale + delta)) } });
-    } else if (key === "title" || key === "highlight") {
-      const currentSize = typo.titleSize ?? 28;
-      const delta = Math.round(dh * 0.5);
-      if (delta !== 0) {
-        const newSize = Math.max(12, Math.min(72, currentSize + delta));
-        updateSlide(slide.id, { typography: { ...typo, titleSize: newSize } });
-      }
-    } else if (key === "subtitle") {
-      const currentSize = typo.subtitleSize ?? ((typo.bodySize ?? 16) + 2);
-      const delta = Math.round(dh * 0.5);
-      if (delta !== 0) {
-        const newSize = Math.max(10, Math.min(48, currentSize + delta));
-        updateSlide(slide.id, { typography: { ...typo, subtitleSize: newSize } });
-      }
     } else {
-      // category, body, bullets, cta, sourceLabel → bodySize
-      const currentSize = typo.bodySize ?? 16;
-      const delta = Math.round(dh * 0.5);
-      if (delta !== 0) {
-        const newSize = Math.max(8, Math.min(40, currentSize + delta));
-        updateSlide(slide.id, { typography: { ...typo, bodySize: newSize } });
+      // Per-element font size map
+      const sizeMap: Record<string, { field: string; fallback: number; min: number; max: number }> = {
+        title:       { field: "titleSize",       fallback: 28, min: 12, max: 72 },
+        highlight:   { field: "highlightSize",   fallback: typo.bodySize ?? 16, min: 10, max: 48 },
+        subtitle:    { field: "subtitleSize",     fallback: (typo.bodySize ?? 16) + 2, min: 10, max: 48 },
+        category:    { field: "categorySize",     fallback: 12, min: 8, max: 32 },
+        body:        { field: "bodySize",          fallback: 16, min: 8, max: 40 },
+        bullets:     { field: "bulletSize",        fallback: (typo.bodySize ?? 16) - 1, min: 8, max: 36 },
+        cta:         { field: "ctaSize",           fallback: typo.bodySize ?? 16, min: 10, max: 40 },
+        sourceLabel: { field: "sourceLabelSize",   fallback: 11, min: 8, max: 24 },
+      };
+      const cfg = sizeMap[key];
+      if (cfg) {
+        const currentSize = (typo as any)[cfg.field] ?? cfg.fallback;
+        const delta = Math.round(dh * 0.5);
+        if (delta !== 0) {
+          const newSize = Math.max(cfg.min, Math.min(cfg.max, currentSize + delta));
+          updateSlide(slide.id, { typography: { ...typo, [cfg.field]: newSize } });
+        }
       }
     }
   }, [currentProject, currentSlideIndex, updateSlide]);
