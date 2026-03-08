@@ -153,18 +153,21 @@ export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize,
         </div>
 
         {/* Social row */}
-        <div className="flex items-center justify-between px-3 py-2.5">
+        <div className="relative flex items-center justify-between px-3 py-2.5">
           <div className="flex gap-4">
             <Heart className="w-[22px] h-[22px] text-foreground" />
             <MessageCircle className="w-[22px] h-[22px] text-foreground" />
             <Send className="w-[22px] h-[22px] text-foreground" />
           </div>
-          <div className="flex gap-[3px] items-center">
-            {slides.map((_, i) => (
-              <button key={i} onClick={() => onIndexChange(i)}
-                className={`rounded-full transition-all ${i === currentIndex ? "w-[6px] h-[6px] bg-primary" : "w-[5px] h-[5px] bg-muted-foreground/30"}`}
-              />
-            ))}
+          {/* Centered carousel dots */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="flex gap-[3px] items-center pointer-events-auto">
+              {slides.map((_, i) => (
+                <button key={i} onClick={() => onIndexChange(i)}
+                  className={`rounded-full transition-all ${i === currentIndex ? "w-[6px] h-[6px] bg-primary" : "w-[5px] h-[5px] bg-muted-foreground/30"}`}
+                />
+              ))}
+            </div>
           </div>
           <Bookmark className="w-[22px] h-[22px] text-foreground" />
         </div>
