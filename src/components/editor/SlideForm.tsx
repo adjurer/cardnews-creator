@@ -463,7 +463,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
               <ImageCropPreview
                 image={slide.image}
                 exportSize={exportSize}
-                onUpdate={(updates) => onUpdate({ image: { ...slide.image!, ...updates } })}
+                onUpdate={(updates) => updateImage(updates)}
               />
 
               <div className="p-3 bg-surface rounded-lg space-y-2.5">
