@@ -8,13 +8,6 @@ import { useInstagramStore } from "@/store/useInstagramStore";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFontStore } from "@/store/useFontStore";
 import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
-import { useThemeStore, type ThemeMode } from "@/store/useThemeStore";
-import { useInstagramStore } from "@/store/useInstagramStore";
-import { useAuth } from "@/contexts/AuthContext";
-import { cn } from "@/lib/utils";
 
 const THEME_OPTIONS: { mode: ThemeMode; icon: typeof Sun; label: string; desc: string }[] = [
   { mode: "light", icon: Sun, label: "라이트", desc: "밝은 배경" },
