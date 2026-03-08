@@ -103,32 +103,16 @@ export default function EditorPage() {
     if (!currentProject) return;
     const slide = currentProject.slides[currentSlideIndex];
     const current = slide.elementOverrides?.[key] || {};
+    // dx/dy are already clamped by CanvasOverlay based on actual DOM positions
     const newX = (current.offsetX || 0) + dx;
     const newY = (current.offsetY || 0) + dy;
-
-    // Calculate max offset based on actual preview dimensions
-    const [w, h] = currentProject.exportPreset.size.split("x").map(Number);
-    const previewW = w * canvasScale;
-    const previewH = h * canvasScale;
-    const marginFraction = MARGIN_VALUES[marginGuide] / 100;
-
-    // Allow movement within the slide area minus margin
-    // Elements start at their natural CSS position, offset shifts from there
-    // Limit to ~45% of preview size (minus margin) so elements stay visible
-    const maxFractionX = marginGuide === "none" ? 0.45 : Math.max(0.1, 0.45 - marginFraction);
-    const maxFractionY = marginGuide === "none" ? 0.45 : Math.max(0.1, 0.45 - marginFraction);
-    const maxOffsetX = previewW * maxFractionX;
-    const maxOffsetY = previewH * maxFractionY;
-
-    const clampedX = Math.max(-maxOffsetX, Math.min(maxOffsetX, newX));
-    const clampedY = Math.max(-maxOffsetY, Math.min(maxOffsetY, newY));
     updateSlide(slide.id, {
       elementOverrides: {
         ...slide.elementOverrides,
-        [key]: { ...current, offsetX: clampedX, offsetY: clampedY },
+        [key]: { ...current, offsetX: newX, offsetY: newY },
       },
     });
-  }, [currentProject, currentSlideIndex, updateSlide, marginGuide, canvasScale]);
+  }, [currentProject, currentSlideIndex, updateSlide]);
 
   const handleResizeElement = useCallback((key: ElementKey, dw: number, dh: number, handle: string) => {
     if (!currentProject) return;
