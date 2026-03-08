@@ -14,7 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      instagram_accounts: {
+        Row: {
+          access_token: string
+          created_at: string | null
+          id: string
+          ig_user_id: string
+          is_default: boolean | null
+          profile_picture_url: string | null
+          updated_at: string | null
+          user_id: string
+          username: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string | null
+          id?: string
+          ig_user_id: string
+          is_default?: boolean | null
+          profile_picture_url?: string | null
+          updated_at?: string | null
+          user_id: string
+          username: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string | null
+          id?: string
+          ig_user_id?: string
+          is_default?: boolean | null
+          profile_picture_url?: string | null
+          updated_at?: string | null
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
