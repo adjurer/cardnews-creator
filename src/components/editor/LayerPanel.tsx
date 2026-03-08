@@ -66,11 +66,12 @@ export function LayerPanel({ slide, selectedElement, onSelectElement, onUpdateOv
     const [moved] = newOrder.splice(fromIdx, 1);
     newOrder.splice(targetIdx, 0, moved);
 
-    // Assign new zIndex values: top of list gets highest
+    // Batch assign new zIndex values: top of list gets highest
+    const batch: Record<string, Partial<ElementOverride>> = {};
     newOrder.forEach((el, i) => {
-      const newZ = (newOrder.length - 1 - i) * 10;
-      onUpdateOverride(el.key, { zIndex: newZ });
+      batch[el.key] = { zIndex: (newOrder.length - 1 - i) * 10 };
     });
+    onBatchUpdateOverrides(batch as Record<ElementKey, Partial<ElementOverride>>);
 
     setDragKey(null);
     setDropIdx(null);
