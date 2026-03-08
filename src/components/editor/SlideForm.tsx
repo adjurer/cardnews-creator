@@ -144,8 +144,8 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
 
   return (
     <div className="animate-fade-in">
-      {/* Tab bar */}
-      <div className="flex gap-0.5 mb-3 p-0.5 bg-surface rounded-lg flex-wrap">
+      {/* Tab bar — sticky */}
+      <div className="flex gap-0.5 mb-3 p-0.5 bg-surface rounded-lg flex-wrap sticky top-0 z-10">
         {TABS.map(tab => (
           <button key={tab.id} onClick={() => setEditorTab(tab.id)}
             className={cn("flex items-center gap-1 px-2 py-1.5 rounded-md text-[10px] font-medium transition-all flex-1 justify-center min-w-0",
