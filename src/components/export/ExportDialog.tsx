@@ -1,6 +1,8 @@
-import { useState, useRef, useCallback } from "react";
-import { X, Download, Loader2, Instagram } from "lucide-react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { X, Download, Loader2, Instagram, ChevronDown } from "lucide-react";
 import { SlideRenderer } from "@/components/preview/SlideRenderer";
+import { useInstagramStore } from "@/store/useInstagramStore";
+import { useAuth } from "@/contexts/AuthContext";
 import { toPng } from "html-to-image";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
