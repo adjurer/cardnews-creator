@@ -114,7 +114,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
     <div className="space-y-1">
       <div className="flex items-center justify-between">
         <span className="text-[10px] text-muted-foreground">{label}</span>
-        <span className="text-[10px] text-foreground tabular-nums">{value}{unit}</span>
+        <span className="text-[10px] text-foreground tabular-nums">{parseFloat(value.toFixed(4))}{unit}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <button onClick={() => onChange(Math.max(min, +(value - step).toFixed(4)))} className="p-0.5 rounded hover:bg-surface text-muted-foreground"><Minus className="w-3 h-3" /></button>
