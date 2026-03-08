@@ -20,6 +20,7 @@ export interface SlideImage {
   scale?: number;
   overlayOpacity?: number;
   overlayDirection?: OverlayDirection;
+  overlayRange?: [number, number]; // [start%, end%] of overlay gradient
   overlayBlur?: number;
   overlayBlurDirection?: OverlayDirection;
   overlayBlurRange?: [number, number]; // [start%, end%] of blur mask gradient
