@@ -7,6 +7,7 @@ import { MobilePreview } from "@/components/preview/MobilePreview";
 import { SlideForm } from "@/components/editor/SlideForm";
 import { ExportDialog } from "@/components/export/ExportDialog";
 import { SlideStrip } from "@/components/editor/SlideStrip";
+import { AiCommandInput } from "@/components/editor/AiCommandInput";
 import {
   ArrowLeft, Save, Download, Check, AlertCircle, Loader2, Sparkles,
   Monitor, Square, Smartphone
@@ -33,6 +34,7 @@ export default function EditorPage() {
   } = useProjectStore();
   const { exportDialogOpen, setExportDialogOpen, selectedElement, setSelectedElement, marginGuide } = useUiStore();
   const [regenerating, setRegenerating] = useState(false);
+  const [aiProcessing, setAiProcessing] = useState(false);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const [canvasScale, setCanvasScale] = useState(1);
 
@@ -106,6 +108,35 @@ export default function EditorPage() {
       setRegenerating(false);
     }
   };
+
+  const handleAiCommand = useCallback(async (instruction: string, mode: "slide" | "project") => {
+    if (!currentProject || aiProcessing) return;
+    setAiProcessing(true);
+    try {
+      if (mode === "slide") {
+        const { regenerateSlide } = await import("@/lib/ai/aiService");
+        const slide = currentProject.slides[currentSlideIndex];
+        const result = await regenerateSlide(slide, currentProject.title, currentProject.slides, "improve", instruction);
+        updateSlide(slide.id, result);
+        toast.success("슬라이드가 수정되었습니다");
+      } else {
+        const { rewriteProject } = await import("@/lib/ai/aiService");
+        const result = await rewriteProject(currentProject.title, currentProject.slides, instruction);
+        // Update each slide with new content, preserving ids and style
+        result.slides.forEach((newSlide, i) => {
+          if (i < currentProject.slides.length) {
+            updateSlide(currentProject.slides[i].id, newSlide);
+          }
+        });
+        toast.success("프로젝트가 재구성되었습니다");
+      }
+    } catch (e: any) {
+      console.error("AI command error:", e);
+      toast.error(e.message || "AI 처리에 실패했습니다");
+    } finally {
+      setAiProcessing(false);
+    }
+  }, [currentProject, currentSlideIndex, updateSlide, aiProcessing]);
 
   const handleElementSelect = useCallback((key: ElementKey | null) => {
     setSelectedElement(key);
@@ -277,6 +308,14 @@ export default function EditorPage() {
                 <button onClick={() => setSelectedElement(null)} className="text-[9px] text-muted-foreground hover:text-foreground">ESC</button>
               </div>
             )}
+          </div>
+
+          <div className="px-4 py-2 border-b border-border shrink-0">
+            <AiCommandInput
+              onSubmit={handleAiCommand}
+              isProcessing={aiProcessing}
+              slideTitle={currentSlide.title}
+            />
           </div>
 
           <div className="flex-1 overflow-auto p-4 scrollbar-thin">

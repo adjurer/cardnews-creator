@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { generateSlideImage } from "@/lib/ai/aiService";
 import type { Slide, SlideType, LayoutType, TextAlign, ThemePreset, SlideImage, SlideLogo, SlideTypography, SlideColors, SlideVisibility, SlidePosition, ElementKey, ElementOverride, AutoLayoutPreset, ExportSize, OverlayDirection } from "@/types/project";
 import { THEME_LABELS } from "@/lib/themes";
 import { MOCK_IMAGE_RESULTS } from "@/mocks/data";
@@ -64,6 +65,55 @@ function Section({ title, icon: Icon, defaultOpen = true, children, badge }: {
         {open ? <ChevronDown className="w-3 h-3 text-muted-foreground" /> : <ChevronRight className="w-3 h-3 text-muted-foreground" />}
       </button>
       {open && <div className="p-3 space-y-3 bg-card">{children}</div>}
+    </div>
+  );
+}
+/* ── AI Image Generator ── */
+function AiImageGenerator({ defaultPrompt, aiPrompt, setAiPrompt, inputCls, onGenerated }: {
+  defaultPrompt: string; aiPrompt: string; setAiPrompt: (v: string) => void;
+  inputCls: string; onGenerated: (url: string, prompt: string) => void;
+}) {
+  const [generating, setGenerating] = useState(false);
+
+  const handleGenerate = async () => {
+    const prompt = aiPrompt.trim() || defaultPrompt;
+    if (!prompt || generating) return;
+    setGenerating(true);
+    try {
+      const result = await generateSlideImage(prompt, "generate");
+      onGenerated(result.imageUrl, prompt);
+    } catch (e: any) {
+      console.error("AI image error:", e);
+      const { toast } = await import("sonner");
+      toast.error(e.message || "이미지 생성에 실패했습니다");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <input
+        value={aiPrompt}
+        onChange={(e) => setAiPrompt(e.target.value)}
+        placeholder={defaultPrompt || "이미지 프롬프트 입력"}
+        className={inputCls}
+      />
+      <p className="text-[9px] text-muted-foreground">비워두면 슬라이드 텍스트가 프롬프트로 사용됩니다</p>
+      <button
+        onClick={handleGenerate}
+        disabled={generating}
+        className="w-full py-2 rounded-lg bg-primary/15 text-primary text-xs font-medium hover:bg-primary/25 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+      >
+        {generating ? (
+          <>
+            <span className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            생성 중...
+          </>
+        ) : (
+          "AI 이미지 생성"
+        )}
+      </button>
     </div>
   );
 }
@@ -335,15 +385,13 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
         )}
 
         {imageTab === "ai" && (
-          <div className="space-y-2">
-            <input value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} placeholder="이미지 프롬프트 입력" className={inputCls} />
-            <button onClick={() => {
-              const mockUrl = MOCK_IMAGE_RESULTS[Math.floor(Math.random() * MOCK_IMAGE_RESULTS.length)];
-              updateImage({ mode: "generate", url: mockUrl, prompt: aiPrompt });
-            }} className="w-full py-2 rounded-lg bg-primary/15 text-primary text-xs font-medium hover:bg-primary/25 transition-colors">
-              AI 이미지 생성
-            </button>
-          </div>
+          <AiImageGenerator
+            defaultPrompt={slide.title + (slide.body ? ` - ${slide.body.substring(0, 80)}` : "")}
+            aiPrompt={aiPrompt}
+            setAiPrompt={setAiPrompt}
+            inputCls={inputCls}
+            onGenerated={(url, prompt) => updateImage({ mode: "generate", url, prompt })}
+          />
         )}
 
         {imageTab === "search" && (
