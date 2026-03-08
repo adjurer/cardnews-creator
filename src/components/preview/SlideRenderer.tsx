@@ -167,7 +167,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     display: "inline-block", padding: "2px 10px", borderRadius: "4px",
     background: colors.highlightBg || accentColor,
     color: colors.highlightText || bg,
-    fontWeight: 700, fontSize: subtitleSize,
+    fontWeight: 700, fontSize: highlightSize,
   };
 
   const renderImage = () => {
