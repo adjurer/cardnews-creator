@@ -631,6 +631,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
           selectedElement={selectedElement}
           onSelectElement={onSelectElement}
           onUpdateOverride={updateOverride}
+          onBatchUpdateOverrides={batchUpdateOverrides}
         />
       )}
 
