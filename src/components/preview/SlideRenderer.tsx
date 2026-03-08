@@ -291,7 +291,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         ...elementStyle(slide, "sourceLabel"),
         marginTop: "auto", paddingTop: "12px", cursor: onElementClick ? "pointer" : undefined,
       }}>
-        <span style={{ fontSize: isExport ? "14px" : "clamp(8px, 2vw, 11px)", color: secondaryText }}>{slide.sourceLabel}</span>
+        <span style={{ fontSize: sourceLabelSize, color: secondaryText }}>{slide.sourceLabel}</span>
       </div>
     );
   };
