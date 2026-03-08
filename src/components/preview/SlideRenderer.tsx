@@ -1,5 +1,5 @@
 import { THEME_MAP } from "@/lib/themes";
-import type { Slide, ElementKey, ElementOverride } from "@/types/project";
+import type { Slide, ElementKey, ElementOverride, SlideLogo } from "@/types/project";
 
 interface Props {
   slide: Slide;
