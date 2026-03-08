@@ -11,6 +11,7 @@ interface Props {
   showSafeArea: boolean;
   gridSize: number;
   locked?: Record<string, boolean>;
+  canvasScale?: number; // ratio of preview size to actual content size
 }
 
 interface ElementRect {
@@ -28,13 +29,14 @@ const HANDLE_CURSORS: Record<ResizeHandle, string> = {
 
 export function CanvasOverlay({
   containerRef, selectedElement, onSelectElement, onUpdateOffset,
-  onResizeElement, showGrid, showSafeArea, gridSize, locked = {},
+  onResizeElement, showGrid, showSafeArea, gridSize, locked = {}, canvasScale = 1,
 }: Props) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [elements, setElements] = useState<ElementRect[]>([]);
   const [mode, setMode] = useState<InteractionMode>("idle");
   const [activeHandle, setActiveHandle] = useState<ResizeHandle | null>(null);
   const dragStart = useRef<{ x: number; y: number } | null>(null);
+  const accumDelta = useRef<{ dx: number; dy: number }>({ dx: 0, dy: 0 });
   const [hoveredElement, setHoveredElement] = useState<ElementKey | null>(null);
   const [centerGuides, setCenterGuides] = useState<{ h: boolean; v: boolean }>({ h: false, v: false });
 
@@ -75,7 +77,7 @@ export function CanvasOverlay({
     };
   }, [scanElements, containerRef]);
 
-  // Check center alignment guides
+  // Center alignment guides
   useEffect(() => {
     if (!selectedElement || !overlayRef.current) {
       setCenterGuides({ h: false, v: false });
@@ -123,34 +125,36 @@ export function CanvasOverlay({
     const x = e.clientX - overlayRect.x;
     const y = e.clientY - overlayRect.y;
 
-    // Check if clicking on a resize handle
-    const handleSize = 6;
+    // Check resize handles - larger hit area for easier grabbing
+    const handleHitSize = 10;
     const r = selEl.rect;
     const handles: { handle: ResizeHandle; x: number; y: number }[] = [
-      { handle: "nw", x: r.x - 1, y: r.y - 1 },
-      { handle: "ne", x: r.x + r.width + 1, y: r.y - 1 },
-      { handle: "sw", x: r.x - 1, y: r.y + r.height + 1 },
-      { handle: "se", x: r.x + r.width + 1, y: r.y + r.height + 1 },
-      { handle: "n", x: r.x + r.width / 2, y: r.y - 1 },
-      { handle: "s", x: r.x + r.width / 2, y: r.y + r.height + 1 },
-      { handle: "w", x: r.x - 1, y: r.y + r.height / 2 },
-      { handle: "e", x: r.x + r.width + 1, y: r.y + r.height / 2 },
+      { handle: "nw", x: r.x, y: r.y },
+      { handle: "ne", x: r.x + r.width, y: r.y },
+      { handle: "sw", x: r.x, y: r.y + r.height },
+      { handle: "se", x: r.x + r.width, y: r.y + r.height },
+      { handle: "n", x: r.x + r.width / 2, y: r.y },
+      { handle: "s", x: r.x + r.width / 2, y: r.y + r.height },
+      { handle: "w", x: r.x, y: r.y + r.height / 2 },
+      { handle: "e", x: r.x + r.width, y: r.y + r.height / 2 },
     ];
 
     for (const h of handles) {
-      if (Math.abs(x - h.x) <= handleSize && Math.abs(y - h.y) <= handleSize) {
+      if (Math.abs(x - h.x) <= handleHitSize && Math.abs(y - h.y) <= handleHitSize) {
         setMode("resizing");
         setActiveHandle(h.handle);
         dragStart.current = { x: e.clientX, y: e.clientY };
+        accumDelta.current = { dx: 0, dy: 0 };
         e.preventDefault();
         e.stopPropagation();
         return;
       }
     }
 
-    // Check if clicking inside the selected element for drag
+    // Drag
     if (x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height) {
       dragStart.current = { x: e.clientX, y: e.clientY };
+      accumDelta.current = { dx: 0, dy: 0 };
       setMode("dragging");
       e.preventDefault();
     }
@@ -165,17 +169,27 @@ export function CanvasOverlay({
       onUpdateOffset(selectedElement, dx, dy);
       dragStart.current = { x: e.clientX, y: e.clientY };
     } else if (mode === "resizing" && activeHandle && onResizeElement) {
-      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-        onResizeElement(selectedElement, dx, dy, activeHandle);
-        dragStart.current = { x: e.clientX, y: e.clientY };
+      // Accumulate deltas for smoother resize
+      accumDelta.current.dx += dx;
+      accumDelta.current.dy += dy;
+      dragStart.current = { x: e.clientX, y: e.clientY };
+      
+      // Fire resize with accumulated delta scaled to content space
+      const scaledDx = accumDelta.current.dx / canvasScale;
+      const scaledDy = accumDelta.current.dy / canvasScale;
+      
+      if (Math.abs(scaledDx) >= 1 || Math.abs(scaledDy) >= 1) {
+        onResizeElement(selectedElement, scaledDx, scaledDy, activeHandle);
+        accumDelta.current = { dx: 0, dy: 0 };
       }
     }
-  }, [mode, selectedElement, activeHandle, onUpdateOffset, onResizeElement]);
+  }, [mode, selectedElement, activeHandle, onUpdateOffset, onResizeElement, canvasScale]);
 
   const handleMouseUp = useCallback(() => {
     setMode("idle");
     setActiveHandle(null);
     dragStart.current = null;
+    accumDelta.current = { dx: 0, dy: 0 };
   }, []);
 
   useEffect(() => {
@@ -306,11 +320,11 @@ export function CanvasOverlay({
         }}>
           {/* Corner handles */}
           {(["nw", "ne", "sw", "se"] as ResizeHandle[]).map(pos => (
-            <div key={pos} className="absolute w-2.5 h-2.5 bg-primary rounded-[2px] pointer-events-auto border border-primary-foreground/30"
+            <div key={pos} className="absolute w-3 h-3 bg-primary rounded-[2px] pointer-events-auto border border-primary-foreground/30"
               style={{
                 cursor: HANDLE_CURSORS[pos],
-                ...(pos.includes("n") ? { top: -5 } : { bottom: -5 }),
-                ...(pos.includes("w") ? { left: -5 } : { right: -5 }),
+                ...(pos.includes("n") ? { top: -6 } : { bottom: -6 }),
+                ...(pos.includes("w") ? { left: -6 } : { right: -6 }),
               }}
             />
           ))}
@@ -319,10 +333,10 @@ export function CanvasOverlay({
             <div key={pos} className="absolute bg-primary rounded-[1px] pointer-events-auto border border-primary-foreground/30"
               style={{
                 cursor: HANDLE_CURSORS[pos],
-                ...(pos === "n" ? { top: -3, left: "50%", transform: "translateX(-50%)", width: 12, height: 4 } : {}),
-                ...(pos === "s" ? { bottom: -3, left: "50%", transform: "translateX(-50%)", width: 12, height: 4 } : {}),
-                ...(pos === "e" ? { right: -3, top: "50%", transform: "translateY(-50%)", width: 4, height: 12 } : {}),
-                ...(pos === "w" ? { left: -3, top: "50%", transform: "translateY(-50%)", width: 4, height: 12 } : {}),
+                ...(pos === "n" ? { top: -4, left: "50%", transform: "translateX(-50%)", width: 16, height: 5 } : {}),
+                ...(pos === "s" ? { bottom: -4, left: "50%", transform: "translateX(-50%)", width: 16, height: 5 } : {}),
+                ...(pos === "e" ? { right: -4, top: "50%", transform: "translateY(-50%)", width: 5, height: 16 } : {}),
+                ...(pos === "w" ? { left: -4, top: "50%", transform: "translateY(-50%)", width: 5, height: 16 } : {}),
               }}
             />
           ))}
@@ -330,10 +344,12 @@ export function CanvasOverlay({
           <div className="absolute -top-5 left-0 px-1.5 py-0.5 bg-primary text-primary-foreground text-[7px] font-semibold rounded whitespace-nowrap">
             {selectedRect.key}
           </div>
-          {/* Size info */}
-          <div className="absolute -bottom-4 right-0 px-1 py-0.5 bg-muted text-[6px] text-muted-foreground rounded whitespace-nowrap tabular-nums">
-            {Math.round(selectedRect.rect.width)}×{Math.round(selectedRect.rect.height)}
-          </div>
+          {/* Size info during resize */}
+          {mode === "resizing" && (
+            <div className="absolute -bottom-5 right-0 px-1.5 py-0.5 bg-primary text-primary-foreground text-[7px] font-semibold rounded whitespace-nowrap tabular-nums">
+              {Math.round(selectedRect.rect.width)}×{Math.round(selectedRect.rect.height)}
+            </div>
+          )}
         </div>
       )}
     </div>
