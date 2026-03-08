@@ -309,7 +309,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     <div style={containerStyle} className={className}>
       {renderImage()}
 
-      <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", padding: basePadding, justifyContent: justifyMap[contentAlign], overflow: "hidden" }}
+      <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", padding: basePadding, justifyContent: justifyMap[contentAlign], overflow: "hidden", gap: isExport ? "16px" : "8px" }}
         className={textAlignClass}>
 
         {renderCategory()}
