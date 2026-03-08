@@ -109,7 +109,36 @@ export default function EditorPage() {
     }
   };
 
-  const handleElementSelect = useCallback((key: ElementKey | null) => {
+  const handleAiCommand = useCallback(async (instruction: string, mode: "slide" | "project") => {
+    if (!currentProject || aiProcessing) return;
+    setAiProcessing(true);
+    try {
+      if (mode === "slide") {
+        const { regenerateSlide } = await import("@/lib/ai/aiService");
+        const slide = currentProject.slides[currentSlideIndex];
+        const result = await regenerateSlide(slide, currentProject.title, currentProject.slides, "improve", instruction);
+        updateSlide(slide.id, result);
+        toast.success("슬라이드가 수정되었습니다");
+      } else {
+        const { rewriteProject } = await import("@/lib/ai/aiService");
+        const result = await rewriteProject(currentProject.title, currentProject.slides, instruction);
+        // Update each slide with new content, preserving ids and style
+        result.slides.forEach((newSlide, i) => {
+          if (i < currentProject.slides.length) {
+            updateSlide(currentProject.slides[i].id, newSlide);
+          }
+        });
+        toast.success("프로젝트가 재구성되었습니다");
+      }
+    } catch (e: any) {
+      console.error("AI command error:", e);
+      toast.error(e.message || "AI 처리에 실패했습니다");
+    } finally {
+      setAiProcessing(false);
+    }
+  }, [currentProject, currentSlideIndex, updateSlide, aiProcessing]);
+
+
     setSelectedElement(key);
   }, [setSelectedElement]);
 
