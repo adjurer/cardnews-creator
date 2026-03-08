@@ -400,6 +400,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
 
           const isTitleLevel = el === "title" || el === "highlight";
           const cfg = sizeConfig[el];
+          const elOverride = slide.elementOverrides?.[el] || {};
 
           return (
             <div className="space-y-2">
@@ -407,18 +408,22 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
                 <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-medium">{el}</span>
                 <span className="text-[9px] text-muted-foreground">선택됨</span>
               </div>
+              {/* Size */}
               {cfg && (
                 <Range label="크기" value={(typo as any)[cfg.field] ?? cfg.fallback} min={cfg.min} max={cfg.max} step={1} onChange={v => updateTypo({ [cfg.field]: v })} unit="px" />
               )}
+              {/* Per-element weight */}
+              <Range label="굵기" value={elOverride.fontWeight ?? (isTitleLevel ? (typo.titleWeight ?? 700) : (typo.bodyWeight ?? 400))} min={100} max={900} step={100} onChange={v => updateOverride(el, { fontWeight: v })} />
+              {/* Per-element color */}
+              <ColorInput label="색상" value={elOverride.color || colors.textColor || "#f0f6fc"} onChange={v => updateOverride(el, { color: v })} />
+              {/* Line height & spacing from group */}
               {isTitleLevel ? (
                 <>
-                  <Range label="굵기" value={typo.titleWeight ?? 700} min={300} max={900} step={100} onChange={v => updateTypo({ titleWeight: v })} />
                   <Range label="줄간격" value={typo.titleLineHeight ?? 1.3} min={0.8} max={2.0} step={0.05} onChange={v => updateTypo({ titleLineHeight: v })} />
                   <Range label="자간" value={typo.titleLetterSpacing ?? 0} min={-0.1} max={0.2} step={0.01} onChange={v => updateTypo({ titleLetterSpacing: v })} unit="em" />
                 </>
               ) : (
                 <>
-                  <Range label="굵기" value={typo.bodyWeight ?? 400} min={300} max={700} step={100} onChange={v => updateTypo({ bodyWeight: v })} />
                   <Range label="줄간격" value={typo.bodyLineHeight ?? 1.6} min={1.0} max={2.5} step={0.05} onChange={v => updateTypo({ bodyLineHeight: v })} />
                   <Range label="자간" value={typo.bodyLetterSpacing ?? 0} min={-0.05} max={0.15} step={0.01} onChange={v => updateTypo({ bodyLetterSpacing: v })} unit="em" />
                 </>
@@ -443,16 +448,6 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
               ))}
             </div>
           </div>
-        </div>
-        {/* Font */}
-        <div className="space-y-2 pt-3 border-t border-border">
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">폰트</span>
-          <FontManager
-            titleFont={typo.titleFontFamily}
-            bodyFont={typo.bodyFontFamily}
-            onSetTitleFont={f => updateTypo({ titleFontFamily: f })}
-            onSetBodyFont={f => updateTypo({ bodyFontFamily: f })}
-          />
         </div>
       </Section>
 
