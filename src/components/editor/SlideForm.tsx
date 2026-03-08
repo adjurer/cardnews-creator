@@ -398,9 +398,18 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
             sourceLabel: { field: "sourceLabelSize",   fallback: 11, min: 8, max: 24 },
           };
 
-          const isTitleLevel = el === "title" || el === "highlight";
+          const defaultLineHeight: Record<string, number> = {
+            title: 1.3, highlight: 1.3, subtitle: 1.5, category: 1.3,
+            body: 1.6, bullets: 1.6, cta: 1.4, sourceLabel: 1.4,
+          };
+          const defaultLetterSpacing: Record<string, number> = {
+            title: 0, highlight: 0, subtitle: 0, category: 0.05,
+            body: 0, bullets: 0, cta: 0, sourceLabel: 0,
+          };
+
           const cfg = sizeConfig[el];
           const elOverride = slide.elementOverrides?.[el] || {};
+          const isTitleLevel = el === "title" || el === "highlight";
 
           return (
             <div className="space-y-2">
@@ -416,38 +425,19 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
               <Range label="굵기" value={elOverride.fontWeight ?? (isTitleLevel ? (typo.titleWeight ?? 700) : (typo.bodyWeight ?? 400))} min={100} max={900} step={100} onChange={v => updateOverride(el, { fontWeight: v })} />
               {/* Per-element color */}
               <ColorInput label="색상" value={elOverride.color || colors.textColor || "#f0f6fc"} onChange={v => updateOverride(el, { color: v })} />
-              {/* Line height & spacing from group */}
-              {isTitleLevel ? (
-                <>
-                  <Range label="줄간격" value={typo.titleLineHeight ?? 1.3} min={0.8} max={2.0} step={0.05} onChange={v => updateTypo({ titleLineHeight: v })} />
-                  <Range label="자간" value={typo.titleLetterSpacing ?? 0} min={-0.1} max={0.2} step={0.01} onChange={v => updateTypo({ titleLetterSpacing: v })} unit="em" />
-                </>
-              ) : (
-                <>
-                  <Range label="줄간격" value={typo.bodyLineHeight ?? 1.6} min={1.0} max={2.5} step={0.05} onChange={v => updateTypo({ bodyLineHeight: v })} />
-                  <Range label="자간" value={typo.bodyLetterSpacing ?? 0} min={-0.05} max={0.15} step={0.01} onChange={v => updateTypo({ bodyLetterSpacing: v })} unit="em" />
-                </>
-              )}
+              {/* Per-element line height */}
+              <Range label="줄간격" value={elOverride.lineHeight ?? defaultLineHeight[el] ?? 1.5} min={0.8} max={3.0} step={0.05} onChange={v => updateOverride(el, { lineHeight: v })} />
+              {/* Per-element letter spacing */}
+              <Range label="자간" value={elOverride.letterSpacing ?? defaultLetterSpacing[el] ?? 0} min={-0.1} max={0.3} step={0.01} onChange={v => updateOverride(el, { letterSpacing: v })} unit="em" />
             </div>
           );
         })()}
         {/* Position */}
         <div className="space-y-2 pt-3 border-t border-border">
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">위치/여백</span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">여백</span>
           <Range label="좌우 여백" value={pos.contentPaddingX ?? 8} min={3} max={20} step={1} onChange={v => updatePos({ contentPaddingX: v })} unit="%" />
           <Range label="상하 여백" value={pos.contentPaddingY ?? 8} min={3} max={20} step={1} onChange={v => updatePos({ contentPaddingY: v })} unit="%" />
           <Range label="텍스트 박스 폭" value={pos.titleBoxWidth ?? 100} min={50} max={100} step={5} onChange={v => updatePos({ titleBoxWidth: v })} unit="%" />
-          <div>
-            <span className="text-[10px] text-muted-foreground mb-1 block">세로 정렬</span>
-            <div className="flex gap-1">
-              {(["start", "center", "end"] as const).map(a => (
-                <button key={a} onClick={() => updatePos({ contentAlign: a })}
-                  className={cn("flex-1 py-1.5 rounded-lg text-[10px] font-medium",
-                    (pos.contentAlign || "center") === a ? "bg-primary/20 text-primary" : "bg-surface text-muted-foreground"
-                  )}>{a === "start" ? "상단" : a === "center" ? "중앙" : "하단"}</button>
-              ))}
-            </div>
-          </div>
         </div>
       </Section>
 
