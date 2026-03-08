@@ -118,7 +118,7 @@ function AiImageGenerator({ defaultPrompt, aiPrompt, setAiPrompt, inputCls, onGe
   );
 }
 
-
+export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSelectElement, exportSize }: Props) {
   const [imageTab, setImageTab] = useState<ImageTab>("upload");
   const [aiPrompt, setAiPrompt] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
