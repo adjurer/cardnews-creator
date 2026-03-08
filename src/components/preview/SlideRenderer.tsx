@@ -2,16 +2,10 @@ import { useEffect, useState } from "react";
 import { THEME_MAP } from "@/lib/themes";
 import type { Slide, ElementKey, ElementOverride, SlideLogo, OverlayDirection } from "@/types/project";
 
-const OVERLAY_GRADIENT_MAP: Record<OverlayDirection, string> = {
-  "top-left": "linear-gradient(135deg, COLOR 0%, transparent 70%)",
-  "top-center": "linear-gradient(180deg, COLOR 0%, transparent 70%)",
-  "top-right": "linear-gradient(225deg, COLOR 0%, transparent 70%)",
-  "center-left": "linear-gradient(90deg, COLOR 0%, transparent 70%)",
-  "center": "COLOR_FLAT",
-  "center-right": "linear-gradient(270deg, COLOR 0%, transparent 70%)",
-  "bottom-left": "linear-gradient(45deg, COLOR 0%, transparent 70%)",
-  "bottom-center": "linear-gradient(0deg, COLOR 0%, transparent 70%)",
-  "bottom-right": "linear-gradient(315deg, COLOR 0%, transparent 70%)",
+const DEG_MAP: Record<OverlayDirection, string> = {
+  "top-left": "135deg", "top-center": "180deg", "top-right": "225deg",
+  "center-left": "90deg", "center": "", "center-right": "270deg",
+  "bottom-left": "45deg", "bottom-center": "0deg", "bottom-right": "315deg",
 };
 
 interface Props {
