@@ -42,6 +42,8 @@ function elementStyle(slide: Slide, key: ElementKey): React.CSSProperties {
     transform: ovr.offsetX || ovr.offsetY ? `translate(${ovr.offsetX || 0}px, ${ovr.offsetY || 0}px)` : undefined,
     color: ovr.color || undefined,
     fontWeight: ovr.fontWeight || undefined,
+    lineHeight: ovr.lineHeight || undefined,
+    letterSpacing: ovr.letterSpacing !== undefined && ovr.letterSpacing !== 0 ? `${ovr.letterSpacing}em` : undefined,
     backgroundColor: ovr.boxBg ? `${ovr.boxBg}${Math.round((ovr.boxBgOpacity ?? 1) * 255).toString(16).padStart(2, "0")}` : undefined,
     padding: ovr.boxPadding ? `${ovr.boxPadding}px` : undefined,
     borderRadius: ovr.boxRadius ? `${ovr.boxRadius}px` : undefined,
