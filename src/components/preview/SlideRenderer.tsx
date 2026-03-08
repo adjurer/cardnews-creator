@@ -242,7 +242,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         ...elementStyle(slide, "category"),
         fontSize: catSize, color: accentColor, fontWeight: 600,
         letterSpacing: "0.05em", textTransform: "uppercase",
-        marginBottom: isExport ? "16px" : "8px",
+        margin: 0, padding: 0,
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.category}</span>
     );
