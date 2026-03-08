@@ -154,7 +154,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
   const bodyStyle: React.CSSProperties = {
     fontSize: bodySize,
     fontWeight: typo.bodyWeight ?? 400,
-    lineHeight: typo.bodyLineHeight ?? 1.7,
+    lineHeight: typo.bodyLineHeight ?? 1.6,
     letterSpacing: typo.bodyLetterSpacing ? `${typo.bodyLetterSpacing}em` : undefined,
     color: secondaryText,
     fontFamily: bodyFamily,
@@ -251,10 +251,10 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     );
   };
 
-  const renderTitle = (extraWeight?: number) => (
+  const renderTitle = (defaultWeight?: number) => (
     <h2 data-element="title" onClick={eClick("title")} style={{
       ...titleStyle, ...elementStyle(slide, "title"),
-      fontWeight: extraWeight ?? typo.titleWeight ?? 700,
+      fontWeight: typo.titleWeight ?? defaultWeight ?? 700,
       marginBottom: "12px", cursor: onElementClick ? "pointer" : undefined,
     }}>{slide.title}</h2>
   );
