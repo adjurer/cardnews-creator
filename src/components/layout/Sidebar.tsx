@@ -55,13 +55,16 @@ export function Sidebar() {
 
       <div className="flex-1" />
 
-      {/* Theme toggle */}
+      {/* Settings */}
       <button
-        onClick={() => setMode(nextTheme.mode)}
-        className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:bg-sidebar-accent text-sidebar-foreground"
-        title={`테마: ${currentTheme.label} → ${nextTheme.label}`}
+        onClick={() => navigate("/settings")}
+        className={cn(
+          "w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:bg-sidebar-accent",
+          location.pathname === "/settings" ? "text-sidebar-primary" : "text-sidebar-foreground"
+        )}
+        title="설정"
       >
-        <currentTheme.icon className="w-4 h-4" />
+        <Settings className="w-4 h-4" />
       </button>
     </div>
   );
