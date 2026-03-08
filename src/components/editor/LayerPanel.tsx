@@ -10,6 +10,7 @@ interface Props {
 }
 
 const ELEMENT_DEFS: { key: ElementKey; label: string; icon: any; getContent: (s: Slide) => string | undefined }[] = [
+  { key: "logo", label: "로고", icon: ImageIcon, getContent: s => s.logo?.url ? "로고" : undefined },
   { key: "image", label: "이미지", icon: ImageIcon, getContent: s => s.image?.url ? "이미지" : undefined },
   { key: "category", label: "카테고리", icon: Tag, getContent: s => s.category },
   { key: "highlight", label: "하이라이트", icon: Tag, getContent: s => s.highlight },

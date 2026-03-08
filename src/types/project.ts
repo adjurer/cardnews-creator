@@ -7,7 +7,7 @@ export type ExportSize = "1080x1350" | "1080x1080" | "1080x1920";
 export type TextAlign = "left" | "center" | "right";
 export type ImageMode = "upload" | "generate" | "search";
 
-export type ElementKey = "category" | "title" | "subtitle" | "highlight" | "body" | "bullets" | "cta" | "sourceLabel" | "image";
+export type ElementKey = "category" | "title" | "subtitle" | "highlight" | "body" | "bullets" | "cta" | "sourceLabel" | "image" | "logo";
 
 export interface SlideImage {
   mode: ImageMode;
@@ -78,6 +78,17 @@ export interface ElementOverride {
   zIndex?: number;
 }
 
+export interface SlideLogo {
+  url: string;
+  width?: number;   // in px (at export resolution)
+  height?: number;
+  position?: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right";
+  opacity?: number;
+  margin?: number;   // margin from edge in px
+}
+
+export type AutoLayoutPreset = "none" | "centered" | "top-heavy" | "bottom-heavy" | "split-horizontal" | "editorial" | "minimal-quote";
+
 export interface Slide {
   id: string;
   type: SlideType;
@@ -93,11 +104,13 @@ export interface Slide {
   textAlign: TextAlign;
   themePreset: ThemePreset;
   image?: SlideImage;
+  logo?: SlideLogo;
   typography?: SlideTypography;
   colors?: SlideColors;
   visibility?: SlideVisibility;
   position?: SlidePosition;
   elementOverrides?: Partial<Record<ElementKey, ElementOverride>>;
+  autoLayout?: AutoLayoutPreset;
 }
 
 export interface ExportPreset {

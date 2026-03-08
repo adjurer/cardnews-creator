@@ -1,15 +1,17 @@
 import { useState, useRef, useEffect } from "react";
-import type { Slide, SlideType, LayoutType, TextAlign, ThemePreset, SlideImage, SlideTypography, SlideColors, SlideVisibility, SlidePosition, ElementKey, ElementOverride } from "@/types/project";
+import type { Slide, SlideType, LayoutType, TextAlign, ThemePreset, SlideImage, SlideLogo, SlideTypography, SlideColors, SlideVisibility, SlidePosition, ElementKey, ElementOverride, AutoLayoutPreset } from "@/types/project";
 import { THEME_LABELS } from "@/lib/themes";
 import { MOCK_IMAGE_RESULTS } from "@/mocks/data";
 import { LayerPanel } from "./LayerPanel";
 import { FontManager } from "./FontManager";
 import { cn } from "@/lib/utils";
 import { useFontStore } from "@/store/useFontStore";
+import { AUTO_LAYOUT_PRESETS, applyAutoLayout } from "@/lib/autoLayout";
 import {
   Upload, Sparkles, Search, Image as ImageIcon,
   Type, Palette, LayoutTemplate, Layers, TypeIcon,
-  AlignLeft, AlignCenter, AlignRight, Minus, Plus, Bold
+  AlignLeft, AlignCenter, AlignRight, Minus, Plus, Bold,
+  LayoutGrid, X, Star
 } from "lucide-react";
 
 interface Props {
@@ -49,6 +51,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
   const [aiPrompt, setAiPrompt] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const inputCls = "w-full bg-surface rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 border border-border";
 
@@ -71,6 +74,18 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
     if (!file) return;
     const url = URL.createObjectURL(file);
     onUpdate({ image: { ...slide.image, mode: "upload", url } as SlideImage });
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    onUpdate({ logo: { ...slide.logo, url, width: slide.logo?.width ?? 60 } as SlideLogo });
+  };
+
+  const handleAutoLayout = (preset: AutoLayoutPreset) => {
+    const updates = applyAutoLayout(preset, slide);
+    onUpdate(updates);
   };
 
   // Auto-switch to element inspector when element selected
@@ -323,8 +338,26 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
       {/* LAYOUT TAB */}
       {editorTab === "layout" && (
         <div className="space-y-4">
+          {/* Auto Layout */}
           <div>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-2 block">레이아웃</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-2 block">오토 레이아웃</span>
+            <div className="grid grid-cols-2 gap-1.5">
+              {(Object.entries(AUTO_LAYOUT_PRESETS) as [AutoLayoutPreset, typeof AUTO_LAYOUT_PRESETS[AutoLayoutPreset]][]).map(([key, config]) => (
+                <button key={key} onClick={() => handleAutoLayout(key)}
+                  className={cn("p-2.5 rounded-lg text-left transition-all border",
+                    (slide.autoLayout || "none") === key ? "bg-primary/10 border-primary/40" : "bg-surface border-transparent hover:border-border"
+                  )}>
+                  <span className="text-[12px] mr-1">{config.icon}</span>
+                  <span className="text-[10px] font-medium text-foreground">{config.label}</span>
+                  <span className="text-[8px] text-muted-foreground block mt-0.5">{config.description}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Manual Layout */}
+          <div>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-2 block">레이아웃 타입</span>
             <div className="grid grid-cols-2 gap-2">
               {LAYOUT_OPTIONS.map(l => (
                 <button key={l.value} onClick={() => onUpdate({ layoutType: l.value })}
@@ -422,6 +455,52 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
               </div>
             </div>
           )}
+
+          {/* Logo section */}
+          <div className="p-3 bg-surface rounded-lg space-y-2.5 border border-border">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">로고</span>
+              {slide.logo?.url && (
+                <button onClick={() => onUpdate({ logo: undefined })} className="text-[10px] text-destructive hover:underline flex items-center gap-0.5">
+                  <X className="w-3 h-3" /> 제거
+                </button>
+              )}
+            </div>
+            <input ref={logoInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+            {!slide.logo?.url ? (
+              <button onClick={() => logoInputRef.current?.click()}
+                className="w-full py-4 rounded-lg border border-dashed border-border hover:border-primary/50 flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
+                <Star className="w-5 h-5" />
+                <span className="text-[10px]">로고 이미지 업로드</span>
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded bg-card border border-border flex items-center justify-center overflow-hidden">
+                    <img src={slide.logo.url} alt="Logo" className="max-w-full max-h-full object-contain" />
+                  </div>
+                  <button onClick={() => logoInputRef.current?.click()} className="text-[10px] text-primary hover:underline">변경</button>
+                </div>
+                <Range label="크기" value={slide.logo.width ?? 60} min={20} max={200} step={5} onChange={v => onUpdate({ logo: { ...slide.logo!, width: v } })} unit="px" />
+                <Range label="투명도" value={slide.logo.opacity ?? 1} min={0.1} max={1} step={0.05} onChange={v => onUpdate({ logo: { ...slide.logo!, opacity: v } })} />
+                <Range label="여백" value={slide.logo.margin ?? 24} min={8} max={80} step={4} onChange={v => onUpdate({ logo: { ...slide.logo!, margin: v } })} unit="px" />
+                <div>
+                  <span className="text-[10px] text-muted-foreground mb-1 block">위치</span>
+                  <div className="grid grid-cols-3 gap-1">
+                    {(["top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"] as const).map(p => (
+                      <button key={p} onClick={() => onUpdate({ logo: { ...slide.logo!, position: p } })}
+                        className={cn("py-1.5 rounded text-[9px] font-medium",
+                          (slide.logo?.position || "top-left") === p ? "bg-primary/20 text-primary" : "bg-card text-muted-foreground"
+                        )}>
+                        {p === "top-left" ? "↖ 좌상" : p === "top-center" ? "↑ 상단" : p === "top-right" ? "↗ 우상" :
+                         p === "bottom-left" ? "↙ 좌하" : p === "bottom-center" ? "↓ 하단" : "↘ 우하"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
