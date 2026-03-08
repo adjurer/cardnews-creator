@@ -1,9 +1,11 @@
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useEffect, useState } from "react";
 import { SlideRenderer } from "./SlideRenderer";
 import { CanvasOverlay } from "@/components/canvas/CanvasOverlay";
-import { ChevronLeft, ChevronRight, Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Grid3X3, Shield, Ruler, Columns } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Grid3X3, Shield, Ruler, Columns, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUiStore, MARGIN_VALUES, type MarginGuide } from "@/store/useUiStore";
+import { useInstagramStore } from "@/store/useInstagramStore";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Slide, ExportSize, ElementKey } from "@/types/project";
 
 interface Props {
