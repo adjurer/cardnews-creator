@@ -11,7 +11,8 @@ interface Props {
   showSafeArea: boolean;
   gridSize: number;
   locked?: Record<string, boolean>;
-  canvasScale?: number; // ratio of preview size to actual content size
+  canvasScale?: number;
+  marginInset?: number; // margin inset as percentage (0-50), 0 = no margin
 }
 
 interface ElementRect {
