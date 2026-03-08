@@ -15,6 +15,7 @@ const BUILTIN_FONTS = [
   { family: "Pretendard Variable", label: "프리텐다드", weights: "100–900", desc: "카드뉴스 기본" },
   { family: "Freesentation", label: "프리젠테이션", weights: "100–900", desc: "프레젠테이션 특화" },
   { family: "Paperlogy", label: "페이퍼로지", weights: "100–900", desc: "부드러운 감성" },
+  { family: "A2z", label: "에이투지", weights: "100–900", desc: "자율주행 브랜드" },
 ];
 
 const SAMPLE_TEXT = "카드뉴스 디자인 Aa 123";
