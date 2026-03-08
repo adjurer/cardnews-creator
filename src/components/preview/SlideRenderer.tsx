@@ -339,7 +339,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Bullet list */}
         {slide.layoutType === "bullet-list" && (
-            <div style={{ display: "flex", flexDirection: "column", justifyContent: justifyMap[contentAlign], flex: contentAlign !== "start" ? 1 : undefined }}>
+            <div style={{ display: "flex", flexDirection: "column" }}>
             {renderTitle()}
             {shouldShow("showBullets") && !isHidden(slide, "bullets") && (
               <ul data-element="bullets" onClick={eClick("bullets")} style={{ ...elementStyle(slide, "bullets"), listStyle: "none", padding: 0, margin: 0, cursor: onElementClick ? "pointer" : undefined }}>
