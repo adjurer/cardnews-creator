@@ -89,16 +89,27 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
     const rect = container.getBoundingClientRect();
     const startX = e.clientX;
     const startY = e.clientY;
-    const startPosX = image.posX ?? 0;
-    const startPosY = image.posY ?? 0;
+    const startVpLeft = vpLeft;
+    const startVpTop = vpTop;
 
     const onMove = (ev: MouseEvent) => {
-      // Dragging viewport right → show right side → posX increases
       const dx = ((ev.clientX - startX) / rect.width) * 100;
       const dy = ((ev.clientY - startY) / rect.height) * 100;
-      const newX = Math.max(-50, Math.min(50, Math.round(startPosX + dx)));
-      const newY = Math.max(-50, Math.min(50, Math.round(startPosY + dy)));
-      onUpdate({ posX: newX, posY: newY });
+
+      const maxLeft = Math.max(0.0001, 100 - vpW);
+      const maxTop = Math.max(0.0001, 100 - vpH);
+
+      const newVpLeft = Math.max(0, Math.min(100 - vpW, startVpLeft + dx));
+      const newVpTop = Math.max(0, Math.min(100 - vpH, startVpTop + dy));
+
+      // Convert viewport position back to posX/posY (-50..50)
+      const newX = maxLeft <= 0.001 ? 0 : (newVpLeft / maxLeft) * 100 - 50;
+      const newY = maxTop <= 0.001 ? 0 : (newVpTop / maxTop) * 100 - 50;
+
+      onUpdate({
+        posX: Math.max(-50, Math.min(50, parseFloat(newX.toFixed(2)))),
+        posY: Math.max(-50, Math.min(50, parseFloat(newY.toFixed(2)))),
+      });
     };
 
     const onUp = () => {
@@ -108,7 +119,7 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
     };
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
-  }, [image.posX, image.posY, onUpdate]);
+  }, [onUpdate, vpH, vpLeft, vpTop, vpW]);
 
   const handleReset = () => onUpdate({ posX: 0, posY: 0, scale: 1 });
 
