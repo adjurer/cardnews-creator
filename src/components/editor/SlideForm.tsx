@@ -51,6 +51,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
   const [aiPrompt, setAiPrompt] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const inputCls = "w-full bg-surface rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 border border-border";
 
