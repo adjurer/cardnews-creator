@@ -57,3 +57,51 @@ export async function regenerateSlide(
 
   return data;
 }
+
+export interface RewriteProjectResult {
+  slides: Partial<Slide>[];
+}
+
+export async function rewriteProject(
+  projectTitle: string,
+  slides: Slide[],
+  instruction: string
+): Promise<RewriteProjectResult> {
+  const { data, error } = await supabase.functions.invoke("rewrite-project", {
+    body: { projectTitle, slides, instruction },
+  });
+
+  if (error) {
+    console.error("rewrite-project error:", error);
+    throw new Error(error.message || "프로젝트 재구성에 실패했습니다.");
+  }
+
+  if (data?.error) {
+    throw new Error(data.error);
+  }
+
+  return { slides: data.slides || [] };
+}
+
+export async function generateSlideImage(
+  prompt: string,
+  style: "generate" | "search" = "generate"
+): Promise<{ imageUrl: string; description: string }> {
+  const { data, error } = await supabase.functions.invoke("generate-image", {
+    body: { prompt, style },
+  });
+
+  if (error) {
+    console.error("generate-image error:", error);
+    throw new Error(error.message || "이미지 생성에 실패했습니다.");
+  }
+
+  if (data?.error) {
+    throw new Error(data.error);
+  }
+
+  return {
+    imageUrl: data.imageUrl,
+    description: data.description || "",
+  };
+}
