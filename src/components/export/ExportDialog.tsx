@@ -128,12 +128,12 @@ export function ExportDialog({ project, currentSlideIndex, onClose }: Props) {
   };
 
   const handleInstagramPublish = async () => {
-    if (!igAccessToken || !igUserId) {
-      toast.error("Instagram Access Token과 User ID를 입력해주세요");
+    if (!selectedIgAccount) {
+      toast.error("설정에서 Instagram 계정을 먼저 연결해주세요");
       return;
     }
     try {
-      await publish(mode, currentSlideIndex, igCaption, igAccessToken, igUserId);
+      await publish(mode, currentSlideIndex, igCaption, selectedIgAccount.access_token, selectedIgAccount.ig_user_id);
     } catch {
       // Error already handled in hook
     }
