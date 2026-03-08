@@ -333,6 +333,32 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {renderSourceLabel()}
       </div>
+
+      {/* Logo overlay */}
+      {slide.logo?.url && !isHidden(slide, "logo") && (() => {
+        const logo = slide.logo!;
+        const pos = logo.position || "top-left";
+        const margin = isExport ? (logo.margin ?? 24) : `${((logo.margin ?? 24) / width) * 100}%`;
+        const logoW = isExport ? (logo.width ?? 80) : `${((logo.width ?? 80) / width) * 100}%`;
+
+        const posStyle: React.CSSProperties = {
+          position: "absolute",
+          zIndex: 10,
+          opacity: logo.opacity ?? 1,
+          ...(pos.includes("top") ? { top: margin } : { bottom: margin }),
+          ...(pos.includes("left") ? { left: margin } : pos.includes("right") ? { right: margin } : { left: "50%", transform: "translateX(-50%)" }),
+        };
+
+        return (
+          <div data-element="logo" onClick={eClick("logo")} style={{
+            ...posStyle,
+            ...elementStyle(slide, "logo"),
+            cursor: onElementClick ? "pointer" : undefined,
+          }}>
+            <img src={logo.url} alt="Logo" style={{ width: logoW, height: "auto", display: "block", pointerEvents: "none" }} />
+          </div>
+        );
+      })()}
     </div>
   );
 }
