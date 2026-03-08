@@ -115,6 +115,19 @@ export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize,
             </>
           )}
 
+          {/* Margin guide */}
+          {marginGuide !== "none" && (
+            <div className="absolute pointer-events-none z-20" style={{
+              inset: `${marginPct}%`,
+              border: "1px dashed hsl(var(--primary) / 0.25)",
+              borderRadius: "2px",
+            }}>
+              <div className="absolute -top-3.5 left-0 text-[6px] text-primary/40 font-medium">
+                여백 {MARGIN_LABELS[marginGuide]} ({marginPct}%)
+              </div>
+            </div>
+          )}
+
           <SlideRenderer
             slide={slide}
             width={w}
