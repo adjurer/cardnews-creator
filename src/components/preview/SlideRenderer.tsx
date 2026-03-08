@@ -304,7 +304,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Center-title / Cover */}
         {(slide.layoutType === "center-title" || slide.type === "cover") && (
-          <div style={{ display: "flex", flexDirection: "column", justifyContent: justifyMap[contentAlign], alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", flex: contentAlign === "center" ? 1 : undefined }}>
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: justifyMap[contentAlign], alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", flex: contentAlign !== "start" ? 1 : undefined }}>
             {renderHighlight()}
             {renderTitle(800)}
             {renderSubtitle()}
@@ -313,7 +313,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Title-body / Title-image */}
         {(slide.layoutType === "title-body" || slide.layoutType === "title-image") && slide.type !== "cover" && (
-          <div style={{ display: "flex", flexDirection: "column", justifyContent: justifyMap[contentAlign], flex: contentAlign === "center" ? 1 : undefined }}>
+            <div style={{ display: "flex", flexDirection: "column", justifyContent: justifyMap[contentAlign], flex: contentAlign !== "start" ? 1 : undefined }}>
             {renderHighlight()}
             {renderTitle()}
             {renderSubtitle()}
@@ -332,7 +332,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Bullet list */}
         {slide.layoutType === "bullet-list" && (
-          <div style={{ display: "flex", flexDirection: "column", justifyContent: justifyMap[contentAlign], flex: contentAlign === "center" ? 1 : undefined }}>
+            <div style={{ display: "flex", flexDirection: "column", justifyContent: justifyMap[contentAlign], flex: contentAlign !== "start" ? 1 : undefined }}>
             {renderTitle()}
             {shouldShow("showBullets") && !isHidden(slide, "bullets") && (
               <ul data-element="bullets" onClick={eClick("bullets")} style={{ ...elementStyle(slide, "bullets"), listStyle: "none", padding: 0, margin: 0, cursor: onElementClick ? "pointer" : undefined }}>
@@ -368,7 +368,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Timeline */}
         {slide.layoutType === "timeline" && (
-          <div style={{ display: "flex", flexDirection: "column", justifyContent: justifyMap[contentAlign], flex: contentAlign === "center" ? 1 : undefined }}>
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: justifyMap[contentAlign], flex: contentAlign !== "start" ? 1 : undefined }}>
             {renderTitle()}
             {slide.bullets?.map((b, i) => (
               <div key={i} style={{ display: "flex", gap: "16px", marginBottom: "16px" }}>
