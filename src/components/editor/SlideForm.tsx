@@ -445,22 +445,10 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
           </div>
         </div>
 
-        {/* Selected element text box */}
-        {selectedElement && selectedElement !== "image" && (
-          <div className="pt-2 border-t border-primary/20 space-y-2">
-            <span className="text-[10px] text-primary uppercase tracking-wider font-semibold block">
-              {selectedElement} 텍스트 박스
-            </span>
-            <ColorInput label="배경색" value={selectedOverride.boxBg || "#000000"} onChange={v => updateOverride(selectedElement, { boxBg: v })} />
-            <Range label="배경 투명도" value={selectedOverride.boxBgOpacity ?? 0} min={0} max={1} step={0.05} onChange={v => updateOverride(selectedElement, { boxBgOpacity: v })} />
-            <Range label="안쪽 여백" value={selectedOverride.boxPadding ?? 0} min={0} max={30} step={1} onChange={v => updateOverride(selectedElement, { boxPadding: v })} unit="px" />
-            <Range label="둥글기" value={selectedOverride.boxRadius ?? 0} min={0} max={24} step={1} onChange={v => updateOverride(selectedElement, { boxRadius: v })} unit="px" />
-          </div>
-        )}
       </Section>
 
-      {/* ═══ 7. LAYERS (collapsed by default) ═══ */}
-      <Section title="레이어" icon={Layers} defaultOpen={false}>
+      {/* ═══ 7. LAYERS ═══ */}
+      <Section title="레이어" icon={Layers} defaultOpen={true}>
         <LayerPanel
           slide={slide}
           selectedElement={selectedElement}
