@@ -1,7 +1,7 @@
 import { clearAllData } from "@/lib/persistence/storage";
 import { ArrowLeft, Moon, Sun, Monitor, Check, Instagram, Plus, Trash2, Star, Loader2, Type } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useThemeStore, type ThemeMode } from "@/store/useThemeStore";
 import { useInstagramStore } from "@/store/useInstagramStore";
