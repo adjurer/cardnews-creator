@@ -89,7 +89,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
     const file = e.target.files?.[0];
     if (!file) return;
     const url = URL.createObjectURL(file);
-    onUpdate({ image: { ...slide.image, mode: "upload", url } as SlideImage });
+    updateImage({ mode: "upload", url });
   };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
