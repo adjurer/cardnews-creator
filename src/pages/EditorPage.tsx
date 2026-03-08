@@ -7,6 +7,7 @@ import { MobilePreview } from "@/components/preview/MobilePreview";
 import { SlideForm } from "@/components/editor/SlideForm";
 import { ExportDialog } from "@/components/export/ExportDialog";
 import { SlideStrip } from "@/components/editor/SlideStrip";
+import { AiCommandInput } from "@/components/editor/AiCommandInput";
 import {
   ArrowLeft, Save, Download, Check, AlertCircle, Loader2, Sparkles,
   Monitor, Square, Smartphone
