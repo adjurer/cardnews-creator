@@ -81,10 +81,15 @@ export default function EditorPage() {
     if (!currentProject) return;
     const slide = currentProject.slides[currentSlideIndex];
     const current = slide.elementOverrides?.[key] || {};
+    const newX = (current.offsetX || 0) + dx;
+    const newY = (current.offsetY || 0) + dy;
+    // Clamp offsets to prevent going out of bounds (approx ±80px max)
+    const clampedX = Math.max(-80, Math.min(80, newX));
+    const clampedY = Math.max(-80, Math.min(80, newY));
     updateSlide(slide.id, {
       elementOverrides: {
         ...slide.elementOverrides,
-        [key]: { ...current, offsetX: (current.offsetX || 0) + dx, offsetY: (current.offsetY || 0) + dy },
+        [key]: { ...current, offsetX: clampedX, offsetY: clampedY },
       },
     });
   }, [currentProject, currentSlideIndex, updateSlide]);
@@ -92,24 +97,25 @@ export default function EditorPage() {
   const handleResizeElement = useCallback((key: ElementKey, dw: number, dh: number, handle: string) => {
     if (!currentProject) return;
     const slide = currentProject.slides[currentSlideIndex];
+    const typo = slide.typography || {};
 
-    // For text elements, resize adjusts typography/position
     if (key === "image") {
       const img = slide.image || { mode: "upload" as const, url: "" };
       const currentScale = img.scale ?? 1;
       const scaleDelta = (handle.includes("e") || handle.includes("w")) ? dw * 0.005 : dh * 0.005;
       updateSlide(slide.id, { image: { ...img, scale: Math.max(0.3, Math.min(3, currentScale + scaleDelta)) } });
+    } else if (key === "title" || key === "highlight" || key === "subtitle" || key === "category") {
+      // Resize adjusts title font size
+      const currentSize = typo.titleSize ?? 28;
+      const delta = Math.round(dh * 0.15);
+      const newSize = Math.max(12, Math.min(72, currentSize + delta));
+      updateSlide(slide.id, { typography: { ...typo, titleSize: newSize } });
     } else {
-      // For text elements, adjust box padding as proxy for size
-      const current = slide.elementOverrides?.[key] || {};
-      const currentPadding = current.boxPadding ?? 0;
-      const paddingDelta = Math.round(dh * 0.3);
-      updateSlide(slide.id, {
-        elementOverrides: {
-          ...slide.elementOverrides,
-          [key]: { ...current, boxPadding: Math.max(0, currentPadding + paddingDelta) },
-        },
-      });
+      // body, bullets, cta, sourceLabel → adjust body font size
+      const currentSize = typo.bodySize ?? 16;
+      const delta = Math.round(dh * 0.15);
+      const newSize = Math.max(8, Math.min(40, currentSize + delta));
+      updateSlide(slide.id, { typography: { ...typo, bodySize: newSize } });
     }
   }, [currentProject, currentSlideIndex, updateSlide]);
 
