@@ -292,8 +292,9 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         ...elementStyle(slide, "subtitle"),
         fontSize: subtitleSize, color: secondaryText, lineHeight: 1.5,
         margin: 0, padding: 0,
-        display: "inline-block", width: "fit-content",
-        maxWidth: getOverride(slide, "subtitle").boxWidth ? `${getOverride(slide, "subtitle").boxWidth}%` : "100%",
+        display: "inline-block",
+        width: getOverride(slide, "subtitle").boxWidth ? `${getOverride(slide, "subtitle").boxWidth}%` : "fit-content",
+        maxWidth: "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.subtitle}</p>
     );
