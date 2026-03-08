@@ -248,7 +248,8 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         fontSize: catSize, color: accentColor, fontWeight: 600,
         letterSpacing: "0.05em", textTransform: "uppercase",
         margin: 0, padding: 0,
-        display: "inline-block", width: "fit-content", maxWidth: "100%",
+        display: "inline-block", width: "fit-content",
+        maxWidth: getOverride(slide, "category").boxWidth ? `${getOverride(slide, "category").boxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.category}</span>
     );
@@ -260,21 +261,26 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
       <span data-element="highlight" onClick={eClick("highlight")} style={{
         ...elementStyle(slide, "highlight"), ...highlightStyle,
         margin: 0,
-        display: "inline-block", width: "fit-content", maxWidth: "100%",
+        display: "inline-block", width: "fit-content",
+        maxWidth: highlightOvr.boxWidth ? `${highlightOvr.boxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.highlight}</span>
     );
   };
 
-  const renderTitle = (defaultWeight?: number) => (
-    <h2 data-element="title" onClick={eClick("title")} style={{
-      ...titleStyle, ...elementStyle(slide, "title"),
-      fontWeight: typo.titleWeight ?? defaultWeight ?? 700,
-      margin: 0, padding: 0,
-      display: "inline-block", width: "fit-content", maxWidth: titleBoxWidth < 100 ? `${titleBoxWidth}%` : "100%",
-      cursor: onElementClick ? "pointer" : undefined,
-    }}>{slide.title}</h2>
-  );
+  const renderTitle = (defaultWeight?: number) => {
+    const titleOvr = getOverride(slide, "title");
+    const titleMaxW = titleOvr.boxWidth ? `${titleOvr.boxWidth}%` : (titleBoxWidth < 100 ? `${titleBoxWidth}%` : "100%");
+    return (
+      <h2 data-element="title" onClick={eClick("title")} style={{
+        ...titleStyle, ...elementStyle(slide, "title"),
+        fontWeight: typo.titleWeight ?? defaultWeight ?? 700,
+        margin: 0, padding: 0,
+        display: "inline-block", width: "fit-content", maxWidth: titleMaxW,
+        cursor: onElementClick ? "pointer" : undefined,
+      }}>{slide.title}</h2>
+    );
+  };
 
   const renderSubtitle = () => {
     if (!slide.subtitle || !shouldShow("showSubtitle") || isHidden(slide, "subtitle")) return null;
@@ -283,7 +289,8 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         ...elementStyle(slide, "subtitle"),
         fontSize: subtitleSize, color: secondaryText, lineHeight: 1.5,
         margin: 0, padding: 0,
-        display: "inline-block", width: "fit-content", maxWidth: "100%",
+        display: "inline-block", width: "fit-content",
+        maxWidth: getOverride(slide, "subtitle").boxWidth ? `${getOverride(slide, "subtitle").boxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.subtitle}</p>
     );
@@ -296,7 +303,8 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         ...bodyStyle, ...elementStyle(slide, "body"),
         whiteSpace: "pre-wrap",
         margin: 0, padding: 0,
-        display: "inline-block", width: "fit-content", maxWidth: "100%",
+        display: "inline-block", width: "fit-content",
+        maxWidth: getOverride(slide, "body").boxWidth ? `${getOverride(slide, "body").boxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.body}</p>
     );
@@ -313,7 +321,8 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     return (
       <div data-element="cta" onClick={eClick("cta")} style={{
         ...elementStyle(slide, "cta"),
-        display: "inline-block", width: "fit-content", maxWidth: "100%",
+        display: "inline-block", width: "fit-content",
+        maxWidth: ctaOvr.boxWidth ? `${ctaOvr.boxWidth}%` : "100%",
         padding: ctaPad,
         background: ctaBg, color: ctaOvr.color || bg,
         borderRadius: ctaRadius, fontWeight: ctaOvr.fontWeight || 600, fontSize: ctaSize,
