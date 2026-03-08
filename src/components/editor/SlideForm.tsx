@@ -21,6 +21,7 @@ interface Props {
   projectTheme: ThemePreset;
   selectedElement: ElementKey | null;
   onSelectElement: (key: ElementKey | null) => void;
+  exportSize?: ExportSize;
 }
 
 const LAYOUT_OPTIONS: { value: LayoutType; label: string; desc: string }[] = [
