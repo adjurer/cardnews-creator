@@ -450,7 +450,22 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
                 <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-medium">{el}</span>
                 <span className="text-[9px] text-muted-foreground">선택됨</span>
               </div>
-              {/* Size */}
+              {/* Quick text align */}
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] text-muted-foreground mr-auto">정렬</span>
+                {([
+                  { value: "left" as TextAlign, icon: AlignLeft },
+                  { value: "center" as TextAlign, icon: AlignCenter },
+                  { value: "right" as TextAlign, icon: AlignRight },
+                ] as const).map(a => (
+                  <button key={a.value} onClick={() => onUpdate({ textAlign: a.value })}
+                    className={cn("p-1.5 rounded-md transition-colors",
+                      slide.textAlign === a.value ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-surface"
+                    )}>
+                    <a.icon className="w-3.5 h-3.5" />
+                  </button>
+                ))}
+              </div>
               {cfg && (
                 <Range label="크기" value={(typo as any)[cfg.field] ?? cfg.fallback} min={cfg.min} max={cfg.max} step={1} onChange={v => updateTypo({ [cfg.field]: v })} unit="px" />
               )}
