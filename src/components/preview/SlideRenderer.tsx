@@ -261,8 +261,9 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
       <span data-element="highlight" onClick={eClick("highlight")} style={{
         ...elementStyle(slide, "highlight"), ...highlightStyle,
         margin: 0,
-        display: "inline-block", width: "fit-content",
-        maxWidth: highlightOvr.boxWidth ? `${highlightOvr.boxWidth}%` : "100%",
+        display: "inline-block",
+        width: highlightOvr.boxWidth ? `${highlightOvr.boxWidth}%` : "fit-content",
+        maxWidth: "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.highlight}</span>
     );
