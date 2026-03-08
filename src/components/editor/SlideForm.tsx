@@ -468,11 +468,11 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
 
               <div className="p-3 bg-surface rounded-lg space-y-2.5">
                 <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">이미지 조절</span>
-                <Range label="X 위치" value={slide.image.posX ?? 0} min={-50} max={50} step={1} onChange={v => onUpdate({ image: { ...slide.image!, posX: v } })} unit="%" />
-                <Range label="Y 위치" value={slide.image.posY ?? 0} min={-50} max={50} step={1} onChange={v => onUpdate({ image: { ...slide.image!, posY: v } })} unit="%" />
-                <Range label="확대/축소" value={slide.image.scale ?? 1} min={0.5} max={2.5} step={0.05} onChange={v => onUpdate({ image: { ...slide.image!, scale: v } })} unit="x" />
-                <Range label="오버레이" value={slide.image.overlayOpacity ?? 0.5} min={0} max={1} step={0.05} onChange={v => onUpdate({ image: { ...slide.image!, overlayOpacity: v } })} />
-                <Range label="둥글기" value={slide.image.borderRadius ?? 0} min={0} max={32} step={1} onChange={v => onUpdate({ image: { ...slide.image!, borderRadius: v } })} unit="px" />
+                <Range label="X 위치" value={slide.image.posX ?? 0} min={-50} max={50} step={1} onChange={v => updateImage({ posX: v })} unit="%" />
+                <Range label="Y 위치" value={slide.image.posY ?? 0} min={-50} max={50} step={1} onChange={v => updateImage({ posY: v })} unit="%" />
+                <Range label="확대/축소" value={slide.image.scale ?? 1} min={0.5} max={2.5} step={0.05} onChange={v => updateImage({ scale: v })} unit="x" />
+                <Range label="오버레이" value={slide.image.overlayOpacity ?? 0.5} min={0} max={1} step={0.05} onChange={v => updateImage({ overlayOpacity: v })} />
+                <Range label="둥글기" value={slide.image.borderRadius ?? 0} min={0} max={32} step={1} onChange={v => updateImage({ borderRadius: v })} unit="px" />
               </div>
 
               {/* Filters */}
