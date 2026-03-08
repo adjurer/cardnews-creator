@@ -555,7 +555,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
                 <Range label="밝기" value={slide.image.brightness ?? 1} min={0.3} max={2} step={0.05} onChange={v => updateImage({ brightness: v })} />
                 <Range label="대비" value={slide.image.contrast ?? 1} min={0.3} max={2} step={0.05} onChange={v => updateImage({ contrast: v })} />
                 <Range label="채도" value={slide.image.saturate ?? 1} min={0} max={3} step={0.05} onChange={v => updateImage({ saturate: v })} />
-                <Range label="블러" value={slide.image.blur ?? 0} min={0} max={20} step={1} onChange={v => updateImage({ blur: v })} unit="px" />
+                
                 <Range label="흑백" value={slide.image.grayscale ?? 0} min={0} max={1} step={0.05} onChange={v => updateImage({ grayscale: v })} />
                 <Range label="세피아" value={slide.image.sepia ?? 0} min={0} max={1} step={0.05} onChange={v => updateImage({ sepia: v })} />
                 <Range label="색조 회전" value={slide.image.hueRotate ?? 0} min={0} max={360} step={5} onChange={v => updateImage({ hueRotate: v })} unit="°" />
