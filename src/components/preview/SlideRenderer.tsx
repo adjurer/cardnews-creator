@@ -304,13 +304,19 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
   const renderCta = () => {
     if (!slide.cta || !shouldShow("showCta") || isHidden(slide, "cta")) return null;
+    const ctaOvr = getOverride(slide, "cta");
+    const ctaPad = ctaOvr.boxPadding !== undefined ? `${ctaOvr.boxPadding}px` : (isExport ? "16px 40px" : "10px 24px");
+    const ctaRadius = ctaOvr.boxRadius !== undefined ? `${ctaOvr.boxRadius}px` : "999px";
+    const ctaBg = ctaOvr.boxBg
+      ? `${ctaOvr.boxBg}${Math.round((ctaOvr.boxBgOpacity ?? 1) * 255).toString(16).padStart(2, "0")}`
+      : accentColor;
     return (
       <div data-element="cta" onClick={eClick("cta")} style={{
         ...elementStyle(slide, "cta"),
         display: "inline-block", width: "fit-content", maxWidth: "100%",
-        padding: isExport ? "16px 40px" : "10px 24px",
-        background: accentColor, color: bg,
-        borderRadius: "999px", fontWeight: 600, fontSize: ctaSize,
+        padding: ctaPad,
+        background: ctaBg, color: ctaOvr.color || bg,
+        borderRadius: ctaRadius, fontWeight: ctaOvr.fontWeight || 600, fontSize: ctaSize,
         margin: 0,
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.cta}</div>
