@@ -1,0 +1,159 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+const SLIDE_SCHEMA = {
+  type: "function" as const,
+  function: {
+    name: "create_cardnews",
+    description: "Generate a structured card news project with slides",
+    parameters: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "프로젝트 제목 (간결하고 임팩트 있게)" },
+        themePreset: {
+          type: "string",
+          enum: ["dark-minimal", "cyan-accent", "editorial-dark", "warm-neutral"],
+          description: "테마 프리셋",
+        },
+        slides: {
+          type: "array",
+          description: "6~8장의 슬라이드 배열",
+          items: {
+            type: "object",
+            properties: {
+              type: {
+                type: "string",
+                enum: ["cover", "summary", "detail", "list", "quote", "timeline", "cta"],
+              },
+              category: { type: "string", description: "카테고리 라벨 (예: AI & INSIGHT)" },
+              title: { type: "string", description: "슬라이드 제목" },
+              subtitle: { type: "string", description: "부제" },
+              highlight: { type: "string", description: "하이라이트 문구" },
+              body: { type: "string", description: "본문 텍스트" },
+              bullets: {
+                type: "array",
+                items: { type: "string" },
+                description: "불릿 리스트 항목",
+              },
+              cta: { type: "string", description: "CTA 문구" },
+              sourceLabel: { type: "string", description: "출처 라벨" },
+              layoutType: {
+                type: "string",
+                enum: ["center-title", "title-body", "title-image", "image-overlay", "bullet-list", "timeline", "quote", "cta"],
+              },
+              textAlign: { type: "string", enum: ["left", "center", "right"] },
+            },
+            required: ["type", "title", "layoutType", "textAlign"],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ["title", "themePreset", "slides"],
+      additionalProperties: false,
+    },
+  },
+};
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { sourceType, content, title } = await req.json();
+
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    const systemPrompt = `당신은 인스타그램용 카드뉴스 전문 작성자입니다.
+사용자가 제공한 텍스트/URL/뉴스를 분석하여 6~8장의 카드뉴스 슬라이드를 생성합니다.
+
+규칙:
+- 첫 장(cover): 강한 훅이 되는 제목, 카테고리 라벨 포함
+- 두 번째 장(summary): 전체 내용 요약 (목차 또는 핵심 요약)
+- 중간 장(detail/list/quote): 핵심 정보를 1장 1메시지로 분해
+- 마지막 장(cta): 결론 또는 행동 유도
+- 모든 텍스트는 한국어
+- 한 슬라이드에 텍스트가 너무 많지 않게 (모바일 가독성 우선)
+- category는 영어 대문자로 (예: AI & INSIGHT, TECH & GADGET, TREND)
+- 각 슬라이드에 적절한 layoutType 지정
+- themePreset은 내용에 맞게 선택 (기술=cyan-accent, 트렌드=editorial-dark, 따뜻한 주제=warm-neutral, 미니멀=dark-minimal)`;
+
+    const userPrompt = title
+      ? `제목: ${title}\n소스 타입: ${sourceType}\n\n내용:\n${content}`
+      : `소스 타입: ${sourceType}\n\n내용:\n${content}`;
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        tools: [SLIDE_SCHEMA],
+        tool_choice: { type: "function", function: { name: "create_cardnews" } },
+      }),
+    });
+
+    if (!response.ok) {
+      const status = response.status;
+      const text = await response.text();
+      console.error("AI gateway error:", status, text);
+
+      if (status === 429) {
+        return new Response(JSON.stringify({ error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (status === 402) {
+        return new Response(JSON.stringify({ error: "AI 크레딧이 부족합니다." }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify({ error: "AI 생성에 실패했습니다." }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const data = await response.json();
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+
+    if (!toolCall || toolCall.function.name !== "create_cardnews") {
+      console.error("Unexpected response:", JSON.stringify(data));
+      return new Response(JSON.stringify({ error: "AI 응답 형식이 올바르지 않습니다." }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const result = JSON.parse(toolCall.function.arguments);
+
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (e) {
+    console.error("generate-cardnews error:", e);
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    return new Response(JSON.stringify({ error: msg }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
