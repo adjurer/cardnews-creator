@@ -140,14 +140,14 @@ export default function EditorPage() {
     } else {
       // Per-element font size map
       const sizeMap: Record<string, { field: string; fallback: number; min: number; max: number }> = {
-        title:       { field: "titleSize",       fallback: 28, min: 12, max: 72 },
-        highlight:   { field: "highlightSize",   fallback: typo.bodySize ?? 16, min: 10, max: 48 },
-        subtitle:    { field: "subtitleSize",     fallback: (typo.bodySize ?? 16) + 2, min: 10, max: 48 },
-        category:    { field: "categorySize",     fallback: 12, min: 8, max: 32 },
-        body:        { field: "bodySize",          fallback: 16, min: 8, max: 40 },
-        bullets:     { field: "bulletSize",        fallback: (typo.bodySize ?? 16) - 1, min: 8, max: 36 },
-        cta:         { field: "ctaSize",           fallback: typo.bodySize ?? 16, min: 10, max: 40 },
-        sourceLabel: { field: "sourceLabelSize",   fallback: 11, min: 8, max: 24 },
+        title:       { field: "titleSize",       fallback: 28, min: 14, max: 80 },
+        highlight:   { field: "highlightSize",   fallback: typo.bodySize ?? 16, min: 10, max: 80 },
+        subtitle:    { field: "subtitleSize",     fallback: (typo.bodySize ?? 16) + 2, min: 10, max: 60 },
+        category:    { field: "categorySize",     fallback: 12, min: 8, max: 48 },
+        body:        { field: "bodySize",          fallback: 16, min: 8, max: 60 },
+        bullets:     { field: "bulletSize",        fallback: (typo.bodySize ?? 16) - 1, min: 8, max: 48 },
+        cta:         { field: "ctaSize",           fallback: typo.bodySize ?? 16, min: 10, max: 80 },
+        sourceLabel: { field: "sourceLabelSize",   fallback: 11, min: 8, max: 36 },
       };
       const cfg = sizeMap[key];
       if (cfg) {
