@@ -105,8 +105,10 @@ export default function EditorPage() {
     const current = slide.elementOverrides?.[key] || {};
     const newX = (current.offsetX || 0) + dx;
     const newY = (current.offsetY || 0) + dy;
+    // Allow movement up to the margin boundary (percentage-based)
+    // marginPct is the inset %, so maxOffset allows full range minus margin
     const marginPct = MARGIN_VALUES[marginGuide];
-    const maxOffset = marginGuide === "none" ? 100 : Math.max(20, 80 - marginPct * 3);
+    const maxOffset = marginGuide === "none" ? 200 : Math.max(100, 200 - marginPct * 2);
     const clampedX = Math.max(-maxOffset, Math.min(maxOffset, newX));
     const clampedY = Math.max(-maxOffset, Math.min(maxOffset, newY));
     updateSlide(slide.id, {
