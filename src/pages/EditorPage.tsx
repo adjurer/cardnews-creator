@@ -310,6 +310,14 @@ export default function EditorPage() {
             )}
           </div>
 
+          <div className="px-4 py-2 border-b border-border shrink-0">
+            <AiCommandInput
+              onSubmit={handleAiCommand}
+              isProcessing={aiProcessing}
+              slideTitle={currentSlide.title}
+            />
+          </div>
+
           <div className="flex-1 overflow-auto p-4 scrollbar-thin">
             <SlideForm
               slide={currentSlide}
