@@ -17,6 +17,49 @@ export interface SlideImage {
   overlayOpacity?: number;
   borderRadius?: number;
   blur?: number;
+  brightness?: number;
+}
+
+export interface SlideTypography {
+  titleSize?: number;       // px
+  titleWeight?: number;     // 400-900
+  titleLineHeight?: number; // multiplier e.g. 1.3
+  titleLetterSpacing?: number; // em e.g. -0.02
+  bodySize?: number;
+  bodyWeight?: number;
+  bodyLineHeight?: number;
+  bodyLetterSpacing?: number;
+}
+
+export interface SlideColors {
+  backgroundColor?: string;  // hex
+  textColor?: string;
+  accentColor?: string;
+  highlightBg?: string;      // highlight badge background
+  highlightText?: string;
+  gradientPreset?: "none" | "dark-fade" | "primary-glow" | "warm-sunset" | "cool-ocean" | "purple-haze";
+  containerRadius?: number;
+  borderEnabled?: boolean;
+  borderColor?: string;
+  shadowIntensity?: number; // 0-1
+  overlayColor?: string;
+}
+
+export interface SlideVisibility {
+  showCategory?: boolean;
+  showSubtitle?: boolean;
+  showBody?: boolean;
+  showBullets?: boolean;
+  showCta?: boolean;
+  showSourceLabel?: boolean;
+  showHighlight?: boolean;
+}
+
+export interface SlidePosition {
+  contentPaddingX?: number; // percentage 5-20
+  contentPaddingY?: number;
+  titleBoxWidth?: number;   // percentage 50-100
+  contentAlign?: "start" | "center" | "end"; // vertical alignment
 }
 
 export interface Slide {
@@ -34,6 +77,10 @@ export interface Slide {
   textAlign: TextAlign;
   themePreset: ThemePreset;
   image?: SlideImage;
+  typography?: SlideTypography;
+  colors?: SlideColors;
+  visibility?: SlideVisibility;
+  position?: SlidePosition;
 }
 
 export interface ExportPreset {
