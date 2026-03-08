@@ -148,6 +148,7 @@ export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize,
             gridSize={gridSize}
             locked={lockedMap}
             canvasScale={canvasScale}
+            marginInset={marginPct}
           />
         </div>
 

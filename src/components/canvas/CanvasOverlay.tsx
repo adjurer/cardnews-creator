@@ -11,7 +11,8 @@ interface Props {
   showSafeArea: boolean;
   gridSize: number;
   locked?: Record<string, boolean>;
-  canvasScale?: number; // ratio of preview size to actual content size
+  canvasScale?: number;
+  marginInset?: number; // margin inset as percentage (0-50), 0 = no margin
 }
 
 interface ElementRect {
@@ -29,7 +30,7 @@ const HANDLE_CURSORS: Record<ResizeHandle, string> = {
 
 export function CanvasOverlay({
   containerRef, selectedElement, onSelectElement, onUpdateOffset,
-  onResizeElement, showGrid, showSafeArea, gridSize, locked = {}, canvasScale = 1,
+  onResizeElement, showGrid, showSafeArea, gridSize, locked = {}, canvasScale = 1, marginInset = 0,
 }: Props) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [elements, setElements] = useState<ElementRect[]>([]);
@@ -162,19 +163,38 @@ export function CanvasOverlay({
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!dragStart.current || !selectedElement) return;
-    const dx = e.clientX - dragStart.current.x;
-    const dy = e.clientY - dragStart.current.y;
+    let dx = e.clientX - dragStart.current.x;
+    let dy = e.clientY - dragStart.current.y;
 
     if (mode === "dragging" && (Math.abs(dx) > 1 || Math.abs(dy) > 1)) {
-      onUpdateOffset(selectedElement, dx, dy);
+      // Clamp movement so the element stays within the container (minus margin)
+      const selEl = elements.find(el => el.key === selectedElement);
+      const overlay = overlayRef.current;
+      if (selEl && overlay) {
+        const containerW = overlay.clientWidth;
+        const containerH = overlay.clientHeight;
+        const marginPx = marginInset > 0 ? (marginInset / 100) * Math.min(containerW, containerH) : 0;
+
+        const elRect = selEl.rect;
+        // How far the element can move before its edge hits the boundary
+        const minDx = marginPx - elRect.x;
+        const maxDx = (containerW - marginPx) - (elRect.x + elRect.width);
+        const minDy = marginPx - elRect.y;
+        const maxDy = (containerH - marginPx) - (elRect.y + elRect.height);
+
+        dx = Math.max(minDx, Math.min(maxDx, dx));
+        dy = Math.max(minDy, Math.min(maxDy, dy));
+      }
+
+      if (dx !== 0 || dy !== 0) {
+        onUpdateOffset(selectedElement, dx, dy);
+      }
       dragStart.current = { x: e.clientX, y: e.clientY };
     } else if (mode === "resizing" && activeHandle && onResizeElement) {
-      // Accumulate deltas for smoother resize
       accumDelta.current.dx += dx;
       accumDelta.current.dy += dy;
       dragStart.current = { x: e.clientX, y: e.clientY };
       
-      // Fire resize with accumulated delta scaled to content space
       const scaledDx = accumDelta.current.dx / canvasScale;
       const scaledDy = accumDelta.current.dy / canvasScale;
       
@@ -183,7 +203,7 @@ export function CanvasOverlay({
         accumDelta.current = { dx: 0, dy: 0 };
       }
     }
-  }, [mode, selectedElement, activeHandle, onUpdateOffset, onResizeElement, canvasScale]);
+  }, [mode, selectedElement, activeHandle, onUpdateOffset, onResizeElement, canvasScale, elements, marginInset]);
 
   const handleMouseUp = useCallback(() => {
     setMode("idle");
