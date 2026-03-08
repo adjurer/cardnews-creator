@@ -102,10 +102,6 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
   const baseBgH = imageAspect > frameAspect ? 100 : (frameAspect / imageAspect) * 100;
   const bgSizeW = baseBgW * imgScale;
   const bgSizeH = baseBgH * imgScale;
-  const bgPosX = (50 + (slide.image?.posX ?? 0)) / 100;
-  const bgPosY = (50 + (slide.image?.posY ?? 0)) / 100;
-  const layerLeft = (100 - bgSizeW) * bgPosX;
-  const layerTop = (100 - bgSizeH) * bgPosY;
 
   const buildImageFilter = () => {
     const img = slide.image;
