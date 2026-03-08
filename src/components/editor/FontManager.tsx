@@ -89,14 +89,14 @@ export function FontManager({ titleFont, bodyFont, onSetTitleFont, onSetBodyFont
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">제목 폰트</span>
-          <div className="space-y-1 max-h-[280px] overflow-y-auto scrollbar-thin">
+          <div className="space-y-1">
             {allFonts.map(f => <FontCard key={`t-${f.id}`} font={f} isTitle />)}
           </div>
         </div>
 
         <div className="space-y-1.5">
           <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">본문 폰트</span>
-          <div className="space-y-1 max-h-[280px] overflow-y-auto scrollbar-thin">
+          <div className="space-y-1">
             {allFonts.map(f => <FontCard key={`b-${f.id}`} font={f} isTitle={false} />)}
           </div>
         </div>
