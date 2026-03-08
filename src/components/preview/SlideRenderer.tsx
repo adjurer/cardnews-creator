@@ -351,14 +351,14 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     <div style={containerStyle} className={className}>
       {renderImage()}
 
-      <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", padding: basePadding, justifyContent: justifyMap[contentAlign], overflow: "hidden", gap: isExport ? "16px" : "8px" }}
+      <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", padding: basePadding, justifyContent: justifyMap[contentAlign], overflow: "hidden", gap: 0 }}
         className={textAlignClass}>
 
         {renderCategory()}
 
         {/* Center-title / Cover */}
         {(slide.layoutType === "center-title" || slide.type === "cover") && (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", gap: isExport ? "12px" : "6px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", gap: 0 }}>
             {renderHighlight()}
             {renderTitle(800)}
             {renderSubtitle()}
@@ -368,7 +368,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Title-body / Title-image */}
         {(slide.layoutType === "title-body" || slide.layoutType === "title-image") && slide.type !== "cover" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: isExport ? "12px" : "6px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
             {renderHighlight()}
             {renderTitle()}
             {renderSubtitle()}
@@ -388,7 +388,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Bullet list */}
         {slide.layoutType === "bullet-list" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: isExport ? "12px" : "6px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
             {renderTitle()}
             {shouldShow("showBullets") && !isHidden(slide, "bullets") && (
               <ul data-element="bullets" onClick={eClick("bullets")} style={{ ...elementStyle(slide, "bullets"), listStyle: "none", padding: 0, margin: 0, cursor: onElementClick ? "pointer" : undefined }}>
