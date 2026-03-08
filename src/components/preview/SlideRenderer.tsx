@@ -190,22 +190,15 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         }} />
         {(() => {
           const dir = slide.image?.overlayDirection ?? "center";
+          const overlayRange = slide.image?.overlayRange ?? [0, 70];
           const overlayBlur = slide.image?.overlayBlur ?? 0;
           const blurDir = slide.image?.overlayBlurDirection ?? "center";
           const blurRange = slide.image?.overlayBlurRange ?? [0, 30];
           const colorStr = `rgba(0,0,0,${overlayOpacity})`;
-          let bg: string;
-          if (dir === "center") {
-            bg = colorStr;
-          } else {
-            bg = OVERLAY_GRADIENT_MAP[dir].replace(/COLOR/g, colorStr);
-          }
 
-          const DEG_MAP: Record<OverlayDirection, string> = {
-            "top-left": "135deg", "top-center": "180deg", "top-right": "225deg",
-            "center-left": "90deg", "center": "", "center-right": "270deg",
-            "bottom-left": "45deg", "bottom-center": "0deg", "bottom-right": "315deg",
-          };
+          const overlayBg = dir === "center"
+            ? colorStr
+            : `linear-gradient(${DEG_MAP[dir]}, ${colorStr} ${overlayRange[0]}%, transparent ${overlayRange[1]}%)`;
 
           const blurMask = blurDir === "center"
             ? `radial-gradient(ellipse at center, white ${blurRange[0]}%, transparent ${blurRange[1]}%)`
@@ -213,7 +206,6 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
           return (
             <>
-              {/* Blur layer first (underneath overlay) */}
               {overlayBlur > 0 && (
                 <div style={{
                   position: "absolute", inset: 0,
@@ -224,10 +216,9 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
                   pointerEvents: "none",
                 }} />
               )}
-              {/* Color overlay layer on top */}
               <div style={{
                 position: "absolute", inset: 0,
-                background: bg,
+                background: overlayBg,
                 pointerEvents: "none",
               }} />
             </>
