@@ -462,6 +462,8 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
               <Range label="줄간격" value={elOverride.lineHeight ?? defaultLineHeight[el] ?? 1.5} min={0.8} max={3.0} step={0.05} onChange={v => updateOverride(el, { lineHeight: v })} />
               {/* Per-element letter spacing */}
               <Range label="자간" value={elOverride.letterSpacing ?? defaultLetterSpacing[el] ?? 0} min={-0.1} max={0.3} step={0.01} onChange={v => updateOverride(el, { letterSpacing: v })} unit="em" />
+              {/* Per-element box width */}
+              <Range label="박스 폭" value={elOverride.boxWidth ?? 100} min={10} max={100} step={1} onChange={v => updateOverride(el, { boxWidth: v })} unit="%" />
               {/* Box controls for highlight & CTA */}
               {hasBox && (
                 <div className="space-y-2 pt-2 border-t border-border">
