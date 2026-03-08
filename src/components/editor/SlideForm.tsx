@@ -442,7 +442,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
           const cfg = sizeConfig[el];
           const elOverride = slide.elementOverrides?.[el] || {};
           const isTitleLevel = el === "title" || el === "highlight";
-          const hasBox = el === "highlight" || el === "cta";
+          const hasBox = true; // All elements can have box styling
 
           return (
             <div className="space-y-2">
