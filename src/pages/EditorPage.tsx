@@ -11,7 +11,7 @@ import { AiCommandInput } from "@/components/editor/AiCommandInput";
 import { StoryboardPanel } from "@/components/editor/StoryboardPanel";
 import {
   ArrowLeft, Save, Download, Check, AlertCircle, Loader2, Sparkles,
-  Monitor, Square, Smartphone
+  Monitor, Square, Smartphone, Clapperboard
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
