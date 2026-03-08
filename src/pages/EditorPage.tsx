@@ -88,11 +88,23 @@ export default function EditorPage() {
   const handleRegenerateSlide = async () => {
     if (!currentProject || regenerating) return;
     setRegenerating(true);
-    await new Promise(r => setTimeout(r, 1000));
-    const slide = currentProject.slides[currentSlideIndex];
-    updateSlide(slide.id, { title: slide.title + " (개선됨)" });
-    toast.success("슬라이드가 개선되었습니다");
-    setRegenerating(false);
+    try {
+      const { regenerateSlide } = await import("@/lib/ai/aiService");
+      const slide = currentProject.slides[currentSlideIndex];
+      const result = await regenerateSlide(
+        slide,
+        currentProject.title,
+        currentProject.slides,
+        "rewrite"
+      );
+      updateSlide(slide.id, result);
+      toast.success("슬라이드가 개선되었습니다");
+    } catch (e: any) {
+      console.error("Regenerate error:", e);
+      toast.error(e.message || "슬라이드 개선에 실패했습니다");
+    } finally {
+      setRegenerating(false);
+    }
   };
 
   const handleElementSelect = useCallback((key: ElementKey | null) => {
