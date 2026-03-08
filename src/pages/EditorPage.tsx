@@ -24,7 +24,7 @@ export default function EditorPage() {
     updateSlide, addSlide, deleteSlide, moveSlide, duplicateSlide,
     undo, redo,
   } = useProjectStore();
-  const { exportDialogOpen, setExportDialogOpen, selectedElement, setSelectedElement } = useUiStore();
+  const { exportDialogOpen, setExportDialogOpen, selectedElement, setSelectedElement, marginGuide } = useUiStore();
   const [regenerating, setRegenerating] = useState(false);
 
   // Load fonts on mount
