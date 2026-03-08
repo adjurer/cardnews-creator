@@ -444,13 +444,6 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
             ))}
           </div>
         </div>
-        {/* Container */}
-        <div className="pt-2 border-t border-border space-y-2">
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">컨테이너</span>
-          <Range label="둥글기" value={colors.containerRadius ?? 0} min={0} max={32} step={2} onChange={v => updateColors({ containerRadius: v })} unit="px" />
-          <Range label="그림자" value={colors.shadowIntensity ?? 0} min={0} max={1} step={0.1} onChange={v => updateColors({ shadowIntensity: v })} />
-          <Toggle label="테두리" checked={colors.borderEnabled ?? false} onChange={v => updateColors({ borderEnabled: v })} />
-        </div>
 
         {/* Selected element text box */}
         {selectedElement && selectedElement !== "image" && (
