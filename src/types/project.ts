@@ -87,6 +87,8 @@ export interface SlidePosition {
 export interface ElementOverride {
   offsetX?: number;
   offsetY?: number;
+  color?: string;        // per-element text color
+  fontWeight?: number;   // per-element font weight
   boxBg?: string;
   boxBgOpacity?: number;
   boxPadding?: number;
