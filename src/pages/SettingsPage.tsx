@@ -163,6 +163,48 @@ function InstagramAccountManager() {
   );
 }
 
+function FontManagerSettings() {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const { fonts, loadFonts, addFont, removeFont } = useFontStore();
+
+  useEffect(() => { loadFonts(); }, []);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const result = await addFont(file);
+    if (result) toast.success(`${result.family} 폰트가 추가되었습니다`);
+    else toast.error("지원하지 않는 폰트 형식입니다 (.otf, .ttf, .woff2)");
+    e.target.value = "";
+  };
+
+  const BUILTIN = ["Pretendard Variable", "Freesentation", "Paperlogy", "A2z"];
+
+  return (
+    <div className="space-y-2">
+      <p className="text-[10px] text-muted-foreground">기본 폰트: {BUILTIN.join(", ")}</p>
+      {fonts.length > 0 && (
+        <div className="space-y-1.5">
+          <span className="text-[10px] text-muted-foreground">업로드한 폰트</span>
+          {fonts.map(f => (
+            <div key={f.id} className="flex items-center justify-between p-2 rounded-lg bg-surface border border-border">
+              <span className="text-xs font-medium text-foreground" style={{ fontFamily: f.family }}>{f.family}</span>
+              <button onClick={() => removeFont(f.id)} className="text-destructive hover:text-destructive/80">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <input ref={fileRef} type="file" accept=".otf,.ttf,.woff2" onChange={handleUpload} className="hidden" />
+      <button onClick={() => fileRef.current?.click()}
+        className="w-full py-2 rounded-lg border border-dashed border-border hover:border-primary/50 text-xs text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5 transition-colors">
+        <Plus className="w-3.5 h-3.5" /> 폰트 업로드 (.otf, .ttf, .woff2)
+      </button>
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const navigate = useNavigate();
   const { mode, setMode } = useThemeStore();
