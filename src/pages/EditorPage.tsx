@@ -240,6 +240,7 @@ export default function EditorPage() {
               projectTheme={currentProject.themePreset}
               selectedElement={selectedElement}
               onSelectElement={handleElementSelect}
+              exportSize={currentProject.exportPreset.size}
             />
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import type { Slide, SlideType, LayoutType, TextAlign, ThemePreset, SlideImage, SlideLogo, SlideTypography, SlideColors, SlideVisibility, SlidePosition, ElementKey, ElementOverride, AutoLayoutPreset } from "@/types/project";
+import type { Slide, SlideType, LayoutType, TextAlign, ThemePreset, SlideImage, SlideLogo, SlideTypography, SlideColors, SlideVisibility, SlidePosition, ElementKey, ElementOverride, AutoLayoutPreset, ExportSize } from "@/types/project";
 import { THEME_LABELS } from "@/lib/themes";
 import { MOCK_IMAGE_RESULTS } from "@/mocks/data";
 import { LayerPanel } from "./LayerPanel";
@@ -21,6 +21,7 @@ interface Props {
   projectTheme: ThemePreset;
   selectedElement: ElementKey | null;
   onSelectElement: (key: ElementKey | null) => void;
+  exportSize?: ExportSize;
 }
 
 const LAYOUT_OPTIONS: { value: LayoutType; label: string; desc: string }[] = [
@@ -46,7 +47,7 @@ const GRADIENT_PRESETS = [
 type EditorTab = "text" | "style" | "layout" | "image" | "layers" | "font";
 type ImageTab = "upload" | "ai" | "search";
 
-export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSelectElement }: Props) {
+export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSelectElement, exportSize }: Props) {
   const [editorTab, setEditorTab] = useState<EditorTab>("text");
   const [imageTab, setImageTab] = useState<ImageTab>("upload");
   const [aiPrompt, setAiPrompt] = useState("");
@@ -447,7 +448,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
               {/* Visual crop/viewport tool */}
               <ImageCropPreview
                 image={slide.image}
-                exportSize={slide.image.url ? undefined : undefined}
+                exportSize={exportSize}
                 onUpdate={(updates) => onUpdate({ image: { ...slide.image!, ...updates } })}
               />
 
