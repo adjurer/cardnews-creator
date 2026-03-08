@@ -262,7 +262,8 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     <h2 data-element="title" onClick={eClick("title")} style={{
       ...titleStyle, ...elementStyle(slide, "title"),
       fontWeight: typo.titleWeight ?? defaultWeight ?? 700,
-      marginBottom: "12px", cursor: onElementClick ? "pointer" : undefined,
+      margin: 0, padding: 0,
+      cursor: onElementClick ? "pointer" : undefined,
     }}>{slide.title}</h2>
   );
 
