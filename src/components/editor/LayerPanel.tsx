@@ -8,6 +8,7 @@ interface Props {
   selectedElement: ElementKey | null;
   onSelectElement: (key: ElementKey | null) => void;
   onUpdateOverride: (key: ElementKey, updates: Partial<ElementOverride>) => void;
+  onBatchUpdateOverrides: (updates: Record<ElementKey, Partial<ElementOverride>>) => void;
 }
 
 const ELEMENT_DEFS: { key: ElementKey; label: string; icon: any; getContent: (s: Slide) => string | undefined }[] = [
@@ -23,7 +24,7 @@ const ELEMENT_DEFS: { key: ElementKey; label: string; icon: any; getContent: (s:
   { key: "sourceLabel", label: "출처", icon: Quote, getContent: s => s.sourceLabel },
 ];
 
-export function LayerPanel({ slide, selectedElement, onSelectElement, onUpdateOverride }: Props) {
+export function LayerPanel({ slide, selectedElement, onSelectElement, onUpdateOverride, onBatchUpdateOverrides }: Props) {
   const overrides = slide.elementOverrides || {};
   const [dragKey, setDragKey] = useState<ElementKey | null>(null);
   const [dropIdx, setDropIdx] = useState<number | null>(null);
@@ -65,11 +66,12 @@ export function LayerPanel({ slide, selectedElement, onSelectElement, onUpdateOv
     const [moved] = newOrder.splice(fromIdx, 1);
     newOrder.splice(targetIdx, 0, moved);
 
-    // Assign new zIndex values: top of list gets highest
+    // Batch assign new zIndex values: top of list gets highest
+    const batch: Record<string, Partial<ElementOverride>> = {};
     newOrder.forEach((el, i) => {
-      const newZ = (newOrder.length - 1 - i) * 10;
-      onUpdateOverride(el.key, { zIndex: newZ });
+      batch[el.key] = { zIndex: (newOrder.length - 1 - i) * 10 };
     });
+    onBatchUpdateOverrides(batch as Record<ElementKey, Partial<ElementOverride>>);
 
     setDragKey(null);
     setDropIdx(null);
