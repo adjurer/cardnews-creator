@@ -340,19 +340,29 @@ export default function EditorPage() {
           </div>
         </div>
 
-        {/* Right: Preview */}
-        <div ref={previewContainerRef} className="w-[380px] shrink-0 border-l border-border bg-background flex items-center justify-center p-6 overflow-hidden">
-          <MobilePreview
-            slides={currentProject.slides}
-            currentIndex={currentSlideIndex}
-            onIndexChange={setCurrentSlideIndex}
-            exportSize={currentProject.exportPreset.size}
-            onElementSelect={handleElementSelect}
-            onUpdateElementOffset={handleUpdateElementOffset}
-            onResizeElement={handleResizeElement}
-            canvasScale={canvasScale}
-          />
-        </div>
+        {/* Right: Preview or Storyboard */}
+        {showStoryboard ? (
+          <div className="w-[380px] shrink-0 overflow-hidden">
+            <StoryboardPanel
+              projectTitle={currentProject.title}
+              slides={currentProject.slides}
+              onClose={() => setShowStoryboard(false)}
+            />
+          </div>
+        ) : (
+          <div ref={previewContainerRef} className="w-[380px] shrink-0 border-l border-border bg-background flex items-center justify-center p-6 overflow-hidden">
+            <MobilePreview
+              slides={currentProject.slides}
+              currentIndex={currentSlideIndex}
+              onIndexChange={setCurrentSlideIndex}
+              exportSize={currentProject.exportPreset.size}
+              onElementSelect={handleElementSelect}
+              onUpdateElementOffset={handleUpdateElementOffset}
+              onResizeElement={handleResizeElement}
+              canvasScale={canvasScale}
+            />
+          </div>
+        )}
       </div>
 
       {exportDialogOpen && (
