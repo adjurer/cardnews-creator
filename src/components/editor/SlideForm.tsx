@@ -76,6 +76,18 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
     onUpdate({ image: { ...slide.image, mode: "upload", url } as SlideImage });
   };
 
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    onUpdate({ logo: { ...slide.logo, url, width: slide.logo?.width ?? 60 } as SlideLogo });
+  };
+
+  const handleAutoLayout = (preset: AutoLayoutPreset) => {
+    const updates = applyAutoLayout(preset, slide);
+    onUpdate(updates);
+  };
+
   // Auto-switch to element inspector when element selected
   useEffect(() => {
     if (selectedElement) {
