@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useProjectStore } from "@/store/useProjectStore";
-import { useUiStore } from "@/store/useUiStore";
+import { useUiStore, MARGIN_VALUES } from "@/store/useUiStore";
 import { useFontStore } from "@/store/useFontStore";
 import { MobilePreview } from "@/components/preview/MobilePreview";
 import { SlideForm } from "@/components/editor/SlideForm";
