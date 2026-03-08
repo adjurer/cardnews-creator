@@ -167,7 +167,6 @@ export function CanvasOverlay({
     let dy = e.clientY - dragStart.current.y;
 
     if (mode === "dragging" && (Math.abs(dx) > 1 || Math.abs(dy) > 1)) {
-      // Clamp movement so the element stays within the container (minus margin)
       const selEl = elements.find(el => el.key === selectedElement);
       const overlay = overlayRef.current;
       if (selEl && overlay) {
@@ -176,7 +175,8 @@ export function CanvasOverlay({
         const marginPx = marginInset > 0 ? (marginInset / 100) * Math.min(containerW, containerH) : 0;
 
         const elRect = selEl.rect;
-        // How far the element can move before its edge hits the boundary
+        
+        // Clamp movement
         const minDx = marginPx - elRect.x;
         const maxDx = (containerW - marginPx) - (elRect.x + elRect.width);
         const minDy = marginPx - elRect.y;
@@ -184,6 +184,41 @@ export function CanvasOverlay({
 
         dx = Math.max(minDx, Math.min(maxDx, dx));
         dy = Math.max(minDy, Math.min(maxDy, dy));
+
+        // Snap to guide lines (margin edges + center)
+        const SNAP_THRESHOLD = 4;
+        const newLeft = elRect.x + dx;
+        const newRight = newLeft + elRect.width;
+        const newTop = elRect.y + dy;
+        const newBottom = newTop + elRect.height;
+        const newCenterX = newLeft + elRect.width / 2;
+        const newCenterY = newTop + elRect.height / 2;
+        const centerX = containerW / 2;
+        const centerY = containerH / 2;
+
+        // Horizontal snap targets: left margin, center, right margin
+        const snapXTargets = [
+          { pos: marginPx, edge: "left" },
+          { pos: containerW - marginPx, edge: "right" },
+          { pos: centerX, edge: "center" },
+        ];
+        // Vertical snap targets
+        const snapYTargets = [
+          { pos: marginPx, edge: "top" },
+          { pos: containerH - marginPx, edge: "bottom" },
+          { pos: centerY, edge: "center" },
+        ];
+
+        for (const t of snapXTargets) {
+          if (t.edge === "left" && Math.abs(newLeft - t.pos) < SNAP_THRESHOLD) dx += t.pos - newLeft;
+          else if (t.edge === "right" && Math.abs(newRight - t.pos) < SNAP_THRESHOLD) dx += t.pos - newRight;
+          else if (t.edge === "center" && Math.abs(newCenterX - t.pos) < SNAP_THRESHOLD) dx += t.pos - newCenterX;
+        }
+        for (const t of snapYTargets) {
+          if (t.edge === "top" && Math.abs(newTop - t.pos) < SNAP_THRESHOLD) dy += t.pos - newTop;
+          else if (t.edge === "bottom" && Math.abs(newBottom - t.pos) < SNAP_THRESHOLD) dy += t.pos - newBottom;
+          else if (t.edge === "center" && Math.abs(newCenterY - t.pos) < SNAP_THRESHOLD) dy += t.pos - newCenterY;
+        }
       }
 
       if (dx !== 0 || dy !== 0) {
