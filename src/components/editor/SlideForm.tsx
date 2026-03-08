@@ -6,6 +6,7 @@ import { LayerPanel } from "./LayerPanel";
 import { FontManager } from "./FontManager";
 import { ImageCropPreview } from "./ImageCropPreview";
 import { OverlayDirectionGrid } from "./OverlayDirectionGrid";
+import { StylePresetPanel } from "./StylePresetPanel";
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 import { useFontStore } from "@/store/useFontStore";
