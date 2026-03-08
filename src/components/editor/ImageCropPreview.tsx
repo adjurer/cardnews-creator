@@ -172,8 +172,8 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
 
             {/* Viewport frame - positioned in image-space % with export aspect ratio */}
             <ViewportFrame
-              imgAspect={imgAspect}
-              exportAspect={exportAspect}
+              exportW={expW}
+              exportH={expH}
               vpLeftImg={vpLeftImg}
               vpTopImg={vpTopImg}
               vpWImg={vpWImg}
