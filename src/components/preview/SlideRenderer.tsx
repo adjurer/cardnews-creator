@@ -253,7 +253,8 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     return (
       <span data-element="highlight" onClick={eClick("highlight")} style={{
         ...elementStyle(slide, "highlight"), ...highlightStyle,
-        marginBottom: "12px", cursor: onElementClick ? "pointer" : undefined,
+        margin: 0,
+        cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.highlight}</span>
     );
   };
