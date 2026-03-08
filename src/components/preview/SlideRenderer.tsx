@@ -274,7 +274,8 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
       <p data-element="subtitle" onClick={eClick("subtitle")} style={{
         ...elementStyle(slide, "subtitle"),
         fontSize: subtitleSize, color: secondaryText, lineHeight: 1.5,
-        marginBottom: "12px", cursor: onElementClick ? "pointer" : undefined,
+        margin: 0, padding: 0,
+        cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.subtitle}</p>
     );
   };
