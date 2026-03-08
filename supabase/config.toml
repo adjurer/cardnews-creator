@@ -1,0 +1,7 @@
+project_id = "cwqtiwfkzjltvyaxvtio"
+
+[functions.generate-cardnews]
+verify_jwt = false
+
+[functions.regenerate-slide]
+verify_jwt = false
