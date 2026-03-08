@@ -1,15 +1,17 @@
 import { useState, useRef, useEffect } from "react";
-import type { Slide, SlideType, LayoutType, TextAlign, ThemePreset, SlideImage, SlideTypography, SlideColors, SlideVisibility, SlidePosition, ElementKey, ElementOverride } from "@/types/project";
+import type { Slide, SlideType, LayoutType, TextAlign, ThemePreset, SlideImage, SlideLogo, SlideTypography, SlideColors, SlideVisibility, SlidePosition, ElementKey, ElementOverride, AutoLayoutPreset } from "@/types/project";
 import { THEME_LABELS } from "@/lib/themes";
 import { MOCK_IMAGE_RESULTS } from "@/mocks/data";
 import { LayerPanel } from "./LayerPanel";
 import { FontManager } from "./FontManager";
 import { cn } from "@/lib/utils";
 import { useFontStore } from "@/store/useFontStore";
+import { AUTO_LAYOUT_PRESETS, applyAutoLayout } from "@/lib/autoLayout";
 import {
   Upload, Sparkles, Search, Image as ImageIcon,
   Type, Palette, LayoutTemplate, Layers, TypeIcon,
-  AlignLeft, AlignCenter, AlignRight, Minus, Plus, Bold
+  AlignLeft, AlignCenter, AlignRight, Minus, Plus, Bold,
+  LayoutGrid, X, Star
 } from "lucide-react";
 
 interface Props {
