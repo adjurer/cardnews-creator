@@ -90,9 +90,9 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
     const startPosY = image.posY ?? 0;
 
     const onMove = (ev: MouseEvent) => {
-      // Dragging viewport right → image pans left → posX decreases
-      const dx = -((ev.clientX - startX) / rect.width) * 100;
-      const dy = -((ev.clientY - startY) / rect.height) * 100;
+      // Dragging viewport right → show right side → posX increases
+      const dx = ((ev.clientX - startX) / rect.width) * 100;
+      const dy = ((ev.clientY - startY) / rect.height) * 100;
       const newX = Math.max(-50, Math.min(50, Math.round(startPosX + dx)));
       const newY = Math.max(-50, Math.min(50, Math.round(startPosY + dy)));
       onUpdate({ posX: newX, posY: newY });
