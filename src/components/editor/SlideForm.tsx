@@ -239,6 +239,21 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
         </div>
       </Section>
 
+      {/* ═══ 2.5 STYLE PRESETS ═══ */}
+      <Section title="스타일 프리셋" icon={BookMarked} defaultOpen={false}>
+        <StylePresetPanel
+          slide={slide}
+          onApplyPreset={(updates) => {
+            onUpdate({
+              themePreset: updates.themePreset,
+              ...(updates.typography && { typography: { ...typo, ...updates.typography } }),
+              ...(updates.colors && { colors: { ...colors, ...updates.colors } }),
+              ...(updates.position && { position: { ...pos, ...updates.position } }),
+            });
+          }}
+        />
+      </Section>
+
       {/* ═══ 3. LAYOUT ═══ */}
       <Section title="레이아웃" icon={LayoutTemplate} defaultOpen={true}>
         {/* 3x3 grid + Auto layouts side by side */}
