@@ -175,7 +175,6 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
           ...elementStyle(slide, "image"),
           position: "absolute", inset: 0,
           backgroundImage: `url(${imageUrl})`,
-          backgroundSize: "cover",
           backgroundPosition: `${50 + (slide.image?.posX || 0)}% ${50 + (slide.image?.posY || 0)}%`,
           backgroundSize: `${bgSizeW}% ${bgSizeH}%`,
           borderRadius: imgBorderRadius,
