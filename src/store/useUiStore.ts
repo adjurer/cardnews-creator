@@ -1,10 +1,25 @@
 import { create } from "zustand";
+import type { ElementKey } from "@/types/project";
 
 interface UiState {
   sidebarCollapsed: boolean;
   toggleSidebar: () => void;
   exportDialogOpen: boolean;
   setExportDialogOpen: (v: boolean) => void;
+
+  // Canvas selection
+  selectedElement: ElementKey | null;
+  setSelectedElement: (el: ElementKey | null) => void;
+
+  // Canvas guides
+  showGrid: boolean;
+  showSafeArea: boolean;
+  showRuler: boolean;
+  gridSize: number;
+  toggleGrid: () => void;
+  toggleSafeArea: () => void;
+  toggleRuler: () => void;
+  setGridSize: (s: number) => void;
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -12,4 +27,16 @@ export const useUiStore = create<UiState>((set) => ({
   toggleSidebar: () => set(s => ({ sidebarCollapsed: !s.sidebarCollapsed })),
   exportDialogOpen: false,
   setExportDialogOpen: (v) => set({ exportDialogOpen: v }),
+
+  selectedElement: null,
+  setSelectedElement: (el) => set({ selectedElement: el }),
+
+  showGrid: false,
+  showSafeArea: false,
+  showRuler: false,
+  gridSize: 20,
+  toggleGrid: () => set(s => ({ showGrid: !s.showGrid })),
+  toggleSafeArea: () => set(s => ({ showSafeArea: !s.showSafeArea })),
+  toggleRuler: () => set(s => ({ showRuler: !s.showRuler })),
+  setGridSize: (s) => set({ gridSize: s }),
 }));

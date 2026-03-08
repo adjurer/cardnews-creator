@@ -7,6 +7,8 @@ export type ExportSize = "1080x1350" | "1080x1080" | "1080x1920";
 export type TextAlign = "left" | "center" | "right";
 export type ImageMode = "upload" | "generate" | "search";
 
+export type ElementKey = "category" | "title" | "subtitle" | "highlight" | "body" | "bullets" | "cta" | "sourceLabel" | "image";
+
 export interface SlideImage {
   mode: ImageMode;
   url: string;
@@ -21,27 +23,29 @@ export interface SlideImage {
 }
 
 export interface SlideTypography {
-  titleSize?: number;       // px
-  titleWeight?: number;     // 400-900
-  titleLineHeight?: number; // multiplier e.g. 1.3
-  titleLetterSpacing?: number; // em e.g. -0.02
+  titleSize?: number;
+  titleWeight?: number;
+  titleLineHeight?: number;
+  titleLetterSpacing?: number;
+  titleFontFamily?: string;
   bodySize?: number;
   bodyWeight?: number;
   bodyLineHeight?: number;
   bodyLetterSpacing?: number;
+  bodyFontFamily?: string;
 }
 
 export interface SlideColors {
-  backgroundColor?: string;  // hex
+  backgroundColor?: string;
   textColor?: string;
   accentColor?: string;
-  highlightBg?: string;      // highlight badge background
+  highlightBg?: string;
   highlightText?: string;
   gradientPreset?: "none" | "dark-fade" | "primary-glow" | "warm-sunset" | "cool-ocean" | "purple-haze";
   containerRadius?: number;
   borderEnabled?: boolean;
   borderColor?: string;
-  shadowIntensity?: number; // 0-1
+  shadowIntensity?: number;
   overlayColor?: string;
 }
 
@@ -56,10 +60,22 @@ export interface SlideVisibility {
 }
 
 export interface SlidePosition {
-  contentPaddingX?: number; // percentage 5-20
+  contentPaddingX?: number;
   contentPaddingY?: number;
-  titleBoxWidth?: number;   // percentage 50-100
-  contentAlign?: "start" | "center" | "end"; // vertical alignment
+  titleBoxWidth?: number;
+  contentAlign?: "start" | "center" | "end";
+}
+
+export interface ElementOverride {
+  offsetX?: number;
+  offsetY?: number;
+  boxBg?: string;
+  boxBgOpacity?: number;
+  boxPadding?: number;
+  boxRadius?: number;
+  locked?: boolean;
+  hidden?: boolean;
+  zIndex?: number;
 }
 
 export interface Slide {
@@ -81,6 +97,7 @@ export interface Slide {
   colors?: SlideColors;
   visibility?: SlideVisibility;
   position?: SlidePosition;
+  elementOverrides?: Partial<Record<ElementKey, ElementOverride>>;
 }
 
 export interface ExportPreset {
@@ -104,6 +121,26 @@ export interface Project {
     tags?: string[];
     recentPath?: string;
   };
+  // Style presets saved per project
+  stylePresets?: StylePreset[];
+  // Master style applied to all slides
+  masterStyle?: MasterStyle;
+}
+
+export interface StylePreset {
+  id: string;
+  name: string;
+  target: "title" | "body" | "cta" | "highlight";
+  typography?: Partial<SlideTypography>;
+  colors?: Partial<SlideColors>;
+  textBox?: Partial<ElementOverride>;
+}
+
+export interface MasterStyle {
+  themePreset?: ThemePreset;
+  typography?: Partial<SlideTypography>;
+  colors?: Partial<SlideColors>;
+  position?: Partial<SlidePosition>;
 }
 
 export interface ThemeColors {
@@ -114,4 +151,15 @@ export interface ThemeColors {
   accent: string;
   border: string;
   overlay: string;
+}
+
+export interface UploadedFont {
+  id: string;
+  name: string;
+  family: string;
+  url: string;
+  format: "truetype" | "opentype" | "woff2";
+  isFavorite?: boolean;
+  target?: "title" | "body" | "both";
+  addedAt: string;
 }
