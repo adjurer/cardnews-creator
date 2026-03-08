@@ -251,7 +251,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
               const isActive = (pos.contentAlign || "center") === vAlign && slide.textAlign === hAlign;
               return (
                 <button key={combo}
-                  onClick={() => { updatePos({ contentAlign: vAlign }); onUpdate({ textAlign: hAlign }); }}
+                  onClick={() => onUpdate({ textAlign: hAlign, position: { ...pos, contentAlign: vAlign } })}
                   className={cn("w-7 h-7 rounded flex items-center justify-center transition-all",
                     isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
                   )}>
