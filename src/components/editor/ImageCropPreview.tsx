@@ -155,8 +155,8 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
 
       <div
         ref={containerRef}
-        className="relative w-full rounded-lg overflow-hidden bg-card border border-border"
-        style={{ aspectRatio: `${imgW}/${imgH}`, maxHeight: "220px" }}
+        className="relative rounded-lg overflow-hidden bg-card border border-border mx-auto"
+        style={{ aspectRatio: `${imgW}/${imgH}`, maxHeight: "220px", maxWidth: "100%" }}
       >
         {/* Dimmed full image */}
         <img src={image.url} alt="" draggable={false} onLoad={handleImgLoad}
