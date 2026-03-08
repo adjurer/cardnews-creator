@@ -8,9 +8,10 @@ import { SlideForm } from "@/components/editor/SlideForm";
 import { ExportDialog } from "@/components/export/ExportDialog";
 import { SlideStrip } from "@/components/editor/SlideStrip";
 import { AiCommandInput } from "@/components/editor/AiCommandInput";
+import { StoryboardPanel } from "@/components/editor/StoryboardPanel";
 import {
   ArrowLeft, Save, Download, Check, AlertCircle, Loader2, Sparkles,
-  Monitor, Square, Smartphone
+  Monitor, Square, Smartphone, Clapperboard
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -37,6 +38,7 @@ export default function EditorPage() {
   const [aiProcessing, setAiProcessing] = useState(false);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const [canvasScale, setCanvasScale] = useState(1);
+  const [showStoryboard, setShowStoryboard] = useState(false);
 
   useEffect(() => { useFontStore.getState().loadFonts(); }, []);
 
@@ -266,6 +268,14 @@ export default function EditorPage() {
         </div>
 
         <div className="flex items-center gap-1 ml-auto">
+          <button onClick={() => setShowStoryboard(!showStoryboard)}
+            className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border transition-all",
+              showStoryboard
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-surface hover:bg-muted text-foreground border-border"
+            )}>
+            <Clapperboard className="w-3.5 h-3.5" /> 숏폼
+          </button>
           <button onClick={handleRegenerateSlide} disabled={regenerating}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-surface hover:bg-muted text-foreground border border-border disabled:opacity-50">
             {regenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
@@ -330,19 +340,29 @@ export default function EditorPage() {
           </div>
         </div>
 
-        {/* Right: Preview */}
-        <div ref={previewContainerRef} className="w-[380px] shrink-0 border-l border-border bg-background flex items-center justify-center p-6 overflow-hidden">
-          <MobilePreview
-            slides={currentProject.slides}
-            currentIndex={currentSlideIndex}
-            onIndexChange={setCurrentSlideIndex}
-            exportSize={currentProject.exportPreset.size}
-            onElementSelect={handleElementSelect}
-            onUpdateElementOffset={handleUpdateElementOffset}
-            onResizeElement={handleResizeElement}
-            canvasScale={canvasScale}
-          />
-        </div>
+        {/* Right: Preview or Storyboard */}
+        {showStoryboard ? (
+          <div className="w-[380px] shrink-0 overflow-hidden">
+            <StoryboardPanel
+              projectTitle={currentProject.title}
+              slides={currentProject.slides}
+              onClose={() => setShowStoryboard(false)}
+            />
+          </div>
+        ) : (
+          <div ref={previewContainerRef} className="w-[380px] shrink-0 border-l border-border bg-background flex items-center justify-center p-6 overflow-hidden">
+            <MobilePreview
+              slides={currentProject.slides}
+              currentIndex={currentSlideIndex}
+              onIndexChange={setCurrentSlideIndex}
+              exportSize={currentProject.exportPreset.size}
+              onElementSelect={handleElementSelect}
+              onUpdateElementOffset={handleUpdateElementOffset}
+              onResizeElement={handleResizeElement}
+              canvasScale={canvasScale}
+            />
+          </div>
+        )}
       </div>
 
       {exportDialogOpen && (

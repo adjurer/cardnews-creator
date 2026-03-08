@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Slide, SourceType, ThemePreset } from "@/types/project";
+import type { Slide, SourceType, ThemePreset, Storyboard } from "@/types/project";
 
 export interface CardNewsGenerationResult {
   title: string;
@@ -104,4 +104,26 @@ export async function generateSlideImage(
     imageUrl: data.imageUrl,
     description: data.description || "",
   };
+}
+
+export async function generateStoryboard(
+  projectTitle: string,
+  slides: Slide[],
+  targetPlatform?: string,
+  tone?: string
+): Promise<Storyboard> {
+  const { data, error } = await supabase.functions.invoke("generate-storyboard", {
+    body: { projectTitle, slides, targetPlatform, tone },
+  });
+
+  if (error) {
+    console.error("generate-storyboard error:", error);
+    throw new Error(error.message || "스토리보드 생성에 실패했습니다.");
+  }
+
+  if (data?.error) {
+    throw new Error(data.error);
+  }
+
+  return data as Storyboard;
 }

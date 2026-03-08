@@ -199,3 +199,26 @@ export interface UploadedFont {
   target?: "title" | "body" | "both";
   addedAt: string;
 }
+
+// Storyboard types for short-form video generation
+export type MotionType = "fade-in" | "zoom-in" | "zoom-out" | "slide-left" | "slide-right" | "slide-up" | "ken-burns" | "bounce-in" | "typewriter" | "split-reveal" | "none";
+export type TransitionType = "cut" | "crossfade" | "wipe-left" | "wipe-up" | "zoom-transition" | "morph" | "glitch" | "none";
+
+export interface StoryboardScene {
+  slideIndex: number;
+  durationSec: number;
+  motion: MotionType;
+  motionDetail: string;
+  transition: TransitionType;
+  textAnimation?: string;
+  narration: string;
+  visualNote?: string;
+  emphasis?: string[];
+}
+
+export interface Storyboard {
+  summary: string;
+  totalDurationSec: number;
+  bgmSuggestion: string;
+  scenes: StoryboardScene[];
+}

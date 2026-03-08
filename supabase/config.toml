@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.regenerate-slide]
 verify_jwt = false
+
+[functions.generate-storyboard]
+verify_jwt = false
