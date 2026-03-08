@@ -28,21 +28,15 @@ export default function EditorPage() {
     if (projectId) openProject(projectId);
   }, [projectId]);
 
-  // Auto-save
   const debouncedSave = useCallback(
-    debounce(() => {
-      saveCurrentProject();
-    }, 1000),
+    debounce(() => { saveCurrentProject(); }, 1000),
     [saveCurrentProject]
   );
 
   useEffect(() => {
-    if (currentProject && saveStatus === "idle") {
-      debouncedSave();
-    }
+    if (currentProject && saveStatus === "idle") debouncedSave();
   }, [currentProject?.slides]);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey) {
@@ -51,10 +45,10 @@ export default function EditorPage() {
         if (e.key === "z" && e.shiftKey) { e.preventDefault(); redo(); }
         if (e.key === "e") { e.preventDefault(); setExportDialogOpen(true); }
       }
-      if (e.key === "ArrowLeft" && !e.metaKey && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA") {
+      if (e.key === "ArrowLeft" && !e.metaKey && !["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName || "")) {
         setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1));
       }
-      if (e.key === "ArrowRight" && !e.metaKey && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA") {
+      if (e.key === "ArrowRight" && !e.metaKey && !["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName || "")) {
         if (currentProject) setCurrentSlideIndex(Math.min(currentProject.slides.length - 1, currentSlideIndex + 1));
       }
     };
@@ -66,8 +60,8 @@ export default function EditorPage() {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
-          <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">프로젝트를 불러오는 중...</p>
+          <AlertCircle className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground">프로젝트를 불러오는 중...</p>
         </div>
       </div>
     );
@@ -79,96 +73,97 @@ export default function EditorPage() {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border bg-panel/50 shrink-0">
+      <div className="flex items-center gap-3 px-4 py-2 border-b border-border bg-card shrink-0">
         <button onClick={() => navigate("/dashboard")} className="p-1.5 rounded-md hover:bg-surface text-muted-foreground hover:text-foreground">
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <h2 className="text-sm font-medium text-foreground truncate max-w-[200px]">{currentProject.title}</h2>
+        <h2 className="text-sm font-medium text-foreground truncate max-w-[180px]">{currentProject.title}</h2>
 
-        <div className="flex items-center gap-1.5 ml-auto">
-          <span className="text-xs text-muted-foreground mr-2">
-            {saveStatus === "saved" && <span className="flex items-center gap-1 text-success"><Check className="w-3 h-3" />저장됨</span>}
-            {saveStatus === "saving" && "저장 중..."}
-            {saveStatus === "error" && <span className="text-destructive">저장 실패</span>}
-          </span>
+        {/* Save status */}
+        <span className="text-[10px] text-muted-foreground ml-1">
+          {saveStatus === "saved" && <span className="flex items-center gap-1 text-success"><Check className="w-3 h-3" />저장됨</span>}
+          {saveStatus === "saving" && "저장 중..."}
+          {saveStatus === "error" && <span className="text-destructive">저장 실패</span>}
+        </span>
 
+        <div className="flex items-center gap-1 ml-auto">
           <button onClick={() => { saveCurrentProject(); toast.success("저장되었습니다"); }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs bg-surface hover:bg-muted text-foreground">
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-surface hover:bg-muted text-foreground border border-border">
             <Save className="w-3.5 h-3.5" /> 저장
           </button>
           <button onClick={() => navigate("/create")}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs bg-surface hover:bg-muted text-foreground">
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-surface hover:bg-muted text-foreground border border-border">
             <RefreshCw className="w-3.5 h-3.5" /> 다시 생성
           </button>
           <button onClick={() => setExportDialogOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs bg-primary text-primary-foreground hover:opacity-90">
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-primary text-primary-foreground hover:opacity-90">
             <Download className="w-3.5 h-3.5" /> 내보내기
           </button>
         </div>
       </div>
 
-      {/* Main content */}
+      {/* Main */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left: Editor panel */}
+        {/* Left: Editor */}
         <div className="flex-1 overflow-auto p-4 scrollbar-thin">
-          {/* Slide navigator */}
-          <div className="flex items-center justify-between mb-4">
+          {/* Slide nav */}
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <button onClick={() => setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))} disabled={currentSlideIndex === 0}
-                className="p-1.5 rounded-md hover:bg-surface text-muted-foreground disabled:opacity-30">
+                className="p-1 rounded-md hover:bg-surface text-muted-foreground disabled:opacity-30">
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="text-sm font-medium text-foreground">{currentSlideIndex + 1} / {totalSlides}</span>
+              <span className="text-xs font-medium text-foreground tabular-nums">{currentSlideIndex + 1} / {totalSlides}</span>
               <button onClick={() => setCurrentSlideIndex(Math.min(totalSlides - 1, currentSlideIndex + 1))} disabled={currentSlideIndex === totalSlides - 1}
-                className="p-1.5 rounded-md hover:bg-surface text-muted-foreground disabled:opacity-30">
+                className="p-1 rounded-md hover:bg-surface text-muted-foreground disabled:opacity-30">
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-            <div className="flex items-center gap-1">
-              <button onClick={() => addSlide()} title="슬라이드 추가" className="p-1.5 rounded-md hover:bg-surface text-muted-foreground hover:text-foreground">
-                <Plus className="w-4 h-4" />
+            <div className="flex items-center gap-0.5">
+              <button onClick={() => addSlide()} title="추가" className="p-1.5 rounded-md hover:bg-surface text-muted-foreground hover:text-foreground">
+                <Plus className="w-3.5 h-3.5" />
               </button>
               <button onClick={() => duplicateSlide(currentSlide.id)} title="복제" className="p-1.5 rounded-md hover:bg-surface text-muted-foreground hover:text-foreground">
-                <Copy className="w-4 h-4" />
+                <Copy className="w-3.5 h-3.5" />
               </button>
               {currentSlideIndex > 0 && (
                 <button onClick={() => moveSlide(currentSlideIndex, currentSlideIndex - 1)} title="위로" className="p-1.5 rounded-md hover:bg-surface text-muted-foreground hover:text-foreground">
-                  <MoveUp className="w-4 h-4" />
+                  <MoveUp className="w-3.5 h-3.5" />
                 </button>
               )}
               {currentSlideIndex < totalSlides - 1 && (
                 <button onClick={() => moveSlide(currentSlideIndex, currentSlideIndex + 1)} title="아래로" className="p-1.5 rounded-md hover:bg-surface text-muted-foreground hover:text-foreground">
-                  <MoveDown className="w-4 h-4" />
+                  <MoveDown className="w-3.5 h-3.5" />
                 </button>
               )}
               {totalSlides > 1 && (
-                <button onClick={() => { deleteSlide(currentSlide.id); toast.success("슬라이드 삭제됨"); }} title="삭제"
+                <button onClick={() => { deleteSlide(currentSlide.id); toast.success("삭제됨"); }} title="삭제"
                   className="p-1.5 rounded-md hover:bg-destructive/20 text-muted-foreground hover:text-destructive">
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
           </div>
 
           {/* Thumbnail strip */}
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-thin">
+          <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1.5 scrollbar-thin">
             {currentProject.slides.map((slide, i) => (
               <button
                 key={slide.id}
                 onClick={() => setCurrentSlideIndex(i)}
                 className={cn(
-                  "shrink-0 w-16 h-20 rounded-md border overflow-hidden transition-all",
-                  i === currentSlideIndex ? "border-primary ring-1 ring-primary/50" : "border-border hover:border-muted-foreground/50"
+                  "shrink-0 w-14 h-[70px] rounded-lg border overflow-hidden transition-all",
+                  i === currentSlideIndex ? "border-primary ring-1 ring-primary/30" : "border-border hover:border-muted-foreground/40"
                 )}
               >
-                <div className="w-full h-full flex items-center justify-center bg-surface text-[8px] text-muted-foreground p-1 text-center leading-tight">
-                  {slide.title.slice(0, 20)}
+                <div className="w-full h-full flex items-center justify-center bg-surface text-[7px] text-muted-foreground p-1 text-center leading-tight">
+                  {slide.title.slice(0, 16)}
                 </div>
               </button>
             ))}
           </div>
 
-          {/* Slide form */}
+          {/* Form */}
           <SlideForm
             slide={currentSlide}
             onUpdate={(updates) => updateSlide(currentSlide.id, updates)}
@@ -176,8 +171,8 @@ export default function EditorPage() {
           />
         </div>
 
-        {/* Right: Mobile preview */}
-        <div className="w-[340px] shrink-0 border-l border-border bg-panel/30 flex items-center justify-center p-4 overflow-hidden">
+        {/* Right: Preview */}
+        <div className="w-[360px] shrink-0 border-l border-border bg-background flex items-center justify-center p-6 overflow-hidden">
           <MobilePreview
             slides={currentProject.slides}
             currentIndex={currentSlideIndex}
@@ -187,7 +182,6 @@ export default function EditorPage() {
         </div>
       </div>
 
-      {/* Export dialog */}
       {exportDialogOpen && (
         <ExportDialog
           project={currentProject}
