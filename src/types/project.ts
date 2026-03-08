@@ -40,7 +40,7 @@ export interface SlideTypography {
   titleLineHeight?: number;
   titleLetterSpacing?: number;
   titleFontFamily?: string;
-  bodySize?: number;
+  subtitleSize?: number;
   bodyWeight?: number;
   bodyLineHeight?: number;
   bodyLetterSpacing?: number;
