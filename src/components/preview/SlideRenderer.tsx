@@ -3,15 +3,15 @@ import { THEME_MAP } from "@/lib/themes";
 import type { Slide, ElementKey, ElementOverride, SlideLogo, OverlayDirection } from "@/types/project";
 
 const OVERLAY_GRADIENT_MAP: Record<OverlayDirection, string> = {
-  "top-left": "radial-gradient(ellipse at 0% 0%, COLOR 0%, transparent 70%)",
-  "top-center": "radial-gradient(ellipse at 50% 0%, COLOR 0%, transparent 70%)",
-  "top-right": "radial-gradient(ellipse at 100% 0%, COLOR 0%, transparent 70%)",
-  "center-left": "radial-gradient(ellipse at 0% 50%, COLOR 0%, transparent 70%)",
+  "top-left": "linear-gradient(135deg, COLOR 0%, transparent 70%)",
+  "top-center": "linear-gradient(180deg, COLOR 0%, transparent 70%)",
+  "top-right": "linear-gradient(225deg, COLOR 0%, transparent 70%)",
+  "center-left": "linear-gradient(90deg, COLOR 0%, transparent 70%)",
   "center": "COLOR_FLAT",
-  "center-right": "radial-gradient(ellipse at 100% 50%, COLOR 0%, transparent 70%)",
-  "bottom-left": "radial-gradient(ellipse at 0% 100%, COLOR 0%, transparent 70%)",
-  "bottom-center": "radial-gradient(ellipse at 50% 100%, COLOR 0%, transparent 70%)",
-  "bottom-right": "radial-gradient(ellipse at 100% 100%, COLOR 0%, transparent 70%)",
+  "center-right": "linear-gradient(270deg, COLOR 0%, transparent 70%)",
+  "bottom-left": "linear-gradient(45deg, COLOR 0%, transparent 70%)",
+  "bottom-center": "linear-gradient(0deg, COLOR 0%, transparent 70%)",
+  "bottom-right": "linear-gradient(315deg, COLOR 0%, transparent 70%)",
 };
 
 interface Props {
