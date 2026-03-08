@@ -259,6 +259,19 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
               )}>{l.label}</button>
           ))}
         </div>
+
+        {/* Vertical alignment */}
+        <div className="pt-2 border-t border-border">
+          <span className="text-[10px] text-muted-foreground mb-1 block">세로 정렬</span>
+          <div className="flex gap-1">
+            {(["start", "center", "end"] as const).map(a => (
+              <button key={a} onClick={() => updatePos({ contentAlign: a })}
+                className={cn("flex-1 py-1.5 rounded-lg text-[10px] font-medium",
+                  (pos.contentAlign || "center") === a ? "bg-primary/20 text-primary" : "bg-surface text-muted-foreground"
+                )}>{a === "start" ? "상단" : a === "center" ? "중앙" : "하단"}</button>
+            ))}
+          </div>
+        </div>
       </Section>
 
       {/* ═══ 4. IMAGE ═══ */}

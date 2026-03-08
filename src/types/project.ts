@@ -89,6 +89,8 @@ export interface ElementOverride {
   offsetY?: number;
   color?: string;        // per-element text color
   fontWeight?: number;   // per-element font weight
+  lineHeight?: number;   // per-element line height
+  letterSpacing?: number; // per-element letter spacing (em)
   boxBg?: string;
   boxBgOpacity?: number;
   boxPadding?: number;
