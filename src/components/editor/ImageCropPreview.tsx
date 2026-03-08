@@ -84,7 +84,7 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
       e.preventDefault();
       e.stopPropagation();
       const delta = e.deltaY > 0 ? -0.1 : 0.1;
-      const newScale = Math.max(0.5, Math.min(3, parseFloat((scaleRef.current + delta).toFixed(2))));
+      const newScale = Math.max(1, Math.min(3, parseFloat((scaleRef.current + delta).toFixed(2))));
       onUpdate({ scale: newScale });
     };
     el.addEventListener("wheel", handler, { passive: false });
