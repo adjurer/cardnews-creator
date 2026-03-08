@@ -83,16 +83,18 @@ export default function EditorPage() {
     const current = slide.elementOverrides?.[key] || {};
     const newX = (current.offsetX || 0) + dx;
     const newY = (current.offsetY || 0) + dy;
-    // Clamp offsets to prevent going out of bounds (approx ±80px max)
-    const clampedX = Math.max(-80, Math.min(80, newX));
-    const clampedY = Math.max(-80, Math.min(80, newY));
+    // Clamp based on margin guide — tighter margin = tighter bounds
+    const marginPct = MARGIN_VALUES[marginGuide];
+    const maxOffset = marginGuide === "none" ? 100 : Math.max(20, 80 - marginPct * 3);
+    const clampedX = Math.max(-maxOffset, Math.min(maxOffset, newX));
+    const clampedY = Math.max(-maxOffset, Math.min(maxOffset, newY));
     updateSlide(slide.id, {
       elementOverrides: {
         ...slide.elementOverrides,
         [key]: { ...current, offsetX: clampedX, offsetY: clampedY },
       },
     });
-  }, [currentProject, currentSlideIndex, updateSlide]);
+  }, [currentProject, currentSlideIndex, updateSlide, marginGuide]);
 
   const handleResizeElement = useCallback((key: ElementKey, dw: number, dh: number, handle: string) => {
     if (!currentProject) return;
