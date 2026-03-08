@@ -15,7 +15,7 @@ interface Props {
   onUpdateElementOffset?: (key: ElementKey, dx: number, dy: number) => void;
 }
 
-export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize, onElementSelect, onUpdateElementOffset }: Props) {
+export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize, onElementSelect, onUpdateElementOffset, onResizeElement }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { selectedElement, setSelectedElement, showGrid, showSafeArea, showRuler, gridSize, toggleGrid, toggleSafeArea, toggleRuler } = useUiStore();
 
