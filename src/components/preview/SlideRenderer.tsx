@@ -368,7 +368,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Timeline */}
         {slide.layoutType === "timeline" && (
-          <div style={{ display: "flex", flexDirection: "column", justifyContent: justifyMap[contentAlign], flex: contentAlign === "center" ? 1 : undefined }}>
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: justifyMap[contentAlign], flex: contentAlign !== "start" ? 1 : undefined }}>
             {renderTitle()}
             {slide.bullets?.map((b, i) => (
               <div key={i} style={{ display: "flex", gap: "16px", marginBottom: "16px" }}>
