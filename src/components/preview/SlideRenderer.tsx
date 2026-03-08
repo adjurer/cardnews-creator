@@ -268,15 +268,19 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     );
   };
 
-  const renderTitle = (defaultWeight?: number) => (
-    <h2 data-element="title" onClick={eClick("title")} style={{
-      ...titleStyle, ...elementStyle(slide, "title"),
-      fontWeight: typo.titleWeight ?? defaultWeight ?? 700,
-      margin: 0, padding: 0,
-      display: "inline-block", width: "fit-content", maxWidth: titleBoxWidth < 100 ? `${titleBoxWidth}%` : "100%",
-      cursor: onElementClick ? "pointer" : undefined,
-    }}>{slide.title}</h2>
-  );
+  const renderTitle = (defaultWeight?: number) => {
+    const titleOvr = getOverride(slide, "title");
+    const titleMaxW = titleOvr.boxWidth ? `${titleOvr.boxWidth}%` : (titleBoxWidth < 100 ? `${titleBoxWidth}%` : "100%");
+    return (
+      <h2 data-element="title" onClick={eClick("title")} style={{
+        ...titleStyle, ...elementStyle(slide, "title"),
+        fontWeight: typo.titleWeight ?? defaultWeight ?? 700,
+        margin: 0, padding: 0,
+        display: "inline-block", width: "fit-content", maxWidth: titleMaxW,
+        cursor: onElementClick ? "pointer" : undefined,
+      }}>{slide.title}</h2>
+    );
+  };
 
   const renderSubtitle = () => {
     if (!slide.subtitle || !shouldShow("showSubtitle") || isHidden(slide, "subtitle")) return null;
