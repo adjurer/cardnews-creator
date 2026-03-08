@@ -225,8 +225,8 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
                   position: "absolute", inset: 0,
                   backdropFilter: `blur(${overlayBlur}px)`,
                   WebkitBackdropFilter: `blur(${overlayBlur}px)`,
-                  WebkitMaskImage: BLUR_MASK_MAP[blurDir],
-                  maskImage: BLUR_MASK_MAP[blurDir],
+                  WebkitMaskImage: blurMask,
+                  maskImage: blurMask,
                   pointerEvents: "none",
                 }} />
               )}
