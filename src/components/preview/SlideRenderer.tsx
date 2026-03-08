@@ -174,7 +174,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         <div data-element="image" onClick={eClick("image")} style={{
           ...elementStyle(slide, "image"),
           position: "absolute", inset: 0,
-          backgroundImage: `url(${imageUrl})`,
+          backgroundImage: `url("${imageUrl}")`,
           backgroundPosition: `${50 + (slide.image?.posX || 0)}% ${50 + (slide.image?.posY || 0)}%`,
           backgroundSize: `${bgSizeW}% ${bgSizeH}%`,
           borderRadius: imgBorderRadius,
