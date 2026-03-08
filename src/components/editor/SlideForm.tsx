@@ -338,8 +338,26 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
       {/* LAYOUT TAB */}
       {editorTab === "layout" && (
         <div className="space-y-4">
+          {/* Auto Layout */}
           <div>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-2 block">레이아웃</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-2 block">오토 레이아웃</span>
+            <div className="grid grid-cols-2 gap-1.5">
+              {(Object.entries(AUTO_LAYOUT_PRESETS) as [AutoLayoutPreset, typeof AUTO_LAYOUT_PRESETS[AutoLayoutPreset]][]).map(([key, config]) => (
+                <button key={key} onClick={() => handleAutoLayout(key)}
+                  className={cn("p-2.5 rounded-lg text-left transition-all border",
+                    (slide.autoLayout || "none") === key ? "bg-primary/10 border-primary/40" : "bg-surface border-transparent hover:border-border"
+                  )}>
+                  <span className="text-[12px] mr-1">{config.icon}</span>
+                  <span className="text-[10px] font-medium text-foreground">{config.label}</span>
+                  <span className="text-[8px] text-muted-foreground block mt-0.5">{config.description}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Manual Layout */}
+          <div>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-2 block">레이아웃 타입</span>
             <div className="grid grid-cols-2 gap-2">
               {LAYOUT_OPTIONS.map(l => (
                 <button key={l.value} onClick={() => onUpdate({ layoutType: l.value })}
