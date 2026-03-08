@@ -449,9 +449,24 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
                 <Range label="Y 위치" value={slide.image.posY ?? 0} min={-50} max={50} step={1} onChange={v => onUpdate({ image: { ...slide.image!, posY: v } })} unit="%" />
                 <Range label="확대/축소" value={slide.image.scale ?? 1} min={0.5} max={2.5} step={0.05} onChange={v => onUpdate({ image: { ...slide.image!, scale: v } })} unit="x" />
                 <Range label="오버레이" value={slide.image.overlayOpacity ?? 0.5} min={0} max={1} step={0.05} onChange={v => onUpdate({ image: { ...slide.image!, overlayOpacity: v } })} />
-                <Range label="블러" value={slide.image.blur ?? 0} min={0} max={20} step={1} onChange={v => onUpdate({ image: { ...slide.image!, blur: v } })} unit="px" />
-                <Range label="밝기" value={slide.image.brightness ?? 1} min={0.3} max={1.5} step={0.05} onChange={v => onUpdate({ image: { ...slide.image!, brightness: v } })} />
                 <Range label="둥글기" value={slide.image.borderRadius ?? 0} min={0} max={32} step={1} onChange={v => onUpdate({ image: { ...slide.image!, borderRadius: v } })} unit="px" />
+              </div>
+
+              {/* Filters */}
+              <div className="p-3 bg-surface rounded-lg space-y-2.5">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">필터 효과</span>
+                <Range label="밝기" value={slide.image.brightness ?? 1} min={0.3} max={2} step={0.05} onChange={v => onUpdate({ image: { ...slide.image!, brightness: v } })} />
+                <Range label="대비" value={slide.image.contrast ?? 1} min={0.3} max={2} step={0.05} onChange={v => onUpdate({ image: { ...slide.image!, contrast: v } })} />
+                <Range label="채도" value={slide.image.saturate ?? 1} min={0} max={3} step={0.05} onChange={v => onUpdate({ image: { ...slide.image!, saturate: v } })} />
+                <Range label="블러" value={slide.image.blur ?? 0} min={0} max={20} step={1} onChange={v => onUpdate({ image: { ...slide.image!, blur: v } })} unit="px" />
+                <Range label="흑백" value={slide.image.grayscale ?? 0} min={0} max={1} step={0.05} onChange={v => onUpdate({ image: { ...slide.image!, grayscale: v } })} />
+                <Range label="세피아" value={slide.image.sepia ?? 0} min={0} max={1} step={0.05} onChange={v => onUpdate({ image: { ...slide.image!, sepia: v } })} />
+                <Range label="색조 회전" value={slide.image.hueRotate ?? 0} min={0} max={360} step={5} onChange={v => onUpdate({ image: { ...slide.image!, hueRotate: v } })} unit="°" />
+                {/* Reset button */}
+                <button onClick={() => onUpdate({ image: { ...slide.image!, brightness: 1, contrast: 1, saturate: 1, blur: 0, grayscale: 0, sepia: 0, hueRotate: 0 } })}
+                  className="w-full py-1.5 rounded-lg text-[10px] text-muted-foreground hover:text-foreground bg-card hover:bg-muted border border-border transition-colors">
+                  필터 초기화
+                </button>
               </div>
             </div>
           )}

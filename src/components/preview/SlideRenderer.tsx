@@ -84,6 +84,22 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
   const imgScale = slide.image?.scale ?? 1;
   const imgBorderRadius = slide.image?.borderRadius ?? 0;
 
+  const buildImageFilter = () => {
+    const img = slide.image;
+    if (!img) return undefined;
+    const parts = [
+      img.blur ? `blur(${img.blur}px)` : "",
+      img.brightness !== undefined && img.brightness !== 1 ? `brightness(${img.brightness})` : "",
+      img.contrast !== undefined && img.contrast !== 1 ? `contrast(${img.contrast})` : "",
+      img.saturate !== undefined && img.saturate !== 1 ? `saturate(${img.saturate})` : "",
+      img.grayscale ? `grayscale(${img.grayscale})` : "",
+      img.sepia ? `sepia(${img.sepia})` : "",
+      img.hueRotate ? `hue-rotate(${img.hueRotate}deg)` : "",
+    ].filter(Boolean).join(" ");
+    return parts || undefined;
+  };
+  const imageFilter = buildImageFilter();
+
   const textAlignClass = slide.textAlign === "left" ? "text-left" : slide.textAlign === "right" ? "text-right" : "text-center";
   const justifyMap = { start: "flex-start", center: "center", end: "flex-end" };
 
@@ -140,10 +156,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
             backgroundPosition: `${50 + (slide.image?.posX || 0)}% ${50 + (slide.image?.posY || 0)}%`,
             transform: `scale(${imgScale})`,
             borderRadius: imgBorderRadius,
-            filter: [
-              slide.image?.blur ? `blur(${slide.image.blur}px)` : "",
-              slide.image?.brightness !== undefined && slide.image.brightness !== 1 ? `brightness(${slide.image.brightness})` : "",
-            ].filter(Boolean).join(" ") || undefined,
+            filter: imageFilter,
             cursor: onElementClick ? "pointer" : undefined,
           }} />
           <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayOpacity})`, pointerEvents: "none" }} />
@@ -247,7 +260,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
                 <img src={imageUrl} alt="" style={{
                   width: "100%", height: "auto", maxHeight: isExport ? "500px" : "40%", objectFit: "cover",
                   transform: `scale(${imgScale})`,
-                  filter: slide.image?.brightness !== undefined && slide.image.brightness !== 1 ? `brightness(${slide.image.brightness})` : undefined,
+                  filter: imageFilter,
                 }} />
               </div>
             )}
