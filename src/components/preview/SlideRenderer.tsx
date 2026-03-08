@@ -102,10 +102,6 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
   const baseBgH = imageAspect > frameAspect ? 100 : (frameAspect / imageAspect) * 100;
   const bgSizeW = baseBgW * imgScale;
   const bgSizeH = baseBgH * imgScale;
-  const bgPosX = (50 + (slide.image?.posX ?? 0)) / 100;
-  const bgPosY = (50 + (slide.image?.posY ?? 0)) / 100;
-  const layerLeft = (100 - bgSizeW) * bgPosX;
-  const layerTop = (100 - bgSizeH) * bgPosY;
 
   const buildImageFilter = () => {
     const img = slide.image;
@@ -175,37 +171,16 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     // Background image for all other layouts (overlay, center-title, title-body, etc.)
     return (
       <>
-        <div
-          data-element="image"
-          onClick={eClick("image")}
-          style={{
-            ...elementStyle(slide, "image"),
-            position: "absolute",
-            inset: 0,
-            overflow: "hidden",
-            borderRadius: imgBorderRadius,
-            cursor: onElementClick ? "pointer" : undefined,
-          }}
-        >
-          <img
-            src={imageUrl}
-            alt=""
-            draggable={false}
-            style={{
-              position: "absolute",
-              width: `${bgSizeW}%`,
-              height: `${bgSizeH}%`,
-              left: `${layerLeft}%`,
-              top: `${layerTop}%`,
-              maxWidth: "none",
-              maxHeight: "none",
-              objectFit: "fill",
-              filter: imageFilter,
-              pointerEvents: "none",
-              userSelect: "none",
-            }}
-          />
-        </div>
+        <div data-element="image" onClick={eClick("image")} style={{
+          ...elementStyle(slide, "image"),
+          position: "absolute", inset: 0,
+          backgroundImage: `url(${imageUrl})`,
+          backgroundPosition: `${50 + (slide.image?.posX || 0)}% ${50 + (slide.image?.posY || 0)}%`,
+          backgroundSize: `${bgSizeW}% ${bgSizeH}%`,
+          borderRadius: imgBorderRadius,
+          filter: imageFilter,
+          cursor: onElementClick ? "pointer" : undefined,
+        }} />
         <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayOpacity})`, pointerEvents: "none" }} />
       </>
     );
