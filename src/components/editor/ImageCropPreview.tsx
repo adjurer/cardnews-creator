@@ -17,7 +17,7 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
   scaleRef.current = image.scale ?? 1;
 
   const [expW, expH] = exportSize.split("x").map(Number);
-  const exportAspect = expW / expH; // e.g. 0.8 for 1080x1350
+  const frameAspect = expW / expH; // e.g. 0.8 for 1080x1350
   const imgW = imgNaturalSize.w || 1;
   const imgH = imgNaturalSize.h || 1;
   const imgAspect = imgW / imgH;
@@ -27,32 +27,29 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
   const scale = image.scale ?? 1;
 
   // --- Viewport calculation ---
-  // The viewport must visually maintain the export aspect ratio within the image container.
-  // At scale=1 with background-size: cover behavior:
-  // - If image is wider than export: full height visible, width cropped
-  // - If image is taller than export: full width visible, height cropped
+  // Must match SlideRenderer's background-size: cover logic exactly
+  // 
+  // SlideRenderer uses:
+  //   baseBgW = imageAspect > frameAspect ? (imageAspect / frameAspect) * 100 : 100
+  //   baseBgH = imageAspect > frameAspect ? 100 : (frameAspect / imageAspect) * 100
+  //   backgroundSize: `${baseBgW * scale}% ${baseBgH * scale}%`
+  //
+  // This means the image is displayed as (baseBgW * scale)% of frame width and (baseBgH * scale)% of frame height.
+  // The visible portion of the IMAGE is: 100 / (baseBgW * scale) of image width, 100 / (baseBgH * scale) of image height.
 
-  // Calculate viewport dimensions as percentages of the image
-  let vpWImg: number;
-  let vpHImg: number;
+  const baseBgW = imgAspect > frameAspect ? (imgAspect / frameAspect) * 100 : 100;
+  const baseBgH = imgAspect > frameAspect ? 100 : (frameAspect / imgAspect) * 100;
+  const bgW = baseBgW * scale;
+  const bgH = baseBgH * scale;
 
-  if (imgAspect > exportAspect) {
-    // Image is wider: full height at scale=1, width is proportionally less
-    vpHImg = Math.min(100, 100 / scale);
-    vpWImg = Math.min(100, vpHImg * (exportAspect / imgAspect));
-  } else {
-    // Image is taller: full width at scale=1, height is proportionally less
-    vpWImg = Math.min(100, 100 / scale);
-    vpHImg = Math.min(100, vpWImg * (imgAspect / exportAspect));
-  }
-
-  // Clamp to valid range
-  vpWImg = Math.max(0.01, vpWImg);
-  vpHImg = Math.max(0.01, vpHImg);
+  // Viewport size as % of the original image
+  const vpWImg = Math.max(0.01, Math.min(100, (100 / bgW) * 100));
+  const vpHImg = Math.max(0.01, Math.min(100, (100 / bgH) * 100));
 
   // Position: posX/posY range is -50..50, maps to background-position 0..100%
-  const pX = (50 + posX) / 100;
-  const pY = (50 + posY) / 100;
+  // background-position determines which part of the image is centered
+  const pX = (50 + posX) / 100; // 0..1
+  const pY = (50 + posY) / 100; // 0..1
 
   // Viewport left/top in image-space %
   const maxLeftOffset = Math.max(0, 100 - vpWImg);
