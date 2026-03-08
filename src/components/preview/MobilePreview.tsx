@@ -4,7 +4,7 @@ import { CanvasOverlay } from "@/components/canvas/CanvasOverlay";
 import { ChevronLeft, ChevronRight, Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Grid3X3, Shield, Ruler, Columns } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUiStore, MARGIN_VALUES, type MarginGuide } from "@/store/useUiStore";
-import type { Slide, ExportSize, ElementKey, ElementOverride } from "@/types/project";
+import type { Slide, ExportSize, ElementKey } from "@/types/project";
 
 interface Props {
   slides: Slide[];
@@ -14,11 +14,12 @@ interface Props {
   onElementSelect?: (key: ElementKey | null) => void;
   onUpdateElementOffset?: (key: ElementKey, dx: number, dy: number) => void;
   onResizeElement?: (key: ElementKey, dw: number, dh: number, handle: string) => void;
+  canvasScale?: number;
 }
 
 const MARGIN_LABELS: Record<MarginGuide, string> = { none: "없음", narrow: "좁게", normal: "보통", wide: "넓게" };
 
-export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize, onElementSelect, onUpdateElementOffset, onResizeElement }: Props) {
+export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize, onElementSelect, onUpdateElementOffset, onResizeElement, canvasScale = 0.28 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { selectedElement, setSelectedElement, showGrid, showSafeArea, showRuler, gridSize, marginGuide, toggleGrid, toggleSafeArea, toggleRuler, setMarginGuide } = useUiStore();
 
@@ -108,7 +109,7 @@ export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize,
               <div className="absolute top-0 left-0 bottom-0 w-3 bg-surface/80 z-20 flex flex-col pointer-events-none">
                 {Array.from({ length: 20 }).map((_, i) => (
                   <div key={i} className="flex-1 border-b border-muted-foreground/20 relative">
-                    {i % 5 === 0 && <span className="absolute left-0 top-0 text-[6px] text-muted-foreground/40 writing-mode-vertical" style={{ writingMode: "vertical-lr" }}>{i * 5}</span>}
+                    {i % 5 === 0 && <span className="absolute left-0 top-0 text-[6px] text-muted-foreground/40" style={{ writingMode: "vertical-lr" }}>{i * 5}</span>}
                   </div>
                 ))}
               </div>
@@ -146,6 +147,7 @@ export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize,
             showSafeArea={showSafeArea}
             gridSize={gridSize}
             locked={lockedMap}
+            canvasScale={canvasScale}
           />
         </div>
 
