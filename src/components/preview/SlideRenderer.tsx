@@ -167,9 +167,14 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     fontFamily: bodyFamily,
   };
 
+  const highlightOvr = getOverride(slide, "highlight");
   const highlightStyle: React.CSSProperties = {
-    display: "inline-block", padding: "2px 10px", borderRadius: "4px",
-    background: colors.highlightBg || accentColor,
+    display: "inline-block",
+    padding: highlightOvr.boxPadding !== undefined ? `${highlightOvr.boxPadding}px` : "2px 10px",
+    borderRadius: highlightOvr.boxRadius !== undefined ? `${highlightOvr.boxRadius}px` : "4px",
+    background: highlightOvr.boxBg
+      ? `${highlightOvr.boxBg}${Math.round((highlightOvr.boxBgOpacity ?? 1) * 255).toString(16).padStart(2, "0")}`
+      : (colors.highlightBg || accentColor),
     color: colors.highlightText || bg,
     fontWeight: 700, fontSize: highlightSize,
   };
