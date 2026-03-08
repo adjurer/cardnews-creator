@@ -487,18 +487,8 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
           onSelectElement={onSelectElement}
           onUpdateOverride={updateOverride}
           onBatchUpdateOverrides={batchUpdateOverrides}
+          onToggleVisibility={u => updateVis(u)}
         />
-      </Section>
-
-      {/* ═══ 8. VISIBILITY TOGGLES (collapsed by default) ═══ */}
-      <Section title="요소 표시" icon={LayoutGrid} defaultOpen={false}>
-        <Toggle label="카테고리" checked={vis.showCategory !== false} onChange={v => updateVis({ showCategory: v })} />
-        <Toggle label="부제목" checked={vis.showSubtitle !== false} onChange={v => updateVis({ showSubtitle: v })} />
-        <Toggle label="하이라이트" checked={vis.showHighlight !== false} onChange={v => updateVis({ showHighlight: v })} />
-        <Toggle label="본문" checked={vis.showBody !== false} onChange={v => updateVis({ showBody: v })} />
-        <Toggle label="목록" checked={vis.showBullets !== false} onChange={v => updateVis({ showBullets: v })} />
-        <Toggle label="CTA" checked={vis.showCta !== false} onChange={v => updateVis({ showCta: v })} />
-        <Toggle label="출처" checked={vis.showSourceLabel !== false} onChange={v => updateVis({ showSourceLabel: v })} />
       </Section>
 
       {/* ═══ 9. LOGO (collapsed by default) ═══ */}
