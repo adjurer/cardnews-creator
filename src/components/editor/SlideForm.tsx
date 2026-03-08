@@ -71,6 +71,20 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
     onUpdate({ elementOverrides: { ...current, [key]: { ...current[key], ...u } } });
   };
 
+  const updateImage = (u: Partial<SlideImage>) => {
+    const currentImage = (slide.image || { mode: "upload", url: "" }) as SlideImage;
+    const currentOverrides = slide.elementOverrides || {};
+    const imageOverride = currentOverrides.image || {};
+
+    onUpdate({
+      image: { ...currentImage, ...u },
+      elementOverrides: {
+        ...currentOverrides,
+        image: { ...imageOverride, hidden: false },
+      },
+    });
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
