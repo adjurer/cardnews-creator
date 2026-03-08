@@ -455,6 +455,52 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
               </div>
             </div>
           )}
+
+          {/* Logo section */}
+          <div className="p-3 bg-surface rounded-lg space-y-2.5 border border-border">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">로고</span>
+              {slide.logo?.url && (
+                <button onClick={() => onUpdate({ logo: undefined })} className="text-[10px] text-destructive hover:underline flex items-center gap-0.5">
+                  <X className="w-3 h-3" /> 제거
+                </button>
+              )}
+            </div>
+            <input ref={logoInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+            {!slide.logo?.url ? (
+              <button onClick={() => logoInputRef.current?.click()}
+                className="w-full py-4 rounded-lg border border-dashed border-border hover:border-primary/50 flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
+                <Star className="w-5 h-5" />
+                <span className="text-[10px]">로고 이미지 업로드</span>
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 rounded bg-card border border-border flex items-center justify-center overflow-hidden">
+                    <img src={slide.logo.url} alt="Logo" className="max-w-full max-h-full object-contain" />
+                  </div>
+                  <button onClick={() => logoInputRef.current?.click()} className="text-[10px] text-primary hover:underline">변경</button>
+                </div>
+                <Range label="크기" value={slide.logo.width ?? 60} min={20} max={200} step={5} onChange={v => onUpdate({ logo: { ...slide.logo!, width: v } })} unit="px" />
+                <Range label="투명도" value={slide.logo.opacity ?? 1} min={0.1} max={1} step={0.05} onChange={v => onUpdate({ logo: { ...slide.logo!, opacity: v } })} />
+                <Range label="여백" value={slide.logo.margin ?? 24} min={8} max={80} step={4} onChange={v => onUpdate({ logo: { ...slide.logo!, margin: v } })} unit="px" />
+                <div>
+                  <span className="text-[10px] text-muted-foreground mb-1 block">위치</span>
+                  <div className="grid grid-cols-3 gap-1">
+                    {(["top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"] as const).map(p => (
+                      <button key={p} onClick={() => onUpdate({ logo: { ...slide.logo!, position: p } })}
+                        className={cn("py-1.5 rounded text-[9px] font-medium",
+                          (slide.logo?.position || "top-left") === p ? "bg-primary/20 text-primary" : "bg-card text-muted-foreground"
+                        )}>
+                        {p === "top-left" ? "↖ 좌상" : p === "top-center" ? "↑ 상단" : p === "top-right" ? "↗ 우상" :
+                         p === "bottom-left" ? "↙ 좌하" : p === "bottom-center" ? "↓ 하단" : "↘ 우하"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
