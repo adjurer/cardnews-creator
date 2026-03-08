@@ -336,15 +336,13 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
         )}
 
         {imageTab === "ai" && (
-          <div className="space-y-2">
-            <input value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} placeholder="이미지 프롬프트 입력" className={inputCls} />
-            <button onClick={() => {
-              const mockUrl = MOCK_IMAGE_RESULTS[Math.floor(Math.random() * MOCK_IMAGE_RESULTS.length)];
-              updateImage({ mode: "generate", url: mockUrl, prompt: aiPrompt });
-            }} className="w-full py-2 rounded-lg bg-primary/15 text-primary text-xs font-medium hover:bg-primary/25 transition-colors">
-              AI 이미지 생성
-            </button>
-          </div>
+          <AiImageGenerator
+            defaultPrompt={slide.title + (slide.body ? ` - ${slide.body.substring(0, 80)}` : "")}
+            aiPrompt={aiPrompt}
+            setAiPrompt={setAiPrompt}
+            inputCls={inputCls}
+            onGenerated={(url, prompt) => updateImage({ mode: "generate", url, prompt })}
+          />
         )}
 
         {imageTab === "search" && (
