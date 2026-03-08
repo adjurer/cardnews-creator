@@ -243,6 +243,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         fontSize: catSize, color: accentColor, fontWeight: 600,
         letterSpacing: "0.05em", textTransform: "uppercase",
         margin: 0, padding: 0,
+        display: "inline-block", width: "fit-content", maxWidth: "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.category}</span>
     );
@@ -254,6 +255,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
       <span data-element="highlight" onClick={eClick("highlight")} style={{
         ...elementStyle(slide, "highlight"), ...highlightStyle,
         margin: 0,
+        display: "inline-block", width: "fit-content", maxWidth: "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.highlight}</span>
     );
@@ -264,6 +266,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
       ...titleStyle, ...elementStyle(slide, "title"),
       fontWeight: typo.titleWeight ?? defaultWeight ?? 700,
       margin: 0, padding: 0,
+      display: "inline-block", width: "fit-content", maxWidth: titleBoxWidth < 100 ? `${titleBoxWidth}%` : "100%",
       cursor: onElementClick ? "pointer" : undefined,
     }}>{slide.title}</h2>
   );
@@ -275,6 +278,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         ...elementStyle(slide, "subtitle"),
         fontSize: subtitleSize, color: secondaryText, lineHeight: 1.5,
         margin: 0, padding: 0,
+        display: "inline-block", width: "fit-content", maxWidth: "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.subtitle}</p>
     );
@@ -287,8 +291,24 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         ...bodyStyle, ...elementStyle(slide, "body"),
         whiteSpace: "pre-wrap",
         margin: 0, padding: 0,
+        display: "inline-block", width: "fit-content", maxWidth: "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.body}</p>
+    );
+  };
+
+  const renderCta = () => {
+    if (!slide.cta || !shouldShow("showCta") || isHidden(slide, "cta")) return null;
+    return (
+      <div data-element="cta" onClick={eClick("cta")} style={{
+        ...elementStyle(slide, "cta"),
+        display: "inline-block", width: "fit-content", maxWidth: "100%",
+        padding: isExport ? "16px 40px" : "10px 24px",
+        background: accentColor, color: bg,
+        borderRadius: "999px", fontWeight: 600, fontSize: ctaSize,
+        margin: 0,
+        cursor: onElementClick ? "pointer" : undefined,
+      }}>{slide.cta}</div>
     );
   };
 
@@ -298,6 +318,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
       <div data-element="sourceLabel" onClick={eClick("sourceLabel")} style={{
         ...elementStyle(slide, "sourceLabel"),
         marginTop: "auto", padding: 0,
+        display: "inline-block", width: "fit-content", maxWidth: "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>
         <span style={{ fontSize: sourceLabelSize, color: secondaryText }}>{slide.sourceLabel}</span>
