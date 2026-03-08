@@ -138,7 +138,7 @@ export default function EditorPage() {
     }
   }, [currentProject, currentSlideIndex, updateSlide, aiProcessing]);
 
-
+  const handleElementSelect = useCallback((key: ElementKey | null) => {
     setSelectedElement(key);
   }, [setSelectedElement]);
 
