@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { THEME_MAP } from "@/lib/themes";
 import type { Slide, ElementKey, ElementOverride, SlideLogo } from "@/types/project";
 
@@ -83,6 +84,24 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
   const overlayOpacity = slide.image?.overlayOpacity ?? 0.5;
   const imgScale = slide.image?.scale ?? 1;
   const imgBorderRadius = slide.image?.borderRadius ?? 0;
+  const [imageAspect, setImageAspect] = useState(1);
+
+  useEffect(() => {
+    if (!imageUrl) return;
+    const img = new Image();
+    img.onload = () => {
+      if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+        setImageAspect(img.naturalWidth / img.naturalHeight);
+      }
+    };
+    img.src = imageUrl;
+  }, [imageUrl]);
+
+  const frameAspect = width / height;
+  const baseBgW = imageAspect > frameAspect ? (imageAspect / frameAspect) * 100 : 100;
+  const baseBgH = imageAspect > frameAspect ? 100 : (frameAspect / imageAspect) * 100;
+  const bgSizeW = baseBgW * imgScale;
+  const bgSizeH = baseBgH * imgScale;
 
   const buildImageFilter = () => {
     const img = slide.image;
@@ -156,9 +175,8 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
           ...elementStyle(slide, "image"),
           position: "absolute", inset: 0,
           backgroundImage: `url(${imageUrl})`,
-          backgroundSize: "cover",
           backgroundPosition: `${50 + (slide.image?.posX || 0)}% ${50 + (slide.image?.posY || 0)}%`,
-          transform: `scale(${imgScale})`,
+          backgroundSize: `${bgSizeW}% ${bgSizeH}%`,
           borderRadius: imgBorderRadius,
           filter: imageFilter,
           cursor: onElementClick ? "pointer" : undefined,
