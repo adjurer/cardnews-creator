@@ -465,7 +465,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
                     <a.icon className="w-3.5 h-3.5" />
                   </button>
                 ))}
-              {/* Size */}
+              </div>
               {cfg && (
                 <Range label="크기" value={(typo as any)[cfg.field] ?? cfg.fallback} min={cfg.min} max={cfg.max} step={1} onChange={v => updateTypo({ [cfg.field]: v })} unit="px" />
               )}
