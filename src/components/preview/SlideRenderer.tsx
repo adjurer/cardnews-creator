@@ -326,11 +326,13 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     return (
       <div data-element="cta" onClick={eClick("cta")} style={{
         ...elementStyle(slide, "cta"),
-        display: "inline-block", width: "fit-content",
-        maxWidth: ctaOvr.boxWidth ? `${ctaOvr.boxWidth}%` : "100%",
+        display: "inline-block",
+        width: ctaOvr.boxWidth ? `${ctaOvr.boxWidth}%` : "fit-content",
+        maxWidth: "100%",
         padding: ctaPad,
         background: ctaBg, color: ctaOvr.color || bg,
         borderRadius: ctaRadius, fontWeight: ctaOvr.fontWeight || 600, fontSize: ctaSize,
+        textAlign: "center",
         margin: 0,
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.cta}</div>

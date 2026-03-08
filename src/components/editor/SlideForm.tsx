@@ -409,7 +409,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
       </Section>
 
       {/* ═══ 5. TEXT STYLE ═══ */}
-      <Section title="텍스트 스타일" icon={Bold} defaultOpen={false}>
+      <Section title="텍스트 스타일" icon={Bold} defaultOpen={!!selectedElement}>
         {/* Dynamic typography — based on selected element */}
         {(() => {
           const el = selectedElement;
