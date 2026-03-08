@@ -26,37 +26,25 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
   const posY = image.posY ?? 0;
   const scale = image.scale ?? 1;
 
-  // --- Viewport calculation (must match SlideRenderer exactly) ---
-  // SlideRenderer uses:
-  // - background-size: cover
-  // - background-position: (50+posX)% (50+posY)%
-  // - transform: scale(scale) on the whole layer (center-origin)
-  //
-  // 1) f0 = visible fraction at scale=1 (cover crop)
-  // 2) f = f0 / scale (zoomed visible fraction)
-  // 3) left/top must include center-zoom offset: +(f0 - f)/2
+  // --- Viewport calculation (must match SlideRenderer) ---
+  // SlideRenderer uses background-size percentages based on cover + scale.
+  // baseW/baseH are image size (in frame %) at scale=1.
 
-  const f0x = imgAspect > exportAspect ? (exportAspect / imgAspect) : 1;
-  const f0y = imgAspect > exportAspect ? 1 : (imgAspect / exportAspect);
+  const baseW = imgAspect > exportAspect ? (imgAspect / exportAspect) * 100 : 100;
+  const baseH = imgAspect > exportAspect ? 100 : (exportAspect / imgAspect) * 100;
 
-  const fx = Math.max(0.01, Math.min(1, f0x / scale));
-  const fy = Math.max(0.01, Math.min(1, f0y / scale));
+  const bgW = baseW * scale;
+  const bgH = baseH * scale;
 
-  // Position: posX/posY range is -50..50, maps to background-position 0%..100%
+  const vpW = Math.max(0.01, Math.min(100, (100 / bgW) * 100));
+  const vpH = Math.max(0.01, Math.min(100, (100 / bgH) * 100));
+
+  // Position: posX/posY range is -50..50, maps to background-position 0..100
   const pX = (50 + posX) / 100;
   const pY = (50 + posY) / 100;
 
-  const baseLeft = (1 - f0x) * pX;
-  const baseTop = (1 - f0y) * pY;
-
-  // Center-origin scale compensation
-  const left = baseLeft + (f0x - fx) / 2;
-  const top = baseTop + (f0y - fy) / 2;
-
-  const vpW = fx * 100;
-  const vpH = fy * 100;
-  const vpLeft = Math.max(0, Math.min(100 - vpW, left * 100));
-  const vpTop = Math.max(0, Math.min(100 - vpH, top * 100));
+  const vpLeft = Math.max(0, Math.min(100 - vpW, pX * (100 - vpW)));
+  const vpTop = Math.max(0, Math.min(100 - vpH, pY * (100 - vpH)));
 
   const handleImgLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
