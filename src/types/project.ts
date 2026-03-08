@@ -109,7 +109,7 @@ export interface SlideLogo {
   margin?: number;   // margin from edge in px
 }
 
-export type AutoLayoutPreset = "none" | "centered" | "top-heavy" | "bottom-heavy" | "split-horizontal" | "editorial" | "minimal-quote";
+export type AutoLayoutPreset = "none" | "centered" | "top-heavy" | "bottom-heavy" | "split-horizontal" | "editorial" | "minimal-quote" | "bold-statement" | "card-news" | "magazine-cover" | "data-highlight" | "sns-promo";
 
 export interface Slide {
   id: string;
