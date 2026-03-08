@@ -194,7 +194,26 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
           cursor: onElementClick ? "pointer" : undefined,
           zIndex: getOverride(slide, "image").zIndex,
         }} />
-        <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayOpacity})`, pointerEvents: "none" }} />
+        {(() => {
+          const dir = slide.image?.overlayDirection ?? "center";
+          const overlayBlur = slide.image?.overlayBlur ?? 0;
+          const colorStr = `rgba(0,0,0,${overlayOpacity})`;
+          let bg: string;
+          if (dir === "center") {
+            bg = colorStr;
+          } else {
+            bg = OVERLAY_GRADIENT_MAP[dir].replace(/COLOR/g, colorStr);
+          }
+          return (
+            <div style={{
+              position: "absolute", inset: 0,
+              background: bg,
+              backdropFilter: overlayBlur > 0 ? `blur(${overlayBlur}px)` : undefined,
+              WebkitBackdropFilter: overlayBlur > 0 ? `blur(${overlayBlur}px)` : undefined,
+              pointerEvents: "none",
+            }} />
+          );
+        })()}
       </>
     );
   };
