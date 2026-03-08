@@ -41,11 +41,8 @@ export function LayerPanel({ slide, selectedElement, onSelectElement, onUpdateOv
   const [dragKey, setDragKey] = useState<ElementKey | null>(null);
   const [dropLine, setDropLine] = useState<number | null>(null);
 
-  // Show all elements that have content OR are always-present (title, image, logo)
-  const visibleElements = ELEMENT_DEFS.filter(e => {
-    const content = e.getContent(slide);
-    return content !== undefined && content !== "";
-  });
+  // Show ALL elements — always present in layer list regardless of content
+  const visibleElements = ELEMENT_DEFS;
 
   const sorted = [...visibleElements].sort((a, b) => {
     const zA = overrides[a.key]?.zIndex ?? 0;
