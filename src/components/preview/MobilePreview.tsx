@@ -24,6 +24,15 @@ const MARGIN_LABELS: Record<MarginGuide, string> = { none: "없음", narrow: "�
 export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize, onElementSelect, onUpdateElementOffset, onResizeElement, canvasScale = 0.28 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { selectedElement, setSelectedElement, showGrid, showSafeArea, showRuler, gridSize, marginGuide, toggleGrid, toggleSafeArea, toggleRuler, setMarginGuide } = useUiStore();
+  const { user } = useAuth();
+  const { accounts, activeAccountId, fetchAccounts, setActiveAccount, getActiveAccount } = useInstagramStore();
+  const [showAccountPicker, setShowAccountPicker] = useState(false);
+
+  useEffect(() => {
+    if (user) fetchAccounts();
+  }, [user]);
+
+  const activeAccount = getActiveAccount();
 
   const handleElementSelect = useCallback((key: ElementKey | null) => {
     setSelectedElement(key);
@@ -87,13 +96,24 @@ export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize,
           </div>
         </div>
 
-        {/* Profile row */}
-        <div className="flex items-center gap-2 px-3 py-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 border border-border" />
-          <div className="flex-1">
-            <span className="text-[11px] font-semibold text-foreground">cardnews_studio</span>
-          </div>
-          <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+        {/* Profile row — clickable for account switching */}
+        <div className="relative">
+          <button
+            onClick={() => accounts.length > 0 && setShowAccountPicker(!showAccountPicker)}
+            className="flex items-center gap-2 px-3 py-2 w-full text-left hover:bg-surface/50 transition-colors"
+          >
+            {activeAccount?.profile_picture_url ? (
+              <img src={activeAccount.profile_picture_url} alt="" className="w-8 h-8 rounded-full object-cover border border-border" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 border border-border" />
+            )}
+            <div className="flex-1 flex items-center gap-1">
+              <span className="text-[11px] font-semibold text-foreground">
+                {activeAccount ? `@${activeAccount.username}` : "cardnews_studio"}
+              </span>
+              {accounts.length > 1 && <ChevronDown className="w-3 h-3 text-muted-foreground" />}
+            </div>
+            <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
         </div>
 
         {/* Slide content with overlay */}
