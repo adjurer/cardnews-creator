@@ -322,8 +322,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
       <div data-element="cta" onClick={eClick("cta")} style={{
         ...elementStyle(slide, "cta"),
         display: "inline-block",
-        width: ctaOvr.boxWidth ? `${ctaOvr.boxWidth}%` : "fit-content",
-        maxWidth: "100%",
+        width: ctaOvr.boxWidth ? `${ctaOvr.boxWidth}%` : "100%",
         padding: ctaPad,
         background: ctaBg, color: ctaOvr.color || bg,
         borderRadius: ctaRadius, fontWeight: ctaOvr.fontWeight || 600, fontSize: ctaSize,
