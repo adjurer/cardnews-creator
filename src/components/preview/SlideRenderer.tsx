@@ -156,10 +156,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
             backgroundPosition: `${50 + (slide.image?.posX || 0)}% ${50 + (slide.image?.posY || 0)}%`,
             transform: `scale(${imgScale})`,
             borderRadius: imgBorderRadius,
-            filter: [
-              slide.image?.blur ? `blur(${slide.image.blur}px)` : "",
-              slide.image?.brightness !== undefined && slide.image.brightness !== 1 ? `brightness(${slide.image.brightness})` : "",
-            ].filter(Boolean).join(" ") || undefined,
+            filter: imageFilter,
             cursor: onElementClick ? "pointer" : undefined,
           }} />
           <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayOpacity})`, pointerEvents: "none" }} />
