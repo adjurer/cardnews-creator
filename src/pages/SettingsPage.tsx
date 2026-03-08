@@ -201,6 +201,14 @@ export default function SettingsPage() {
             </div>
           </div>
 
+          {/* Font management */}
+          <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+            <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+              <Type className="w-4 h-4" /> 폰트 관리
+            </h3>
+            <FontManagerSettings />
+          </div>
+
           {/* Instagram accounts */}
           <InstagramAccountManager />
 
