@@ -16,9 +16,19 @@ interface Props {
 }
 
 export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize, onElementSelect, onUpdateElementOffset }: Props) {
-  const slide = slides[currentIndex];
   const containerRef = useRef<HTMLDivElement>(null);
   const { selectedElement, setSelectedElement, showGrid, showSafeArea, showRuler, gridSize, toggleGrid, toggleSafeArea, toggleRuler } = useUiStore();
+
+  const handleElementSelect = useCallback((key: ElementKey | null) => {
+    setSelectedElement(key);
+    onElementSelect?.(key);
+  }, [setSelectedElement, onElementSelect]);
+
+  const handleUpdateOffset = useCallback((key: ElementKey, dx: number, dy: number) => {
+    onUpdateElementOffset?.(key, dx, dy);
+  }, [onUpdateElementOffset]);
+
+  const slide = slides[currentIndex];
   if (!slide) return null;
 
   const [w, h] = exportSize.split("x").map(Number);
