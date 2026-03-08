@@ -177,7 +177,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
           backgroundImage: `url(${imageUrl})`,
           backgroundSize: "cover",
           backgroundPosition: `${50 + (slide.image?.posX || 0)}% ${50 + (slide.image?.posY || 0)}%`,
-          transform: `scale(${imgScale})`,
+          backgroundSize: `${bgSizeW}% ${bgSizeH}%`,
           borderRadius: imgBorderRadius,
           filter: imageFilter,
           cursor: onElementClick ? "pointer" : undefined,
