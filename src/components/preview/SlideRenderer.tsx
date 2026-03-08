@@ -286,6 +286,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
       <p data-element="body" onClick={eClick("body")} style={{
         ...bodyStyle, ...elementStyle(slide, "body"),
         whiteSpace: "pre-wrap",
+        margin: 0, padding: 0,
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.body}</p>
     );
