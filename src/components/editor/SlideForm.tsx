@@ -240,30 +240,50 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
 
       {/* ═══ 3. LAYOUT ═══ */}
       <Section title="레이아웃" icon={LayoutTemplate} defaultOpen={true}>
-        {/* 3x3 alignment grid */}
-        <div>
-          <span className="text-[10px] text-muted-foreground mb-1.5 block">콘텐츠 정렬</span>
-          <div className="inline-grid grid-cols-3 gap-0.5 p-1 bg-surface rounded-lg border border-border">
-            {(["start-left", "start-center", "start-right",
-              "center-left", "center-center", "center-right",
-              "end-left", "end-center", "end-right"] as const).map(combo => {
-              const [vAlign, hAlign] = combo.split("-") as ["start" | "center" | "end", "left" | "center" | "right"];
-              const isActive = (pos.contentAlign || "center") === vAlign && slide.textAlign === hAlign;
-              return (
-                <button key={combo}
-                  onClick={() => onUpdate({ textAlign: hAlign, position: { ...pos, contentAlign: vAlign } })}
-                  className={cn("w-7 h-7 rounded flex items-center justify-center transition-all",
-                    isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
+        {/* 3x3 grid + Auto layouts side by side */}
+        <div className="flex gap-3">
+          {/* 3x3 alignment grid */}
+          <div className="shrink-0">
+            <span className="text-[10px] text-muted-foreground mb-1.5 block">콘텐츠 정렬</span>
+            <div className="inline-grid grid-cols-3 gap-0.5 p-1 bg-surface rounded-lg border border-border">
+              {(["start-left", "start-center", "start-right",
+                "center-left", "center-center", "center-right",
+                "end-left", "end-center", "end-right"] as const).map(combo => {
+                const [vAlign, hAlign] = combo.split("-") as ["start" | "center" | "end", "left" | "center" | "right"];
+                const isActive = (pos.contentAlign || "center") === vAlign && slide.textAlign === hAlign;
+                return (
+                  <button key={combo}
+                    onClick={() => onUpdate({ textAlign: hAlign, position: { ...pos, contentAlign: vAlign } })}
+                    className={cn("w-7 h-7 rounded flex items-center justify-center transition-all",
+                      isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                    )}>
+                    <div className={cn("w-2 h-2 rounded-sm", isActive ? "bg-primary-foreground" : "bg-current")} />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Auto layout presets */}
+          <div className="flex-1 min-w-0">
+            <span className="text-[10px] text-muted-foreground mb-1.5 block">오토 레이아웃</span>
+            <div className="grid grid-cols-3 gap-1">
+              {Object.entries(AUTO_LAYOUT_PRESETS).filter(([k]) => k !== "none").map(([key, cfg]) => (
+                <button key={key} onClick={() => handleAutoLayout(key as AutoLayoutPreset)}
+                  title={cfg.description}
+                  className={cn("py-1.5 px-1 rounded-md text-[9px] font-medium transition-all text-center leading-tight truncate",
+                    slide.autoLayout === key ? "bg-primary/20 text-primary border border-primary/40" : "bg-surface text-muted-foreground border border-transparent hover:border-border"
                   )}>
-                  <div className={cn("w-2 h-2 rounded-sm", isActive ? "bg-primary-foreground" : "bg-current")} />
+                  <span className="block text-xs mb-0.5">{cfg.icon}</span>
+                  {cfg.label}
                 </button>
-              );
-            })}
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Layout type grid */}
-        <div className="grid grid-cols-3 gap-1.5">
+        <div className="grid grid-cols-3 gap-1.5 pt-2 border-t border-border">
           {LAYOUT_OPTIONS.map(l => (
             <button key={l.value} onClick={() => onUpdate({ layoutType: l.value })}
               className={cn("py-2 rounded-lg text-[10px] font-medium transition-all text-center",
