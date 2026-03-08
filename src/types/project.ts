@@ -9,6 +9,8 @@ export type ImageMode = "upload" | "generate" | "search";
 
 export type ElementKey = "category" | "title" | "subtitle" | "highlight" | "body" | "bullets" | "cta" | "sourceLabel" | "image" | "logo";
 
+export type OverlayDirection = "top-left" | "top-center" | "top-right" | "center-left" | "center" | "center-right" | "bottom-left" | "bottom-center" | "bottom-right";
+
 export interface SlideImage {
   mode: ImageMode;
   url: string;
@@ -17,6 +19,8 @@ export interface SlideImage {
   posY?: number;
   scale?: number;
   overlayOpacity?: number;
+  overlayDirection?: OverlayDirection;
+  overlayBlur?: number;
   borderRadius?: number;
   blur?: number;
   brightness?: number;
