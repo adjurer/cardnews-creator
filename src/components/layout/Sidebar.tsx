@@ -5,8 +5,6 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { icon: Plus, label: "만들기", path: "/create" },
   { icon: LayoutGrid, label: "작업 목록", path: "/dashboard" },
-  { icon: Rss, label: "소스", path: "/create" },
-  { icon: Sparkles, label: "에디터", path: "/dashboard" },
   { icon: Settings, label: "설정", path: "/settings" },
 ];
 
