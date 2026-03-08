@@ -268,6 +268,14 @@ export default function EditorPage() {
         </div>
 
         <div className="flex items-center gap-1 ml-auto">
+          <button onClick={() => setShowStoryboard(!showStoryboard)}
+            className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border transition-all",
+              showStoryboard
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-surface hover:bg-muted text-foreground border-border"
+            )}>
+            <Clapperboard className="w-3.5 h-3.5" /> 숏폼
+          </button>
           <button onClick={handleRegenerateSlide} disabled={regenerating}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-surface hover:bg-muted text-foreground border border-border disabled:opacity-50">
             {regenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
