@@ -42,6 +42,11 @@ export interface SlideTypography {
   titleFontFamily?: string;
   bodySize?: number;
   subtitleSize?: number;
+  highlightSize?: number;
+  categorySize?: number;
+  bulletSize?: number;
+  ctaSize?: number;
+  sourceLabelSize?: number;
   bodyWeight?: number;
   bodyLineHeight?: number;
   bodyLetterSpacing?: number;

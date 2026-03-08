@@ -130,9 +130,12 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
   const titleSize = isExport ? `${(typo.titleSize ?? 28) * 1.5}px` : `clamp(16px, 4.5vw, ${typo.titleSize ?? 28}px)`;
   const subtitleSize = isExport ? `${(typo.subtitleSize ?? (typo.bodySize ?? 16) + 2) * 1.3}px` : `clamp(11px, 3vw, ${typo.subtitleSize ?? ((typo.bodySize ?? 16) + 2)}px)`;
+  const highlightSize = isExport ? `${(typo.highlightSize ?? (typo.bodySize ?? 16)) * 1.3}px` : `clamp(10px, 2.8vw, ${typo.highlightSize ?? (typo.bodySize ?? 16)}px)`;
   const bodySize = isExport ? `${(typo.bodySize ?? 16) * 1.5}px` : `clamp(10px, 2.8vw, ${typo.bodySize ?? 16}px)`;
-  const bulletSize = isExport ? `${(typo.bodySize ?? 16) * 1.4}px` : `clamp(10px, 2.6vw, ${(typo.bodySize ?? 16) - 1}px)`;
-  const catSize = isExport ? "16px" : "clamp(8px, 2vw, 12px)";
+  const bulletSize = isExport ? `${(typo.bulletSize ?? (typo.bodySize ?? 16) - 1) * 1.4}px` : `clamp(10px, 2.6vw, ${typo.bulletSize ?? ((typo.bodySize ?? 16) - 1)}px)`;
+  const catSize = isExport ? `${(typo.categorySize ?? 12) * 1.3}px` : `clamp(8px, 2vw, ${typo.categorySize ?? 12}px)`;
+  const ctaSize = isExport ? `${(typo.ctaSize ?? (typo.bodySize ?? 16)) * 1.5}px` : `clamp(10px, 2.8vw, ${typo.ctaSize ?? (typo.bodySize ?? 16)}px)`;
+  const sourceLabelSize = isExport ? `${(typo.sourceLabelSize ?? 11) * 1.3}px` : `clamp(8px, 2vw, ${typo.sourceLabelSize ?? 11}px)`;
   const basePadding = isExport ? `${paddingY * 6}px ${paddingX * 6}px` : `${paddingY}% ${paddingX}%`;
 
   const shouldShow = (key: keyof typeof vis) => vis[key] !== false;
@@ -164,7 +167,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     display: "inline-block", padding: "2px 10px", borderRadius: "4px",
     background: colors.highlightBg || accentColor,
     color: colors.highlightText || bg,
-    fontWeight: 700, fontSize: subtitleSize,
+    fontWeight: 700, fontSize: highlightSize,
   };
 
   const renderImage = () => {
@@ -288,7 +291,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         ...elementStyle(slide, "sourceLabel"),
         marginTop: "auto", paddingTop: "12px", cursor: onElementClick ? "pointer" : undefined,
       }}>
-        <span style={{ fontSize: isExport ? "14px" : "clamp(8px, 2vw, 11px)", color: secondaryText }}>{slide.sourceLabel}</span>
+        <span style={{ fontSize: sourceLabelSize, color: secondaryText }}>{slide.sourceLabel}</span>
       </div>
     );
   };
@@ -391,7 +394,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
                 ...elementStyle(slide, "cta"),
                 display: "inline-block", padding: isExport ? "16px 40px" : "10px 24px",
                 background: accentColor, color: bg,
-                borderRadius: "999px", fontWeight: 600, fontSize: bodySize,
+                borderRadius: "999px", fontWeight: 600, fontSize: ctaSize,
                 cursor: onElementClick ? "pointer" : undefined,
               }}>{slide.cta}</div>
             )}

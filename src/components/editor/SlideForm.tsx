@@ -380,37 +380,51 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
       <Section title="텍스트 스타일" icon={Bold} defaultOpen={false}>
         {/* Dynamic typography — based on selected element */}
         {(() => {
-          const isTitleLevel = selectedElement === "title" || selectedElement === "highlight";
-          const isBodyLevel = selectedElement === "subtitle" || selectedElement === "body" || selectedElement === "bullets" || selectedElement === "cta" || selectedElement === "sourceLabel" || selectedElement === "category";
-          const showTitle = !selectedElement || isTitleLevel;
-          const showBody = !selectedElement || isBodyLevel;
+          const el = selectedElement;
+          
+          // Per-element size config
+          const sizeConfig: Record<string, { field: keyof SlideTypography; fallback: number; min: number; max: number }> = {
+            title:       { field: "titleSize",       fallback: 28, min: 14, max: 60 },
+            highlight:   { field: "highlightSize",   fallback: typo.bodySize ?? 16, min: 10, max: 48 },
+            subtitle:    { field: "subtitleSize",     fallback: (typo.bodySize ?? 16) + 2, min: 10, max: 48 },
+            category:    { field: "categorySize",     fallback: 12, min: 8, max: 32 },
+            body:        { field: "bodySize",          fallback: 16, min: 8, max: 40 },
+            bullets:     { field: "bulletSize",        fallback: (typo.bodySize ?? 16) - 1, min: 8, max: 36 },
+            cta:         { field: "ctaSize",           fallback: typo.bodySize ?? 16, min: 10, max: 40 },
+            sourceLabel: { field: "sourceLabelSize",   fallback: 11, min: 8, max: 24 },
+          };
+
+          const isTitleLevel = el === "title" || el === "highlight";
+          const isBodyLevel = el && !isTitleLevel && el !== "image" && el !== "logo";
 
           return (
             <div className="space-y-2">
-              {selectedElement && (
+              {el && el !== "image" && el !== "logo" && (
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-medium">{selectedElement}</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-medium">{el}</span>
                   <span className="text-[9px] text-muted-foreground">선택됨</span>
                 </div>
               )}
-              {showTitle && (
+              {/* When an element is selected, show only its size */}
+              {el && sizeConfig[el] && (
+                <Range label="크기" value={(typo as any)[sizeConfig[el].field] ?? sizeConfig[el].fallback} min={sizeConfig[el].min} max={sizeConfig[el].max} step={1} onChange={v => updateTypo({ [sizeConfig[el].field]: v })} unit="px" />
+              )}
+              {/* Title-level: show title weight/line-height/spacing */}
+              {(!el || isTitleLevel) && (
                 <>
-                  {!selectedElement && <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">제목</span>}
-                  <Range label="크기" value={typo.titleSize ?? 28} min={14} max={60} step={1} onChange={v => updateTypo({ titleSize: v })} unit="px" />
+                  {!el && <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">제목</span>}
+                  {!el && <Range label="크기" value={typo.titleSize ?? 28} min={14} max={60} step={1} onChange={v => updateTypo({ titleSize: v })} unit="px" />}
                   <Range label="굵기" value={typo.titleWeight ?? 700} min={300} max={900} step={100} onChange={v => updateTypo({ titleWeight: v })} />
                   <Range label="줄간격" value={typo.titleLineHeight ?? 1.3} min={0.8} max={2.0} step={0.05} onChange={v => updateTypo({ titleLineHeight: v })} />
                   <Range label="자간" value={typo.titleLetterSpacing ?? 0} min={-0.1} max={0.2} step={0.01} onChange={v => updateTypo({ titleLetterSpacing: v })} unit="em" />
                 </>
               )}
-              {showBody && (
+              {/* Body-level: show body weight/line-height/spacing */}
+              {(!el || isBodyLevel) && (
                 <>
-                  {!selectedElement && <div className="pt-3 border-t border-border" />}
-                  {!selectedElement && <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">본문</span>}
-                  {selectedElement === "subtitle" ? (
-                    <Range label="크기" value={typo.subtitleSize ?? ((typo.bodySize ?? 16) + 2)} min={10} max={48} step={1} onChange={v => updateTypo({ subtitleSize: v })} unit="px" />
-                  ) : (
-                    <Range label="크기" value={typo.bodySize ?? 16} min={10} max={32} step={1} onChange={v => updateTypo({ bodySize: v })} unit="px" />
-                  )}
+                  {!el && <div className="pt-3 border-t border-border" />}
+                  {!el && <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">본문</span>}
+                  {!el && <Range label="크기" value={typo.bodySize ?? 16} min={10} max={32} step={1} onChange={v => updateTypo({ bodySize: v })} unit="px" />}
                   <Range label="굵기" value={typo.bodyWeight ?? 400} min={300} max={700} step={100} onChange={v => updateTypo({ bodyWeight: v })} />
                   <Range label="줄간격" value={typo.bodyLineHeight ?? 1.6} min={1.0} max={2.5} step={0.05} onChange={v => updateTypo({ bodyLineHeight: v })} />
                   <Range label="자간" value={typo.bodyLetterSpacing ?? 0} min={-0.05} max={0.15} step={0.01} onChange={v => updateTypo({ bodyLetterSpacing: v })} unit="em" />
