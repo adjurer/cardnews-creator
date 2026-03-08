@@ -248,7 +248,8 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         fontSize: catSize, color: accentColor, fontWeight: 600,
         letterSpacing: "0.05em", textTransform: "uppercase",
         margin: 0, padding: 0,
-        display: "inline-block", width: "fit-content", maxWidth: "100%",
+        display: "inline-block", width: "fit-content",
+        maxWidth: getOverride(slide, "category").boxWidth ? `${getOverride(slide, "category").boxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.category}</span>
     );
