@@ -208,26 +208,52 @@ export function ExportDialog({ project, currentSlideIndex, onClose }: Props) {
 
         {tab === "instagram" && (
           <div className="space-y-3">
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Instagram User ID</label>
-              <input
-                type="text"
-                value={igUserId}
-                onChange={e => setIgUserId(e.target.value)}
-                placeholder="17841400..."
-                className="w-full px-3 py-2 rounded-lg bg-surface border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Access Token</label>
-              <input
-                type="password"
-                value={igAccessToken}
-                onChange={e => setIgAccessToken(e.target.value)}
-                placeholder="EAAxxxxxx..."
-                className="w-full px-3 py-2 rounded-lg bg-surface border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
+            {/* Account selector */}
+            {accounts.length > 0 ? (
+              <div className="relative">
+                <label className="text-xs text-muted-foreground mb-1 block">게시할 계정</label>
+                <button
+                  onClick={() => setShowAccountSelector(!showAccountSelector)}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg bg-surface border border-border text-left"
+                >
+                  {selectedIgAccount?.profile_picture_url ? (
+                    <img src={selectedIgAccount.profile_picture_url} alt="" className="w-6 h-6 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[hsl(320,70%,50%)] to-[hsl(30,90%,55%)]" />
+                  )}
+                  <span className="text-sm font-medium text-foreground flex-1">
+                    @{selectedIgAccount?.username || "계정 선택"}
+                  </span>
+                  <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+                </button>
+                {showAccountSelector && accounts.length > 1 && (
+                  <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden">
+                    {accounts.map(acc => (
+                      <button
+                        key={acc.id}
+                        onClick={() => { setActiveAccount(acc.id); setShowAccountSelector(false); }}
+                        className={cn("flex items-center gap-2 px-3 py-2 w-full text-left hover:bg-surface transition-colors text-sm",
+                          acc.id === activeAccountId && "bg-primary/10"
+                        )}
+                      >
+                        {acc.profile_picture_url ? (
+                          <img src={acc.profile_picture_url} alt="" className="w-5 h-5 rounded-full object-cover" />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[hsl(320,70%,50%)] to-[hsl(30,90%,55%)]" />
+                        )}
+                        <span className="text-foreground">@{acc.username}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="p-3 rounded-lg bg-surface border border-border text-center">
+                <p className="text-xs text-muted-foreground mb-1">연결된 Instagram 계정이 없습니다</p>
+                <p className="text-[10px] text-primary">설정 → Instagram 계정에서 추가해주세요</p>
+              </div>
+            )}
+
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">캡션 (선택)</label>
               <textarea
@@ -241,7 +267,7 @@ export function ExportDialog({ project, currentSlideIndex, onClose }: Props) {
 
             <button
               onClick={handleInstagramPublish}
-              disabled={publishing || !igAccessToken || !igUserId}
+              disabled={publishing || !selectedIgAccount}
               className="w-full py-3 rounded-lg bg-gradient-to-r from-[hsl(320,70%,50%)] to-[hsl(30,90%,55%)] text-white font-medium text-sm flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 transition-all"
             >
               {publishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Instagram className="w-4 h-4" />}
@@ -249,8 +275,7 @@ export function ExportDialog({ project, currentSlideIndex, onClose }: Props) {
             </button>
 
             <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
-              Instagram Graph API를 사용합니다. Business 계정과 유효한 Access Token이 필요합니다.
-              {mode === "all" && project.slides.length > 1 && " 전체 슬라이드는 캐러셀로 게시됩니다."}
+              {mode === "all" && project.slides.length > 1 && "전체 슬라이드는 캐러셀로 게시됩니다."}
             </p>
           </div>
         )}
