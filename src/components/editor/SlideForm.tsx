@@ -7,6 +7,7 @@ import { FontManager } from "./FontManager";
 import { ImageCropPreview } from "./ImageCropPreview";
 import { OverlayDirectionGrid } from "./OverlayDirectionGrid";
 import { cn } from "@/lib/utils";
+import { Slider } from "@/components/ui/slider";
 import { useFontStore } from "@/store/useFontStore";
 import { AUTO_LAYOUT_PRESETS, applyAutoLayout } from "@/lib/autoLayout";
 import {
