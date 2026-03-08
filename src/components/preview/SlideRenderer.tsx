@@ -320,7 +320,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Title-body / Title-image */}
         {(slide.layoutType === "title-body" || slide.layoutType === "title-image") && slide.type !== "cover" && (
-            <div style={{ display: "flex", flexDirection: "column", justifyContent: justifyMap[contentAlign], flex: contentAlign !== "start" ? 1 : undefined }}>
+            <div style={{ display: "flex", flexDirection: "column" }}>
             {renderHighlight()}
             {renderTitle()}
             {renderSubtitle()}
