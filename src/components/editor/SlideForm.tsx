@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import type { Slide, SlideType, LayoutType, TextAlign, ThemePreset, SlideImage, SlideLogo, SlideTypography, SlideColors, SlideVisibility, SlidePosition, ElementKey, ElementOverride, AutoLayoutPreset, ExportSize } from "@/types/project";
+import type { Slide, SlideType, LayoutType, TextAlign, ThemePreset, SlideImage, SlideLogo, SlideTypography, SlideColors, SlideVisibility, SlidePosition, ElementKey, ElementOverride, AutoLayoutPreset, ExportSize, OverlayDirection } from "@/types/project";
 import { THEME_LABELS } from "@/lib/themes";
 import { MOCK_IMAGE_RESULTS } from "@/mocks/data";
 import { LayerPanel } from "./LayerPanel";
