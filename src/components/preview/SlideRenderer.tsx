@@ -154,7 +154,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
   const bodyStyle: React.CSSProperties = {
     fontSize: bodySize,
     fontWeight: typo.bodyWeight ?? 400,
-    lineHeight: typo.bodyLineHeight ?? 1.7,
+    lineHeight: typo.bodyLineHeight ?? 1.6,
     letterSpacing: typo.bodyLetterSpacing ? `${typo.bodyLetterSpacing}em` : undefined,
     color: secondaryText,
     fontFamily: bodyFamily,
