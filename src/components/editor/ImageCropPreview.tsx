@@ -178,7 +178,7 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
           <Move className="w-3 h-3" /> 드래그: 위치 · 휠: 확대/축소
         </span>
         <div className="flex items-center gap-1">
-          <button onClick={() => onUpdate({ scale: Math.max(0.5, parseFloat((scale - 0.1).toFixed(2))) })}
+          <button onClick={() => onUpdate({ scale: Math.max(1, parseFloat((scale - 0.1).toFixed(2))) })}
             className="p-1 rounded hover:bg-surface text-muted-foreground hover:text-foreground" title="축소">
             <ZoomOut className="w-3 h-3" />
           </button>
