@@ -71,11 +71,25 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
     onUpdate({ elementOverrides: { ...current, [key]: { ...current[key], ...u } } });
   };
 
+  const updateImage = (u: Partial<SlideImage>) => {
+    const currentImage = (slide.image || { mode: "upload", url: "" }) as SlideImage;
+    const currentOverrides = slide.elementOverrides || {};
+    const imageOverride = currentOverrides.image || {};
+
+    onUpdate({
+      image: { ...currentImage, ...u },
+      elementOverrides: {
+        ...currentOverrides,
+        image: { ...imageOverride, hidden: false },
+      },
+    });
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const url = URL.createObjectURL(file);
-    onUpdate({ image: { ...slide.image, mode: "upload", url } as SlideImage });
+    updateImage({ mode: "upload", url });
   };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -417,7 +431,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
               <input value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} placeholder="이미지 프롬프트 입력" className={inputCls} />
               <button onClick={() => {
                 const mockUrl = MOCK_IMAGE_RESULTS[Math.floor(Math.random() * MOCK_IMAGE_RESULTS.length)];
-                onUpdate({ image: { mode: "generate", url: mockUrl, prompt: aiPrompt } as SlideImage });
+                updateImage({ mode: "generate", url: mockUrl, prompt: aiPrompt });
               }} className="w-full py-2 rounded-lg bg-primary/15 text-primary text-xs font-medium hover:bg-primary/25 transition-colors">
                 AI 이미지 생성 (Mock)
               </button>
@@ -429,7 +443,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
               <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="검색어 입력" className={inputCls} />
               <div className="grid grid-cols-4 gap-1.5">
                 {MOCK_IMAGE_RESULTS.map((url, i) => (
-                  <button key={i} onClick={() => onUpdate({ image: { mode: "search", url } as SlideImage })}
+                  <button key={i} onClick={() => updateImage({ mode: "search", url })}
                     className={cn("aspect-square rounded-lg overflow-hidden border-2 transition-all",
                       slide.image?.url === url ? "border-primary" : "border-transparent hover:border-muted-foreground/30"
                     )}><img src={url} alt="" className="w-full h-full object-cover" /></button>
@@ -449,30 +463,30 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
               <ImageCropPreview
                 image={slide.image}
                 exportSize={exportSize}
-                onUpdate={(updates) => onUpdate({ image: { ...slide.image!, ...updates } })}
+                onUpdate={(updates) => updateImage(updates)}
               />
 
               <div className="p-3 bg-surface rounded-lg space-y-2.5">
                 <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">이미지 조절</span>
-                <Range label="X 위치" value={slide.image.posX ?? 0} min={-50} max={50} step={1} onChange={v => onUpdate({ image: { ...slide.image!, posX: v } })} unit="%" />
-                <Range label="Y 위치" value={slide.image.posY ?? 0} min={-50} max={50} step={1} onChange={v => onUpdate({ image: { ...slide.image!, posY: v } })} unit="%" />
-                <Range label="확대/축소" value={slide.image.scale ?? 1} min={0.5} max={2.5} step={0.05} onChange={v => onUpdate({ image: { ...slide.image!, scale: v } })} unit="x" />
-                <Range label="오버레이" value={slide.image.overlayOpacity ?? 0.5} min={0} max={1} step={0.05} onChange={v => onUpdate({ image: { ...slide.image!, overlayOpacity: v } })} />
-                <Range label="둥글기" value={slide.image.borderRadius ?? 0} min={0} max={32} step={1} onChange={v => onUpdate({ image: { ...slide.image!, borderRadius: v } })} unit="px" />
+                <Range label="X 위치" value={slide.image.posX ?? 0} min={-50} max={50} step={1} onChange={v => updateImage({ posX: v })} unit="%" />
+                <Range label="Y 위치" value={slide.image.posY ?? 0} min={-50} max={50} step={1} onChange={v => updateImage({ posY: v })} unit="%" />
+                <Range label="확대/축소" value={slide.image.scale ?? 1} min={0.5} max={2.5} step={0.05} onChange={v => updateImage({ scale: v })} unit="x" />
+                <Range label="오버레이" value={slide.image.overlayOpacity ?? 0.5} min={0} max={1} step={0.05} onChange={v => updateImage({ overlayOpacity: v })} />
+                <Range label="둥글기" value={slide.image.borderRadius ?? 0} min={0} max={32} step={1} onChange={v => updateImage({ borderRadius: v })} unit="px" />
               </div>
 
               {/* Filters */}
               <div className="p-3 bg-surface rounded-lg space-y-2.5">
                 <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">필터 효과</span>
-                <Range label="밝기" value={slide.image.brightness ?? 1} min={0.3} max={2} step={0.05} onChange={v => onUpdate({ image: { ...slide.image!, brightness: v } })} />
-                <Range label="대비" value={slide.image.contrast ?? 1} min={0.3} max={2} step={0.05} onChange={v => onUpdate({ image: { ...slide.image!, contrast: v } })} />
-                <Range label="채도" value={slide.image.saturate ?? 1} min={0} max={3} step={0.05} onChange={v => onUpdate({ image: { ...slide.image!, saturate: v } })} />
-                <Range label="블러" value={slide.image.blur ?? 0} min={0} max={20} step={1} onChange={v => onUpdate({ image: { ...slide.image!, blur: v } })} unit="px" />
-                <Range label="흑백" value={slide.image.grayscale ?? 0} min={0} max={1} step={0.05} onChange={v => onUpdate({ image: { ...slide.image!, grayscale: v } })} />
-                <Range label="세피아" value={slide.image.sepia ?? 0} min={0} max={1} step={0.05} onChange={v => onUpdate({ image: { ...slide.image!, sepia: v } })} />
-                <Range label="색조 회전" value={slide.image.hueRotate ?? 0} min={0} max={360} step={5} onChange={v => onUpdate({ image: { ...slide.image!, hueRotate: v } })} unit="°" />
+                <Range label="밝기" value={slide.image.brightness ?? 1} min={0.3} max={2} step={0.05} onChange={v => updateImage({ brightness: v })} />
+                <Range label="대비" value={slide.image.contrast ?? 1} min={0.3} max={2} step={0.05} onChange={v => updateImage({ contrast: v })} />
+                <Range label="채도" value={slide.image.saturate ?? 1} min={0} max={3} step={0.05} onChange={v => updateImage({ saturate: v })} />
+                <Range label="블러" value={slide.image.blur ?? 0} min={0} max={20} step={1} onChange={v => updateImage({ blur: v })} unit="px" />
+                <Range label="흑백" value={slide.image.grayscale ?? 0} min={0} max={1} step={0.05} onChange={v => updateImage({ grayscale: v })} />
+                <Range label="세피아" value={slide.image.sepia ?? 0} min={0} max={1} step={0.05} onChange={v => updateImage({ sepia: v })} />
+                <Range label="색조 회전" value={slide.image.hueRotate ?? 0} min={0} max={360} step={5} onChange={v => updateImage({ hueRotate: v })} unit="°" />
                 {/* Reset button */}
-                <button onClick={() => onUpdate({ image: { ...slide.image!, brightness: 1, contrast: 1, saturate: 1, blur: 0, grayscale: 0, sepia: 0, hueRotate: 0 } })}
+                <button onClick={() => updateImage({ brightness: 1, contrast: 1, saturate: 1, blur: 0, grayscale: 0, sepia: 0, hueRotate: 0 })}
                   className="w-full py-1.5 rounded-lg text-[10px] text-muted-foreground hover:text-foreground bg-card hover:bg-muted border border-border transition-colors">
                   필터 초기화
                 </button>
