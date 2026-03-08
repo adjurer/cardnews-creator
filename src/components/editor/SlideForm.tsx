@@ -6,6 +6,7 @@ import { LayerPanel } from "./LayerPanel";
 import { FontManager } from "./FontManager";
 import { ImageCropPreview } from "./ImageCropPreview";
 import { OverlayDirectionGrid } from "./OverlayDirectionGrid";
+import { StylePresetPanel } from "./StylePresetPanel";
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 import { useFontStore } from "@/store/useFontStore";
@@ -14,7 +15,7 @@ import {
   Upload, Sparkles, Search, Image as ImageIcon,
   Type, Palette, LayoutTemplate, Layers, TypeIcon,
   AlignLeft, AlignCenter, AlignRight, Minus, Plus, Bold,
-  LayoutGrid, X, Star, ChevronDown, ChevronRight
+  LayoutGrid, X, Star, ChevronDown, ChevronRight, BookMarked
 } from "lucide-react";
 
 interface Props {
@@ -236,6 +237,21 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
               )}>{THEME_LABELS[t]}</button>
           ))}
         </div>
+      </Section>
+
+      {/* ═══ 2.5 STYLE PRESETS ═══ */}
+      <Section title="스타일 프리셋" icon={BookMarked} defaultOpen={false}>
+        <StylePresetPanel
+          slide={slide}
+          onApplyPreset={(updates) => {
+            onUpdate({
+              themePreset: updates.themePreset,
+              ...(updates.typography && { typography: { ...typo, ...updates.typography } }),
+              ...(updates.colors && { colors: { ...colors, ...updates.colors } }),
+              ...(updates.position && { position: { ...pos, ...updates.position } }),
+            });
+          }}
+        />
       </Section>
 
       {/* ═══ 3. LAYOUT ═══ */}
