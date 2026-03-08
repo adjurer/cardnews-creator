@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import type { ElementKey, ElementOverride } from "@/types/project";
+import type { ElementKey } from "@/types/project";
 
 interface Props {
   containerRef: React.RefObject<HTMLDivElement>;
   selectedElement: ElementKey | null;
   onSelectElement: (key: ElementKey | null) => void;
   onUpdateOffset: (key: ElementKey, dx: number, dy: number) => void;
+  onResizeElement?: (key: ElementKey, dw: number, dh: number, handle: string) => void;
   showGrid: boolean;
   showSafeArea: boolean;
   gridSize: number;
@@ -17,14 +18,25 @@ interface ElementRect {
   rect: DOMRect;
 }
 
+type InteractionMode = "idle" | "dragging" | "resizing";
+type ResizeHandle = "n" | "s" | "e" | "w" | "nw" | "ne" | "sw" | "se";
+
+const HANDLE_CURSORS: Record<ResizeHandle, string> = {
+  nw: "nwse-resize", ne: "nesw-resize", sw: "nesw-resize", se: "nwse-resize",
+  n: "ns-resize", s: "ns-resize", e: "ew-resize", w: "ew-resize",
+};
+
 export function CanvasOverlay({
   containerRef, selectedElement, onSelectElement, onUpdateOffset,
-  showGrid, showSafeArea, gridSize, locked = {},
+  onResizeElement, showGrid, showSafeArea, gridSize, locked = {},
 }: Props) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [elements, setElements] = useState<ElementRect[]>([]);
-  const [dragging, setDragging] = useState(false);
+  const [mode, setMode] = useState<InteractionMode>("idle");
+  const [activeHandle, setActiveHandle] = useState<ResizeHandle | null>(null);
   const dragStart = useRef<{ x: number; y: number } | null>(null);
+  const [hoveredElement, setHoveredElement] = useState<ElementKey | null>(null);
+  const [centerGuides, setCenterGuides] = useState<{ h: boolean; v: boolean }>({ h: false, v: false });
 
   const scanElements = useCallback(() => {
     if (!containerRef.current) return;
@@ -63,15 +75,35 @@ export function CanvasOverlay({
     };
   }, [scanElements, containerRef]);
 
+  // Check center alignment guides
+  useEffect(() => {
+    if (!selectedElement || !overlayRef.current) {
+      setCenterGuides({ h: false, v: false });
+      return;
+    }
+    const selEl = elements.find(el => el.key === selectedElement);
+    const overlay = overlayRef.current;
+    if (!selEl || !overlay) return;
+
+    const containerW = overlay.clientWidth;
+    const containerH = overlay.clientHeight;
+    const elCenterX = selEl.rect.x + selEl.rect.width / 2;
+    const elCenterY = selEl.rect.y + selEl.rect.height / 2;
+
+    setCenterGuides({
+      v: Math.abs(elCenterX - containerW / 2) < 3,
+      h: Math.abs(elCenterY - containerH / 2) < 3,
+    });
+  }, [elements, selectedElement]);
+
   const handleClick = (e: React.MouseEvent) => {
-    if (dragging) return;
+    if (mode !== "idle") return;
     const overlay = overlayRef.current;
     if (!overlay) return;
     const overlayRect = overlay.getBoundingClientRect();
     const x = e.clientX - overlayRect.x;
     const y = e.clientY - overlayRect.y;
 
-    // Find clicked element (reverse order = top element first)
     for (let i = elements.length - 1; i >= 0; i--) {
       const el = elements[i];
       if (x >= el.rect.x && x <= el.rect.x + el.rect.width &&
@@ -90,31 +122,64 @@ export function CanvasOverlay({
     const overlayRect = overlayRef.current!.getBoundingClientRect();
     const x = e.clientX - overlayRect.x;
     const y = e.clientY - overlayRect.y;
-    if (x >= selEl.rect.x && x <= selEl.rect.x + selEl.rect.width &&
-        y >= selEl.rect.y && y <= selEl.rect.y + selEl.rect.height) {
+
+    // Check if clicking on a resize handle
+    const handleSize = 6;
+    const r = selEl.rect;
+    const handles: { handle: ResizeHandle; x: number; y: number }[] = [
+      { handle: "nw", x: r.x - 1, y: r.y - 1 },
+      { handle: "ne", x: r.x + r.width + 1, y: r.y - 1 },
+      { handle: "sw", x: r.x - 1, y: r.y + r.height + 1 },
+      { handle: "se", x: r.x + r.width + 1, y: r.y + r.height + 1 },
+      { handle: "n", x: r.x + r.width / 2, y: r.y - 1 },
+      { handle: "s", x: r.x + r.width / 2, y: r.y + r.height + 1 },
+      { handle: "w", x: r.x - 1, y: r.y + r.height / 2 },
+      { handle: "e", x: r.x + r.width + 1, y: r.y + r.height / 2 },
+    ];
+
+    for (const h of handles) {
+      if (Math.abs(x - h.x) <= handleSize && Math.abs(y - h.y) <= handleSize) {
+        setMode("resizing");
+        setActiveHandle(h.handle);
+        dragStart.current = { x: e.clientX, y: e.clientY };
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+    }
+
+    // Check if clicking inside the selected element for drag
+    if (x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height) {
       dragStart.current = { x: e.clientX, y: e.clientY };
-      setDragging(true);
+      setMode("dragging");
       e.preventDefault();
     }
   };
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!dragging || !dragStart.current || !selectedElement) return;
+    if (!dragStart.current || !selectedElement) return;
     const dx = e.clientX - dragStart.current.x;
     const dy = e.clientY - dragStart.current.y;
-    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
+
+    if (mode === "dragging" && (Math.abs(dx) > 1 || Math.abs(dy) > 1)) {
       onUpdateOffset(selectedElement, dx, dy);
       dragStart.current = { x: e.clientX, y: e.clientY };
+    } else if (mode === "resizing" && activeHandle && onResizeElement) {
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+        onResizeElement(selectedElement, dx, dy, activeHandle);
+        dragStart.current = { x: e.clientX, y: e.clientY };
+      }
     }
-  }, [dragging, selectedElement, onUpdateOffset]);
+  }, [mode, selectedElement, activeHandle, onUpdateOffset, onResizeElement]);
 
   const handleMouseUp = useCallback(() => {
-    setDragging(false);
+    setMode("idle");
+    setActiveHandle(null);
     dragStart.current = null;
   }, []);
 
   useEffect(() => {
-    if (dragging) {
+    if (mode !== "idle") {
       window.addEventListener("mousemove", handleMouseMove);
       window.addEventListener("mouseup", handleMouseUp);
       return () => {
@@ -122,7 +187,27 @@ export function CanvasOverlay({
         window.removeEventListener("mouseup", handleMouseUp);
       };
     }
-  }, [dragging, handleMouseMove, handleMouseUp]);
+  }, [mode, handleMouseMove, handleMouseUp]);
+
+  // Hover tracking
+  const handleOverlayMouseMove = (e: React.MouseEvent) => {
+    if (mode !== "idle") return;
+    const overlay = overlayRef.current;
+    if (!overlay) return;
+    const overlayRect = overlay.getBoundingClientRect();
+    const x = e.clientX - overlayRect.x;
+    const y = e.clientY - overlayRect.y;
+
+    for (let i = elements.length - 1; i >= 0; i--) {
+      const el = elements[i];
+      if (x >= el.rect.x && x <= el.rect.x + el.rect.width &&
+          y >= el.rect.y && y <= el.rect.y + el.rect.height) {
+        setHoveredElement(el.key);
+        return;
+      }
+    }
+    setHoveredElement(null);
+  };
 
   // Arrow key nudging
   useEffect(() => {
@@ -145,18 +230,26 @@ export function CanvasOverlay({
   }, [selectedElement, locked, onUpdateOffset]);
 
   const selectedRect = elements.find(el => el.key === selectedElement);
+  const getCursor = () => {
+    if (mode === "dragging") return "grabbing";
+    if (mode === "resizing" && activeHandle) return HANDLE_CURSORS[activeHandle];
+    if (hoveredElement && selectedElement === hoveredElement) return "grab";
+    if (hoveredElement) return "pointer";
+    return "default";
+  };
 
   return (
     <div
       ref={overlayRef}
       className="absolute inset-0 z-10"
-      style={{ cursor: dragging ? "grabbing" : "default" }}
+      style={{ cursor: getCursor() }}
       onClick={handleClick}
       onMouseDown={handleMouseDown}
+      onMouseMove={handleOverlayMouseMove}
     >
       {/* Grid */}
       {showGrid && (
-        <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20">
+        <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-15">
           <defs>
             <pattern id="grid" width={gridSize} height={gridSize} patternUnits="userSpaceOnUse">
               <path d={`M ${gridSize} 0 L 0 0 0 ${gridSize}`} fill="none" stroke="hsl(var(--primary))" strokeWidth="0.5" />
@@ -168,17 +261,36 @@ export function CanvasOverlay({
 
       {/* Safe area */}
       {showSafeArea && (
-        <div className="absolute pointer-events-none" style={{ inset: "8%", border: "1px dashed hsl(var(--warning) / 0.5)" }}>
-          <div className="absolute -top-4 left-0 text-[8px] text-warning/50">Safe Area</div>
+        <div className="absolute pointer-events-none" style={{ inset: "8%", border: "1px dashed hsl(var(--warning) / 0.4)" }}>
+          <div className="absolute -top-4 left-0 text-[7px] text-warning/50 font-medium">Safe Area</div>
         </div>
+      )}
+
+      {/* Center guides */}
+      {selectedElement && centerGuides.v && (
+        <div className="absolute pointer-events-none top-0 bottom-0" style={{ left: "50%", width: "1px", background: "hsl(var(--primary) / 0.6)" }} />
+      )}
+      {selectedElement && centerGuides.h && (
+        <div className="absolute pointer-events-none left-0 right-0" style={{ top: "50%", height: "1px", background: "hsl(var(--primary) / 0.6)" }} />
       )}
 
       {/* Hover highlights */}
       {elements.map(el => {
         if (el.key === selectedElement) return null;
+        const isHov = el.key === hoveredElement;
         return (
-          <div key={el.key} className="absolute pointer-events-none border border-transparent hover:border-primary/30 transition-colors"
-            style={{ left: el.rect.x, top: el.rect.y, width: el.rect.width, height: el.rect.height }} />
+          <div key={el.key} className="absolute pointer-events-none transition-all"
+            style={{
+              left: el.rect.x, top: el.rect.y, width: el.rect.width, height: el.rect.height,
+              border: isHov ? "1px solid hsl(var(--primary) / 0.4)" : "1px solid transparent",
+              background: isHov ? "hsl(var(--primary) / 0.03)" : undefined,
+            }}>
+            {isHov && (
+              <div className="absolute -top-4 left-0 px-1 py-0.5 bg-muted text-[7px] text-muted-foreground font-medium rounded whitespace-nowrap">
+                {el.key}
+              </div>
+            )}
+          </div>
         );
       })}
 
@@ -193,18 +305,34 @@ export function CanvasOverlay({
           borderRadius: "2px",
         }}>
           {/* Corner handles */}
-          {["nw", "ne", "sw", "se"].map(pos => (
-            <div key={pos} className="absolute w-2 h-2 bg-primary rounded-sm pointer-events-auto"
+          {(["nw", "ne", "sw", "se"] as ResizeHandle[]).map(pos => (
+            <div key={pos} className="absolute w-2.5 h-2.5 bg-primary rounded-[2px] pointer-events-auto border border-primary-foreground/30"
               style={{
-                cursor: `${pos}-resize`,
-                ...(pos.includes("n") ? { top: -4 } : { bottom: -4 }),
-                ...(pos.includes("w") ? { left: -4 } : { right: -4 }),
+                cursor: HANDLE_CURSORS[pos],
+                ...(pos.includes("n") ? { top: -5 } : { bottom: -5 }),
+                ...(pos.includes("w") ? { left: -5 } : { right: -5 }),
+              }}
+            />
+          ))}
+          {/* Edge handles */}
+          {(["n", "s", "e", "w"] as ResizeHandle[]).map(pos => (
+            <div key={pos} className="absolute bg-primary rounded-[1px] pointer-events-auto border border-primary-foreground/30"
+              style={{
+                cursor: HANDLE_CURSORS[pos],
+                ...(pos === "n" ? { top: -3, left: "50%", transform: "translateX(-50%)", width: 12, height: 4 } : {}),
+                ...(pos === "s" ? { bottom: -3, left: "50%", transform: "translateX(-50%)", width: 12, height: 4 } : {}),
+                ...(pos === "e" ? { right: -3, top: "50%", transform: "translateY(-50%)", width: 4, height: 12 } : {}),
+                ...(pos === "w" ? { left: -3, top: "50%", transform: "translateY(-50%)", width: 4, height: 12 } : {}),
               }}
             />
           ))}
           {/* Label */}
-          <div className="absolute -top-5 left-0 px-1 py-0.5 bg-primary text-primary-foreground text-[8px] font-semibold rounded whitespace-nowrap">
+          <div className="absolute -top-5 left-0 px-1.5 py-0.5 bg-primary text-primary-foreground text-[7px] font-semibold rounded whitespace-nowrap">
             {selectedRect.key}
+          </div>
+          {/* Size info */}
+          <div className="absolute -bottom-4 right-0 px-1 py-0.5 bg-muted text-[6px] text-muted-foreground rounded whitespace-nowrap tabular-nums">
+            {Math.round(selectedRect.rect.width)}×{Math.round(selectedRect.rect.height)}
           </div>
         </div>
       )}

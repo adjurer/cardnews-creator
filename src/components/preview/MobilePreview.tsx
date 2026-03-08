@@ -13,6 +13,7 @@ interface Props {
   exportSize: ExportSize;
   onElementSelect?: (key: ElementKey | null) => void;
   onUpdateElementOffset?: (key: ElementKey, dx: number, dy: number) => void;
+  onResizeElement?: (key: ElementKey, dw: number, dh: number, handle: string) => void;
 }
 
 export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize, onElementSelect, onUpdateElementOffset, onResizeElement }: Props) {
