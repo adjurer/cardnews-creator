@@ -115,6 +115,23 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
     }
   }, [selectedElement]);
 
+  useEffect(() => {
+    if (editorTab !== "image") return;
+    if (!slide.image?.url) return;
+    if (slide.elementOverrides?.image?.hidden !== true) return;
+
+    const currentOverrides = slide.elementOverrides || {};
+    onUpdate({
+      elementOverrides: {
+        ...currentOverrides,
+        image: {
+          ...(currentOverrides.image || {}),
+          hidden: false,
+        },
+      },
+    });
+  }, [editorTab, slide.image?.url, slide.elementOverrides?.image?.hidden, slide.elementOverrides, onUpdate]);
+
   const TABS: { id: EditorTab; label: string; icon: any }[] = [
     { id: "text", label: "텍스트", icon: Type },
     { id: "style", label: "스타일", icon: Palette },
