@@ -137,31 +137,55 @@ export default function EditorPage() {
       const currentScale = img.scale ?? 1;
       const delta = (handle.includes("e") || handle.includes("w")) ? dw * 0.002 : dh * 0.002;
       updateSlide(slide.id, { image: { ...img, scale: Math.max(1, Math.min(3, currentScale + delta)) } });
-    } else {
-      // Per-element font size map
-      const sizeMap: Record<string, { field: string; fallback: number; min: number; max: number }> = {
-        title:       { field: "titleSize",       fallback: 28, min: 14, max: 80 },
-        highlight:   { field: "highlightSize",   fallback: typo.bodySize ?? 16, min: 10, max: 80 },
-        subtitle:    { field: "subtitleSize",     fallback: (typo.bodySize ?? 16) + 2, min: 10, max: 60 },
-        category:    { field: "categorySize",     fallback: 12, min: 8, max: 48 },
-        body:        { field: "bodySize",          fallback: 16, min: 8, max: 60 },
-        bullets:     { field: "bulletSize",        fallback: (typo.bodySize ?? 16) - 1, min: 8, max: 48 },
-        cta:         { field: "ctaSize",           fallback: typo.bodySize ?? 16, min: 10, max: 80 },
-        sourceLabel: { field: "sourceLabelSize",   fallback: 11, min: 8, max: 36 },
-      };
-      const cfg = sizeMap[key];
-      if (cfg) {
-        const currentSize = (typo as any)[cfg.field] ?? cfg.fallback;
-        // For inline elements like highlight, use the larger delta axis
-        const rawDelta = key === "highlight" || key === "cta" 
-          ? (Math.abs(dw) > Math.abs(dh) ? dw * 0.5 : dh * 0.5)
-          : dh * 0.5;
-        const delta = Math.round(rawDelta);
-        if (delta !== 0) {
-          const newSize = Math.max(cfg.min, Math.min(cfg.max, currentSize + delta));
-          updateSlide(slide.id, { typography: { ...typo, [cfg.field]: newSize } });
-        }
+      return;
+    }
+
+    const sizeMap: Record<string, { field: string; fallback: number; min: number; max: number }> = {
+      title:       { field: "titleSize",       fallback: 28, min: 14, max: 80 },
+      highlight:   { field: "highlightSize",   fallback: typo.bodySize ?? 16, min: 10, max: 80 },
+      subtitle:    { field: "subtitleSize",     fallback: (typo.bodySize ?? 16) + 2, min: 10, max: 60 },
+      category:    { field: "categorySize",     fallback: 12, min: 8, max: 48 },
+      body:        { field: "bodySize",          fallback: 16, min: 8, max: 60 },
+      bullets:     { field: "bulletSize",        fallback: (typo.bodySize ?? 16) - 1, min: 8, max: 48 },
+      cta:         { field: "ctaSize",           fallback: typo.bodySize ?? 16, min: 10, max: 80 },
+      sourceLabel: { field: "sourceLabelSize",   fallback: 11, min: 8, max: 36 },
+    };
+
+    const cfg = sizeMap[key];
+    const isHorizontal = handle.includes("e") || handle.includes("w");
+    const isVertical = handle.includes("n") || handle.includes("s");
+    const updates: any = {};
+
+    // Horizontal resize => per-element box width (independent from text size)
+    if (isHorizontal) {
+      const [canvasW] = currentProject.exportPreset.size.split("x").map(Number);
+      const currentOverride = slide.elementOverrides?.[key] || {};
+      const currentWidth = currentOverride.boxWidth ?? 100;
+      const deltaPct = (dw / canvasW) * 100;
+      const nextWidth = Math.max(10, Math.min(100, Math.round(currentWidth + deltaPct)));
+
+      if (nextWidth !== currentWidth) {
+        updates.elementOverrides = {
+          ...slide.elementOverrides,
+          [key]: { ...currentOverride, boxWidth: nextWidth },
+        };
       }
+    }
+
+    // Vertical resize (or corner handles) => font size
+    if (cfg && (!isHorizontal || isVertical)) {
+      const currentSize = (typo as any)[cfg.field] ?? cfg.fallback;
+      const rawDelta = dh * 0.5;
+      const delta = Math.round(rawDelta);
+
+      if (delta !== 0) {
+        const newSize = Math.max(cfg.min, Math.min(cfg.max, currentSize + delta));
+        updates.typography = { ...typo, [cfg.field]: newSize };
+      }
+    }
+
+    if (Object.keys(updates).length > 0) {
+      updateSlide(slide.id, updates);
     }
   }, [currentProject, currentSlideIndex, updateSlide]);
 
