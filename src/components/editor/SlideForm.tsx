@@ -240,14 +240,26 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
 
       {/* ═══ 3. LAYOUT ═══ */}
       <Section title="레이아웃" icon={LayoutTemplate} defaultOpen={true}>
-        {/* Text align */}
-        <div className="flex gap-1 mb-3">
-          {([{ value: "left" as TextAlign, icon: AlignLeft }, { value: "center" as TextAlign, icon: AlignCenter }, { value: "right" as TextAlign, icon: AlignRight }]).map(a => (
-            <button key={a.value} onClick={() => onUpdate({ textAlign: a.value })}
-              className={cn("flex-1 py-2 rounded-lg flex items-center justify-center transition-all",
-                slide.textAlign === a.value ? "bg-primary/20 text-primary" : "bg-surface text-muted-foreground"
-              )}><a.icon className="w-4 h-4" /></button>
-          ))}
+        {/* 3x3 alignment grid */}
+        <div>
+          <span className="text-[10px] text-muted-foreground mb-1.5 block">콘텐츠 정렬</span>
+          <div className="inline-grid grid-cols-3 gap-0.5 p-1 bg-surface rounded-lg border border-border">
+            {(["start-left", "start-center", "start-right",
+              "center-left", "center-center", "center-right",
+              "end-left", "end-center", "end-right"] as const).map(combo => {
+              const [vAlign, hAlign] = combo.split("-") as ["start" | "center" | "end", "left" | "center" | "right"];
+              const isActive = (pos.contentAlign || "center") === vAlign && slide.textAlign === hAlign;
+              return (
+                <button key={combo}
+                  onClick={() => { updatePos({ contentAlign: vAlign }); onUpdate({ textAlign: hAlign }); }}
+                  className={cn("w-7 h-7 rounded flex items-center justify-center transition-all",
+                    isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                  )}>
+                  <div className={cn("w-2 h-2 rounded-sm", isActive ? "bg-primary-foreground" : "bg-current")} />
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Layout type grid */}
@@ -258,19 +270,6 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
                 slide.layoutType === l.value ? "bg-primary/20 text-primary border border-primary/40" : "bg-surface text-muted-foreground border border-transparent"
               )}>{l.label}</button>
           ))}
-        </div>
-
-        {/* Vertical alignment */}
-        <div className="pt-2 border-t border-border">
-          <span className="text-[10px] text-muted-foreground mb-1 block">세로 정렬</span>
-          <div className="flex gap-1">
-            {(["start", "center", "end"] as const).map(a => (
-              <button key={a} onClick={() => updatePos({ contentAlign: a })}
-                className={cn("flex-1 py-1.5 rounded-lg text-[10px] font-medium",
-                  (pos.contentAlign || "center") === a ? "bg-primary/20 text-primary" : "bg-surface text-muted-foreground"
-                )}>{a === "start" ? "상단" : a === "center" ? "중앙" : "하단"}</button>
-            ))}
-          </div>
         </div>
       </Section>
 
