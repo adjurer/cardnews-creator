@@ -27,31 +27,38 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
   const scale = image.scale ?? 1;
 
   // --- Viewport calculation ---
-  // The viewport rectangle should have the SAME aspect ratio as the export (e.g., 4:5)
-  // and represent the visible portion of the image in the final render.
+  // The viewport must visually maintain the export aspect ratio within the image container.
+  // At scale=1 with background-size: cover behavior:
+  // - If image is wider than export: full height visible, width cropped
+  // - If image is taller than export: full width visible, height cropped
 
-  // At scale=1, the image covers the frame (background-size: cover behavior).
-  // baseW/baseH = image dimensions as % of frame when scale=1
-  const baseW = imgAspect > exportAspect ? (imgAspect / exportAspect) * 100 : 100;
-  const baseH = imgAspect > exportAspect ? 100 : (exportAspect / imgAspect) * 100;
+  // Calculate viewport dimensions as percentages of the image
+  let vpWImg: number;
+  let vpHImg: number;
 
-  // Scaled image size (as % of frame)
-  const bgW = baseW * scale;
-  const bgH = baseH * scale;
+  if (imgAspect > exportAspect) {
+    // Image is wider: full height at scale=1, width is proportionally less
+    vpHImg = Math.min(100, 100 / scale);
+    vpWImg = Math.min(100, vpHImg * (exportAspect / imgAspect));
+  } else {
+    // Image is taller: full width at scale=1, height is proportionally less
+    vpWImg = Math.min(100, 100 / scale);
+    vpHImg = Math.min(100, vpWImg * (imgAspect / exportAspect));
+  }
 
-  // Viewport size in image-space %:
-  // The viewport is the frame (100% of export), mapped back to image coordinates.
-  // Since image is bgW% x bgH% of frame, the visible portion is (100/bgW)% x (100/bgH)% of image.
-  const vpWImg = Math.max(0.01, Math.min(100, (100 / bgW) * 100));
-  const vpHImg = Math.max(0.01, Math.min(100, (100 / bgH) * 100));
+  // Clamp to valid range
+  vpWImg = Math.max(0.01, vpWImg);
+  vpHImg = Math.max(0.01, vpHImg);
 
   // Position: posX/posY range is -50..50, maps to background-position 0..100%
   const pX = (50 + posX) / 100;
   const pY = (50 + posY) / 100;
 
   // Viewport left/top in image-space %
-  const vpLeftImg = Math.max(0, Math.min(100 - vpWImg, pX * (100 - vpWImg)));
-  const vpTopImg = Math.max(0, Math.min(100 - vpHImg, pY * (100 - vpHImg)));
+  const maxLeftOffset = Math.max(0, 100 - vpWImg);
+  const maxTopOffset = Math.max(0, 100 - vpHImg);
+  const vpLeftImg = pX * maxLeftOffset;
+  const vpTopImg = pY * maxTopOffset;
 
   const handleImgLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
