@@ -183,3 +183,28 @@ export const MOCK_IMAGE_RESULTS = [
   "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=500&fit=crop",
   "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=400&h=500&fit=crop",
 ];
+
+// Mock AI keyword news search results
+export const MOCK_KEYWORD_NEWS: Record<string, { id: string; title: string; source: string; date: string; summary: string; relevance: number }[]> = {
+  "AI": [
+    { id: "kn-1", title: "생성형 AI, 2025년 기업 도입률 78% 돌파", source: "MIT Technology Review", date: "2025-12-10", summary: "글로벌 기업의 78%가 생성형 AI를 업무에 도입했으며, 특히 마케팅과 고객 서비스 분야에서 활용이 급증했다.", relevance: 0.97 },
+    { id: "kn-2", title: "AI 에이전트 시대 개막… 자율형 소프트웨어의 미래", source: "The Verge", date: "2025-12-09", summary: "단순 챗봇을 넘어 스스로 판단하고 행동하는 AI 에이전트가 실제 업무 현장에 투입되기 시작했다.", relevance: 0.94 },
+    { id: "kn-3", title: "오픈소스 AI 모델, 상용 모델과 격차 좁혀", source: "Ars Technica", date: "2025-12-08", summary: "Llama 4, Mistral Large 등 오픈소스 모델이 GPT-5급 성능에 근접하면서 AI 민주화가 가속화되고 있다.", relevance: 0.91 },
+    { id: "kn-4", title: "AI 규제 프레임워크, EU·한국·미국 3국 비교", source: "로이터", date: "2025-12-07", summary: "각국의 AI 규제 접근법이 달라 글로벌 기업들의 컴플라이언스 전략이 복잡해지고 있다.", relevance: 0.85 },
+  ],
+  "마케팅": [
+    { id: "kn-5", title: "2025 콘텐츠 마케팅 트렌드: 숏폼에서 롱폼으로 회귀", source: "HubSpot Blog", date: "2025-12-10", summary: "숏폼 콘텐츠 포화 속에서 심층 콘텐츠와 뉴스레터가 다시 주목받고 있다.", relevance: 0.96 },
+    { id: "kn-6", title: "인플루언서 마케팅 ROI, 전통 광고 대비 3배", source: "Forbes", date: "2025-12-08", summary: "마이크로 인플루언서 중심의 마케팅이 브랜드 신뢰도와 전환율 모두에서 높은 성과를 보이고 있다.", relevance: 0.92 },
+    { id: "kn-7", title: "퍼스트파티 데이터 전략이 마케팅의 핵심으로", source: "AdAge", date: "2025-12-06", summary: "서드파티 쿠키 폐지 이후 자사 데이터 기반 타겟팅이 마케팅 성패를 좌우하고 있다.", relevance: 0.88 },
+  ],
+  "스타트업": [
+    { id: "kn-8", title: "Y Combinator 2025 겨울 배치, AI 스타트업 60% 차지", source: "TechCrunch", date: "2025-12-10", summary: "YC 최신 배치에서 AI 관련 스타트업이 역대 최고 비율을 기록했다.", relevance: 0.95 },
+    { id: "kn-9", title: "한국 스타트업 해외 진출 성공 사례 급증", source: "플래텀", date: "2025-12-09", summary: "일본, 동남아 시장을 중심으로 한국 SaaS 스타트업의 해외 매출이 크게 늘고 있다.", relevance: 0.90 },
+    { id: "kn-10", title: "시리즈A 투자, AI·헬스케어에 집중", source: "CB Insights", date: "2025-12-07", summary: "2025년 시리즈A 투자의 45%가 AI, 30%가 헬스케어 분야에 집중되었다.", relevance: 0.87 },
+  ],
+  "크리에이터": [
+    { id: "kn-11", title: "1인 크리에이터 평균 수익, 전년 대비 40% 증가", source: "크리에이터 이코노미 리포트", date: "2025-12-10", summary: "멤버십, 디지털 상품, 브랜드 딜 등 수익 다변화가 크리에이터 수익 성장을 이끌고 있다.", relevance: 0.96 },
+    { id: "kn-12", title: "AI 도구로 콘텐츠 제작 시간 60% 단축", source: "Creator Economy Weekly", date: "2025-12-08", summary: "영상 편집, 썸네일 생성, 자막 작업 등에서 AI 도구 활용이 보편화되고 있다.", relevance: 0.93 },
+    { id: "kn-13", title: "유튜브·틱톡 크리에이터 펀드 정책 변화 비교", source: "Social Media Today", date: "2025-12-06", summary: "플랫폼별 크리에이터 보상 정책이 변화하면서 멀티 플랫폼 전략이 필수가 되고 있다.", relevance: 0.89 },
+  ],
+};

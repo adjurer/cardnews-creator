@@ -1,21 +1,24 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, FileText, Link, Newspaper, Rss, BookOpen } from "lucide-react";
+import { ArrowLeft, FileText, Link, Newspaper, Rss, BookOpen, Search, Loader2 } from "lucide-react";
 import { useProjectStore } from "@/store/useProjectStore";
 import { generateId } from "@/lib/utils/helpers";
-import { MOCK_NEWS, MOCK_FEEDS, MOCK_EXAMPLES } from "@/mocks/data";
+import { MOCK_NEWS, MOCK_FEEDS, MOCK_EXAMPLES, MOCK_KEYWORD_NEWS } from "@/mocks/data";
 import { cn } from "@/lib/utils";
 import type { Project, SourceType } from "@/types/project";
 
-type Tab = "text" | "example" | "news" | "feed" | "url";
+type Tab = "text" | "example" | "news" | "feed" | "url" | "keyword";
 
 const TABS: { id: Tab; label: string; icon: any }[] = [
   { id: "text", label: "텍스트 붙여넣기", icon: FileText },
+  { id: "keyword", label: "키워드 뉴스 검색", icon: Search },
   { id: "example", label: "예시로 시작하기", icon: BookOpen },
   { id: "news", label: "오늘의 뉴스", icon: Newspaper },
   { id: "feed", label: "피드에서 선택", icon: Rss },
   { id: "url", label: "URL 가져오기", icon: Link },
 ];
+
+const SUGGESTED_KEYWORDS = ["AI", "마케팅", "스타트업", "크리에이터"];
 
 export default function CreateProjectPage() {
   const navigate = useNavigate();
@@ -27,6 +30,46 @@ export default function CreateProjectPage() {
   const [selectedFeedEntries, setSelectedFeedEntries] = useState<string[]>([]);
   const [selectedExample, setSelectedExample] = useState<string | null>(null);
 
+  // Keyword search state
+  const [keywordInput, setKeywordInput] = useState("");
+  const [keywordResults, setKeywordResults] = useState<typeof MOCK_KEYWORD_NEWS["AI"]>([]);
+  const [keywordSearching, setKeywordSearching] = useState(false);
+  const [keywordSearched, setKeywordSearched] = useState(false);
+  const [selectedKeywordNews, setSelectedKeywordNews] = useState<string[]>([]);
+
+  const handleKeywordSearch = async () => {
+    if (!keywordInput.trim()) return;
+    setKeywordSearching(true);
+    setKeywordSearched(false);
+    setSelectedKeywordNews([]);
+    // Simulate AI search delay
+    await new Promise(r => setTimeout(r, 1200));
+    // Find matching mock results or generate fallback
+    const key = Object.keys(MOCK_KEYWORD_NEWS).find(k =>
+      keywordInput.includes(k) || k.includes(keywordInput.trim())
+    );
+    setKeywordResults(key ? MOCK_KEYWORD_NEWS[key] : [
+      {
+        id: `kn-gen-1`,
+        title: `"${keywordInput}" 관련 최신 동향 분석`,
+        source: "AI 뉴스 수집기",
+        date: new Date().toISOString().slice(0, 10),
+        summary: `"${keywordInput}" 키워드와 관련된 최신 뉴스와 트렌드를 AI가 수집하여 정리한 결과입니다. 해당 분야의 주요 변화와 시사점을 카드뉴스로 만들어보세요.`,
+        relevance: 0.90,
+      },
+      {
+        id: `kn-gen-2`,
+        title: `${keywordInput}: 2025년 핵심 트렌드 5가지`,
+        source: "트렌드 분석 AI",
+        date: new Date().toISOString().slice(0, 10),
+        summary: `올해 ${keywordInput} 분야에서 가장 주목할 만한 5가지 트렌드를 정리했습니다. 전문가 의견과 데이터를 기반으로 분석한 결과입니다.`,
+        relevance: 0.85,
+      },
+    ]);
+    setKeywordSearching(false);
+    setKeywordSearched(true);
+  };
+
   const canGenerate = () => {
     switch (activeTab) {
       case "text": return textInput.trim().length > 10;
@@ -34,6 +77,7 @@ export default function CreateProjectPage() {
       case "news": return selectedNews.length > 0;
       case "feed": return selectedFeedEntries.length > 0;
       case "example": return selectedExample !== null;
+      case "keyword": return selectedKeywordNews.length > 0;
     }
   };
 
@@ -55,13 +99,16 @@ export default function CreateProjectPage() {
         const ex = MOCK_EXAMPLES.find(e => e.id === selectedExample);
         return { sourceType: "example", content: ex?.slides.map(s => `${s.title}. ${s.body || ""}`).join("\n") || "", title: ex?.title };
       }
+      case "keyword": {
+        const items = keywordResults.filter(n => selectedKeywordNews.includes(n.id));
+        return { sourceType: "news", content: items.map(n => `${n.title}. ${n.summary}`).join("\n"), title: items[0]?.title };
+      }
     }
   };
 
   const handleGenerate = () => {
     if (!canGenerate()) return;
     const source = getSourceContent();
-    // Store source info in sessionStorage for generation page
     sessionStorage.setItem("generation-source", JSON.stringify(source));
     setGenerationStatus("generating");
     setGenerationStep(0);
@@ -106,6 +153,116 @@ export default function CreateProjectPage() {
               placeholder="블로그 글, 기사, 메모 등 원본 텍스트를 여기에 붙여넣으세요. 최소 10자 이상 입력해주세요."
               className="w-full h-64 bg-surface rounded-lg p-4 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary/50 border border-border"
             />
+          )}
+
+          {activeTab === "keyword" && (
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <input
+                  value={keywordInput}
+                  onChange={e => setKeywordInput(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleKeywordSearch()}
+                  placeholder="관심 키워드를 입력하세요 (예: AI, 마케팅, 스타트업)"
+                  className="flex-1 bg-surface rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 border border-border"
+                />
+                <button
+                  onClick={handleKeywordSearch}
+                  disabled={!keywordInput.trim() || keywordSearching}
+                  className={cn(
+                    "px-5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors",
+                    keywordInput.trim() && !keywordSearching
+                      ? "bg-primary text-primary-foreground hover:opacity-90"
+                      : "bg-muted text-muted-foreground cursor-not-allowed"
+                  )}
+                >
+                  {keywordSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                  {keywordSearching ? "검색 중..." : "AI 뉴스 검색"}
+                </button>
+              </div>
+
+              {/* Suggested keywords */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-muted-foreground">추천:</span>
+                {SUGGESTED_KEYWORDS.map(kw => (
+                  <button
+                    key={kw}
+                    onClick={() => { setKeywordInput(kw); }}
+                    className="px-3 py-1 rounded-full text-xs bg-surface border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+                  >
+                    {kw}
+                  </button>
+                ))}
+              </div>
+
+              {/* Searching state */}
+              {keywordSearching && (
+                <div className="flex flex-col items-center justify-center py-12 gap-3">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  <p className="text-sm text-muted-foreground">AI가 "{keywordInput}" 관련 뉴스를 수집하고 있습니다...</p>
+                </div>
+              )}
+
+              {/* Results */}
+              {keywordSearched && !keywordSearching && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs text-muted-foreground">{keywordResults.length}개의 관련 뉴스를 찾았습니다</p>
+                    {keywordResults.length > 0 && (
+                      <button
+                        onClick={() => {
+                          if (selectedKeywordNews.length === keywordResults.length) {
+                            setSelectedKeywordNews([]);
+                          } else {
+                            setSelectedKeywordNews(keywordResults.map(r => r.id));
+                          }
+                        }}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        {selectedKeywordNews.length === keywordResults.length ? "전체 해제" : "전체 선택"}
+                      </button>
+                    )}
+                  </div>
+                  {keywordResults.map(news => (
+                    <label
+                      key={news.id}
+                      className={cn(
+                        "flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all",
+                        selectedKeywordNews.includes(news.id) ? "border-primary bg-primary/10" : "border-border bg-surface hover:border-muted-foreground/30"
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedKeywordNews.includes(news.id)}
+                        onChange={() => {
+                          setSelectedKeywordNews(prev =>
+                            prev.includes(news.id) ? prev.filter(id => id !== news.id) : [...prev, news.id]
+                          );
+                        }}
+                        className="mt-1 accent-primary"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs px-1.5 py-0.5 rounded bg-primary/20 text-primary">관련도 {Math.round(news.relevance * 100)}%</span>
+                          <span className="text-xs text-muted-foreground">{news.source}</span>
+                          <span className="text-xs text-muted-foreground">{news.date}</span>
+                        </div>
+                        <h3 className="text-sm font-medium text-foreground mt-1">{news.title}</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">{news.summary}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              {/* Empty state */}
+              {!keywordSearching && !keywordSearched && (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <Search className="w-10 h-10 text-muted-foreground/40 mb-3" />
+                  <p className="text-sm text-muted-foreground">키워드를 입력하면 AI가 관련 뉴스를 수집합니다</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">수집된 뉴스를 선택해 카드뉴스로 만들 수 있습니다</p>
+                </div>
+              )}
+            </div>
           )}
 
           {activeTab === "example" && (

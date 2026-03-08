@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Plus, LayoutGrid, Rss, Settings, Sparkles } from "lucide-react";
+import { Plus, LayoutGrid, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
