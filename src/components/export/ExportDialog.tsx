@@ -29,11 +29,17 @@ export function ExportDialog({ project, currentSlideIndex, onClose }: Props) {
   const [size, setSize] = useState<ExportSize>(project.exportPreset.size);
   const [exporting, setExporting] = useState(false);
   const [tab, setTab] = useState<"download" | "instagram">("download");
-
-  // Instagram fields
   const [igCaption, setIgCaption] = useState("");
-  const [igAccessToken, setIgAccessToken] = useState("");
-  const [igUserId, setIgUserId] = useState("");
+
+  const { user } = useAuth();
+  const { accounts, activeAccountId, fetchAccounts, setActiveAccount, getActiveAccount } = useInstagramStore();
+  const [showAccountSelector, setShowAccountSelector] = useState(false);
+
+  useEffect(() => {
+    if (user) fetchAccounts();
+  }, [user]);
+
+  const selectedIgAccount = getActiveAccount();
 
   const [w, h] = size.split("x").map(Number);
   const slug = slugify(project.title) || "cardnews";
