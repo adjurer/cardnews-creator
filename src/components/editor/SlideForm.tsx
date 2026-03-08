@@ -485,26 +485,51 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
                 onUpdate={(updates) => updateImage(updates)}
               />
 
+              {/* Position & Scale */}
               <div className="p-3 bg-surface rounded-lg space-y-2.5">
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">이미지 조절</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">위치 / 크기</span>
                 <Range label="X 위치" value={slide.image.posX ?? 0} min={-50} max={50} step={1} onChange={v => updateImage({ posX: v })} unit="%" />
                 <Range label="Y 위치" value={slide.image.posY ?? 0} min={-50} max={50} step={1} onChange={v => updateImage({ posY: v })} unit="%" />
                 <Range label="확대/축소" value={slide.image.scale ?? 1} min={0.5} max={2.5} step={0.05} onChange={v => updateImage({ scale: v })} unit="x" />
-                <Range label="오버레이" value={slide.image.overlayOpacity ?? 0.5} min={0} max={1} step={0.05} onChange={v => updateImage({ overlayOpacity: v })} />
+              </div>
+
+              {/* Overlay */}
+              <div className="p-3 bg-surface rounded-lg space-y-2.5">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">오버레이</span>
+                <Range label="투명도" value={slide.image.overlayOpacity ?? 0.5} min={0} max={1} step={0.05} onChange={v => updateImage({ overlayOpacity: v })} />
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-muted-foreground">오버레이 방향</span>
+                  <span className="text-[10px] text-muted-foreground">방향</span>
                   <OverlayDirectionGrid value={slide.image.overlayDirection ?? "center"} onChange={v => updateImage({ overlayDirection: v })} />
                 </div>
-                <Range label="오버레이 블러" value={slide.image.overlayBlur ?? 0} min={0} max={40} step={1} onChange={v => updateImage({ overlayBlur: v })} unit="px" />
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground">범위</span>
+                    <span className="text-[10px] text-muted-foreground">{(slide.image.overlayRange ?? [0, 70])[0]}% – {(slide.image.overlayRange ?? [0, 70])[1]}%</span>
+                  </div>
+                  <Slider
+                    value={slide.image.overlayRange ?? [0, 70]}
+                    min={0}
+                    max={100}
+                    step={5}
+                    onValueChange={(v) => updateImage({ overlayRange: v as [number, number] })}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              {/* Blur */}
+              <div className="p-3 bg-surface rounded-lg space-y-2.5">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">블러</span>
+                <Range label="강도" value={slide.image.overlayBlur ?? 0} min={0} max={40} step={1} onChange={v => updateImage({ overlayBlur: v })} unit="px" />
                 {(slide.image.overlayBlur ?? 0) > 0 && (
                   <>
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-muted-foreground">블러 방향</span>
+                      <span className="text-[10px] text-muted-foreground">방향</span>
                       <OverlayDirectionGrid value={slide.image.overlayBlurDirection ?? "center"} onChange={v => updateImage({ overlayBlurDirection: v })} />
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-muted-foreground">블러 범위</span>
+                        <span className="text-[10px] text-muted-foreground">범위</span>
                         <span className="text-[10px] text-muted-foreground">{(slide.image.overlayBlurRange ?? [0, 30])[0]}% – {(slide.image.overlayBlurRange ?? [0, 30])[1]}%</span>
                       </div>
                       <Slider
@@ -518,7 +543,6 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
                     </div>
                   </>
                 )}
-                <Range label="둥글기" value={slide.image.borderRadius ?? 0} min={0} max={32} step={1} onChange={v => updateImage({ borderRadius: v })} unit="px" />
               </div>
 
               {/* Filters */}
