@@ -448,7 +448,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
               {/* Visual crop/viewport tool */}
               <ImageCropPreview
                 image={slide.image}
-                exportSize={slide.image.url ? undefined : undefined}
+                exportSize={exportSize}
                 onUpdate={(updates) => onUpdate({ image: { ...slide.image!, ...updates } })}
               />
 
