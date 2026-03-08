@@ -307,8 +307,9 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         ...bodyStyle, ...elementStyle(slide, "body"),
         whiteSpace: "pre-wrap",
         margin: 0, padding: 0,
-        display: "inline-block", width: "fit-content",
-        maxWidth: getOverride(slide, "body").boxWidth ? `${getOverride(slide, "body").boxWidth}%` : "100%",
+        display: "inline-block",
+        width: getOverride(slide, "body").boxWidth ? `${getOverride(slide, "body").boxWidth}%` : "fit-content",
+        maxWidth: "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.body}</p>
     );
