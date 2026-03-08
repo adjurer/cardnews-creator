@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Slide, SourceType, ThemePreset } from "@/types/project";
+import type { Slide, SourceType, ThemePreset, Storyboard } from "@/types/project";
 
 export interface CardNewsGenerationResult {
   title: string;
