@@ -21,6 +21,7 @@ export interface SlideImage {
   overlayOpacity?: number;
   overlayDirection?: OverlayDirection;
   overlayBlur?: number;
+  overlayBlurDirection?: OverlayDirection;
   borderRadius?: number;
   blur?: number;
   brightness?: number;

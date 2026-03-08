@@ -495,6 +495,12 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
                   <OverlayDirectionGrid value={slide.image.overlayDirection ?? "center"} onChange={v => updateImage({ overlayDirection: v })} />
                 </div>
                 <Range label="오버레이 블러" value={slide.image.overlayBlur ?? 0} min={0} max={40} step={1} onChange={v => updateImage({ overlayBlur: v })} unit="px" />
+                {(slide.image.overlayBlur ?? 0) > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground">블러 방향</span>
+                    <OverlayDirectionGrid value={slide.image.overlayBlurDirection ?? "center"} onChange={v => updateImage({ overlayBlurDirection: v })} />
+                  </div>
+                )}
                 <Range label="둥글기" value={slide.image.borderRadius ?? 0} min={0} max={32} step={1} onChange={v => updateImage({ borderRadius: v })} unit="px" />
               </div>
 
