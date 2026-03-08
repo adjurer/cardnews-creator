@@ -358,7 +358,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Center-title / Cover */}
         {(slide.layoutType === "center-title" || slide.type === "cover") && (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", gap: isExport ? "12px" : "6px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", gap: 0 }}>
             {renderHighlight()}
             {renderTitle(800)}
             {renderSubtitle()}
