@@ -95,6 +95,7 @@ export interface ElementOverride {
   boxBgOpacity?: number;
   boxPadding?: number;
   boxRadius?: number;
+  boxWidth?: number;     // per-element max-width in % (0-100)
   locked?: boolean;
   hidden?: boolean;
   zIndex?: number;
