@@ -7,7 +7,7 @@ export type ExportSize = "1080x1350" | "1080x1080" | "1080x1920";
 export type TextAlign = "left" | "center" | "right";
 export type ImageMode = "upload" | "generate" | "search";
 
-export type ElementKey = "category" | "title" | "subtitle" | "highlight" | "body" | "bullets" | "cta" | "sourceLabel" | "image";
+export type ElementKey = "category" | "title" | "subtitle" | "highlight" | "body" | "bullets" | "cta" | "sourceLabel" | "image" | "logo";
 
 export interface SlideImage {
   mode: ImageMode;
