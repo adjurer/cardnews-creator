@@ -137,15 +137,15 @@ export default function EditorPage() {
       const currentScale = img.scale ?? 1;
       const delta = (handle.includes("e") || handle.includes("w")) ? dw * 0.002 : dh * 0.002;
       updateSlide(slide.id, { image: { ...img, scale: Math.max(1, Math.min(3, currentScale + delta)) } });
-    } else if (key === "title" || key === "highlight" || key === "subtitle" || key === "category") {
+    } else if (key === "title" || key === "highlight") {
       const currentSize = typo.titleSize ?? 28;
-      // Use vertical delta for font size, ~1px font change per 2px content-space drag
       const delta = Math.round(dh * 0.5);
       if (delta !== 0) {
         const newSize = Math.max(12, Math.min(72, currentSize + delta));
         updateSlide(slide.id, { typography: { ...typo, titleSize: newSize } });
       }
     } else {
+      // subtitle, category, body, bullets, cta, sourceLabel → bodySize
       const currentSize = typo.bodySize ?? 16;
       const delta = Math.round(dh * 0.5);
       if (delta !== 0) {
