@@ -6,7 +6,6 @@ import { useThemeStore, type ThemeMode } from "@/store/useThemeStore";
 const NAV_ITEMS = [
   { icon: Plus, label: "만들기", path: "/create" },
   { icon: LayoutGrid, label: "작업 목록", path: "/dashboard" },
-  { icon: Settings, label: "설정", path: "/settings" },
 ];
 
 const THEME_CYCLE: { mode: ThemeMode; icon: typeof Sun; label: string }[] = [
