@@ -1,18 +1,18 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProjectStore } from "@/store/useProjectStore";
-import { defaultProvider } from "@/lib/ai/mockProvider";
+import { generateCardNews } from "@/lib/ai/aiService";
 import { generateId } from "@/lib/utils/helpers";
 import { MOCK_EXAMPLES } from "@/mocks/data";
 import { Check, Loader2, AlertCircle, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Project } from "@/types/project";
+import type { Project, SourceType } from "@/types/project";
 
 const STEPS = [
   { label: "입력 준비", desc: "소스 데이터를 정리하고 있습니다" },
   { label: "입력 분석", desc: "핵심 내용을 파악하고 있습니다" },
   { label: "핵심 포인트 추출", desc: "카드뉴스에 적합한 포인트를 선별합니다" },
-  { label: "카드 구조 생성", desc: "슬라이드 구조를 만들고 있습니다" },
+  { label: "카드 구조 생성", desc: "AI가 슬라이드를 구성하고 있습니다" },
   { label: "편집 화면 준비", desc: "거의 완료되었습니다" },
 ];
 
@@ -37,14 +37,18 @@ export default function GenerationProgressPage() {
 
   const runGeneration = async (source: { sourceType: string; content: string; title?: string }) => {
     try {
-      for (let i = 0; i < STEPS.length - 1; i++) {
-        setGenerationStep(i);
-        await new Promise(r => setTimeout(r, 700 + Math.random() * 500));
-      }
+      // Step 0: 입력 준비
+      setGenerationStep(0);
+      await new Promise(r => setTimeout(r, 500));
 
+      // Handle example source type with mock data
       if (source.sourceType === "example") {
         const ex = MOCK_EXAMPLES.find(e => e.title === source.title);
         if (ex) {
+          for (let i = 1; i < STEPS.length - 1; i++) {
+            setGenerationStep(i);
+            await new Promise(r => setTimeout(r, 600));
+          }
           const project: Project = {
             id: generateId(),
             title: ex.title,
@@ -66,19 +70,30 @@ export default function GenerationProgressPage() {
         }
       }
 
-      const result = await defaultProvider.generate({
-        sourceType: source.sourceType as any,
-        content: source.content,
-        title: source.title,
-      });
+      // Step 1: 입력 분석
+      setGenerationStep(1);
 
+      // Call real AI - this does steps 2-3 on the server
+      const result = await generateCardNews(
+        source.sourceType as SourceType,
+        source.content,
+        source.title
+      );
+
+      // Step 2-3: show progress while AI processes
+      setGenerationStep(2);
+      await new Promise(r => setTimeout(r, 300));
+      setGenerationStep(3);
+      await new Promise(r => setTimeout(r, 300));
+
+      // Step 4: 편집 화면 준비
       setGenerationStep(4);
       await new Promise(r => setTimeout(r, 400));
 
       const project: Project = {
         id: generateId(),
         title: result.title,
-        sourceType: source.sourceType as any,
+        sourceType: source.sourceType as SourceType,
         sourceInput: source.content.slice(0, 200),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -92,7 +107,8 @@ export default function GenerationProgressPage() {
       setGenerationStatus("done");
       sessionStorage.removeItem("generation-source");
       navigate(`/editor/${project.id}`);
-    } catch {
+    } catch (e) {
+      console.error("Generation error:", e);
       setGenerationStatus("error");
     }
   };
@@ -102,17 +118,15 @@ export default function GenerationProgressPage() {
   return (
     <div className="h-full flex items-center justify-center p-8">
       <div className="w-full max-w-sm animate-fade-in">
-        {/* Icon */}
         <div className="flex justify-center mb-6">
           <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
             <Sparkles className="w-7 h-7 text-primary" />
           </div>
         </div>
 
-        <h2 className="text-lg font-bold text-foreground mb-1 text-center">카드뉴스 생성 중</h2>
-        <p className="text-xs text-muted-foreground mb-8 text-center">AI가 콘텐츠를 분석하고 있습니다</p>
+        <h2 className="text-lg font-bold text-foreground mb-1 text-center">AI가 카드뉴스를 만들고 있어요</h2>
+        <p className="text-xs text-muted-foreground mb-8 text-center">잠시만 기다려주세요</p>
 
-        {/* Progress bar */}
         <div className="w-full h-1 bg-surface rounded-full mb-8 overflow-hidden">
           <div
             className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
@@ -120,10 +134,9 @@ export default function GenerationProgressPage() {
           />
         </div>
 
-        {/* Steps */}
         <div className="space-y-3">
           {STEPS.map((step, i) => {
-            const isActive = generationStep === i && generationStatus === "generating";
+            const isActive = generationStep === i && generationStatus !== "done" && generationStatus !== "error";
             const isDone = generationStep > i || generationStatus === "done";
             return (
               <div key={i} className={cn(
