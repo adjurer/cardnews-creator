@@ -145,25 +145,27 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
   const renderImage = () => {
     if (!imageUrl) return null;
     if (isHidden(slide, "image")) return null;
-    if (slide.layoutType === "image-overlay") {
-      return (
-        <>
-          <div data-element="image" onClick={eClick("image")} style={{
-            ...elementStyle(slide, "image"),
-            position: "absolute", inset: 0,
-            backgroundImage: `url(${imageUrl})`,
-            backgroundSize: "cover",
-            backgroundPosition: `${50 + (slide.image?.posX || 0)}% ${50 + (slide.image?.posY || 0)}%`,
-            transform: `scale(${imgScale})`,
-            borderRadius: imgBorderRadius,
-            filter: imageFilter,
-            cursor: onElementClick ? "pointer" : undefined,
-          }} />
-          <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayOpacity})`, pointerEvents: "none" }} />
-        </>
-      );
-    }
-    return null;
+
+    // For title-image layout, image is rendered inline (handled separately)
+    if (slide.layoutType === "title-image") return null;
+
+    // Background image for all other layouts (overlay, center-title, title-body, etc.)
+    return (
+      <>
+        <div data-element="image" onClick={eClick("image")} style={{
+          ...elementStyle(slide, "image"),
+          position: "absolute", inset: 0,
+          backgroundImage: `url(${imageUrl})`,
+          backgroundSize: "cover",
+          backgroundPosition: `${50 + (slide.image?.posX || 0)}% ${50 + (slide.image?.posY || 0)}%`,
+          transform: `scale(${imgScale})`,
+          borderRadius: imgBorderRadius,
+          filter: imageFilter,
+          cursor: onElementClick ? "pointer" : undefined,
+        }} />
+        <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayOpacity})`, pointerEvents: "none" }} />
+      </>
+    );
   };
 
   const renderCategory = () => {
