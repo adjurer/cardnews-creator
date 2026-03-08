@@ -447,8 +447,8 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
 
       </Section>
 
-      {/* ═══ 7. LAYERS (collapsed by default) ═══ */}
-      <Section title="레이어" icon={Layers} defaultOpen={false}>
+      {/* ═══ 7. LAYERS ═══ */}
+      <Section title="레이어" icon={Layers} defaultOpen={true}>
         <LayerPanel
           slide={slide}
           selectedElement={selectedElement}
