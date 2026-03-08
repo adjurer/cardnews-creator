@@ -24,7 +24,7 @@ const ELEMENT_DEFS: { key: ElementKey; label: string; icon: any; getContent: (s:
   { key: "sourceLabel", label: "출처", icon: Quote, getContent: s => s.sourceLabel },
 ];
 
-export function LayerPanel({ slide, selectedElement, onSelectElement, onUpdateOverride }: Props) {
+export function LayerPanel({ slide, selectedElement, onSelectElement, onUpdateOverride, onBatchUpdateOverrides }: Props) {
   const overrides = slide.elementOverrides || {};
   const [dragKey, setDragKey] = useState<ElementKey | null>(null);
   const [dropIdx, setDropIdx] = useState<number | null>(null);
