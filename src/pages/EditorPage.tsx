@@ -38,6 +38,7 @@ export default function EditorPage() {
   const [aiProcessing, setAiProcessing] = useState(false);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const [canvasScale, setCanvasScale] = useState(1);
+  const [showStoryboard, setShowStoryboard] = useState(false);
 
   useEffect(() => { useFontStore.getState().loadFonts(); }, []);
 
