@@ -1,9 +1,9 @@
 import { useRef, useCallback } from "react";
 import { SlideRenderer } from "./SlideRenderer";
 import { CanvasOverlay } from "@/components/canvas/CanvasOverlay";
-import { ChevronLeft, ChevronRight, Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Grid3X3, Shield, Ruler } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Grid3X3, Shield, Ruler, Columns } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useUiStore } from "@/store/useUiStore";
+import { useUiStore, MARGIN_VALUES, type MarginGuide } from "@/store/useUiStore";
 import type { Slide, ExportSize, ElementKey, ElementOverride } from "@/types/project";
 
 interface Props {
@@ -16,9 +16,11 @@ interface Props {
   onResizeElement?: (key: ElementKey, dw: number, dh: number, handle: string) => void;
 }
 
+const MARGIN_LABELS: Record<MarginGuide, string> = { none: "없음", narrow: "좁게", normal: "보통", wide: "넓게" };
+
 export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize, onElementSelect, onUpdateElementOffset, onResizeElement }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { selectedElement, setSelectedElement, showGrid, showSafeArea, showRuler, gridSize, toggleGrid, toggleSafeArea, toggleRuler } = useUiStore();
+  const { selectedElement, setSelectedElement, showGrid, showSafeArea, showRuler, gridSize, marginGuide, toggleGrid, toggleSafeArea, toggleRuler, setMarginGuide } = useUiStore();
 
   const handleElementSelect = useCallback((key: ElementKey | null) => {
     setSelectedElement(key);
@@ -33,6 +35,7 @@ export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize,
   if (!slide) return null;
 
   const [w, h] = exportSize.split("x").map(Number);
+  const marginPct = MARGIN_VALUES[marginGuide];
 
   const lockedMap: Record<string, boolean> = {};
   if (slide.elementOverrides) {
@@ -40,6 +43,12 @@ export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize,
       if (v?.locked) lockedMap[k] = true;
     });
   }
+
+  const cycleMargin = () => {
+    const order: MarginGuide[] = ["none", "narrow", "normal", "wide"];
+    const idx = order.indexOf(marginGuide);
+    setMarginGuide(order[(idx + 1) % order.length]);
+  };
 
   return (
     <div className="flex flex-col items-center w-full max-w-[320px]">
@@ -53,6 +62,11 @@ export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize,
         </button>
         <button onClick={toggleRuler} className={cn("p-1.5 rounded-md text-[10px] transition-all", showRuler ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-surface")}>
           <Ruler className="w-3.5 h-3.5" />
+        </button>
+        <button onClick={cycleMargin} className={cn("p-1.5 rounded-md text-[10px] transition-all flex items-center gap-0.5", marginGuide !== "none" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-surface")}
+          title={`여백 가이드: ${MARGIN_LABELS[marginGuide]}`}>
+          <Columns className="w-3.5 h-3.5" />
+          <span className="text-[8px]">{MARGIN_LABELS[marginGuide]}</span>
         </button>
         {selectedElement && (
           <span className="text-[9px] text-primary font-semibold ml-2 bg-primary/10 px-2 py-0.5 rounded">{selectedElement}</span>
@@ -99,6 +113,19 @@ export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize,
                 ))}
               </div>
             </>
+          )}
+
+          {/* Margin guide */}
+          {marginGuide !== "none" && (
+            <div className="absolute pointer-events-none z-20" style={{
+              inset: `${marginPct}%`,
+              border: "1px dashed hsl(var(--primary) / 0.25)",
+              borderRadius: "2px",
+            }}>
+              <div className="absolute -top-3.5 left-0 text-[6px] text-primary/40 font-medium">
+                여백 {MARGIN_LABELS[marginGuide]} ({marginPct}%)
+              </div>
+            </div>
           )}
 
           <SlideRenderer

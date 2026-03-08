@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useProjectStore } from "@/store/useProjectStore";
-import { useUiStore } from "@/store/useUiStore";
+import { useUiStore, MARGIN_VALUES } from "@/store/useUiStore";
 import { useFontStore } from "@/store/useFontStore";
 import { MobilePreview } from "@/components/preview/MobilePreview";
 import { SlideForm } from "@/components/editor/SlideForm";
@@ -24,7 +24,7 @@ export default function EditorPage() {
     updateSlide, addSlide, deleteSlide, moveSlide, duplicateSlide,
     undo, redo,
   } = useProjectStore();
-  const { exportDialogOpen, setExportDialogOpen, selectedElement, setSelectedElement } = useUiStore();
+  const { exportDialogOpen, setExportDialogOpen, selectedElement, setSelectedElement, marginGuide } = useUiStore();
   const [regenerating, setRegenerating] = useState(false);
 
   // Load fonts on mount
@@ -81,35 +81,43 @@ export default function EditorPage() {
     if (!currentProject) return;
     const slide = currentProject.slides[currentSlideIndex];
     const current = slide.elementOverrides?.[key] || {};
+    const newX = (current.offsetX || 0) + dx;
+    const newY = (current.offsetY || 0) + dy;
+    // Clamp based on margin guide — tighter margin = tighter bounds
+    const marginPct = MARGIN_VALUES[marginGuide];
+    const maxOffset = marginGuide === "none" ? 100 : Math.max(20, 80 - marginPct * 3);
+    const clampedX = Math.max(-maxOffset, Math.min(maxOffset, newX));
+    const clampedY = Math.max(-maxOffset, Math.min(maxOffset, newY));
     updateSlide(slide.id, {
       elementOverrides: {
         ...slide.elementOverrides,
-        [key]: { ...current, offsetX: (current.offsetX || 0) + dx, offsetY: (current.offsetY || 0) + dy },
+        [key]: { ...current, offsetX: clampedX, offsetY: clampedY },
       },
     });
-  }, [currentProject, currentSlideIndex, updateSlide]);
+  }, [currentProject, currentSlideIndex, updateSlide, marginGuide]);
 
   const handleResizeElement = useCallback((key: ElementKey, dw: number, dh: number, handle: string) => {
     if (!currentProject) return;
     const slide = currentProject.slides[currentSlideIndex];
+    const typo = slide.typography || {};
 
-    // For text elements, resize adjusts typography/position
     if (key === "image") {
       const img = slide.image || { mode: "upload" as const, url: "" };
       const currentScale = img.scale ?? 1;
       const scaleDelta = (handle.includes("e") || handle.includes("w")) ? dw * 0.005 : dh * 0.005;
       updateSlide(slide.id, { image: { ...img, scale: Math.max(0.3, Math.min(3, currentScale + scaleDelta)) } });
+    } else if (key === "title" || key === "highlight" || key === "subtitle" || key === "category") {
+      // Resize adjusts title font size
+      const currentSize = typo.titleSize ?? 28;
+      const delta = Math.round(dh * 0.15);
+      const newSize = Math.max(12, Math.min(72, currentSize + delta));
+      updateSlide(slide.id, { typography: { ...typo, titleSize: newSize } });
     } else {
-      // For text elements, adjust box padding as proxy for size
-      const current = slide.elementOverrides?.[key] || {};
-      const currentPadding = current.boxPadding ?? 0;
-      const paddingDelta = Math.round(dh * 0.3);
-      updateSlide(slide.id, {
-        elementOverrides: {
-          ...slide.elementOverrides,
-          [key]: { ...current, boxPadding: Math.max(0, currentPadding + paddingDelta) },
-        },
-      });
+      // body, bullets, cta, sourceLabel → adjust body font size
+      const currentSize = typo.bodySize ?? 16;
+      const delta = Math.round(dh * 0.15);
+      const newSize = Math.max(8, Math.min(40, currentSize + delta));
+      updateSlide(slide.id, { typography: { ...typo, bodySize: newSize } });
     }
   }, [currentProject, currentSlideIndex, updateSlide]);
 
