@@ -72,6 +72,14 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
     const current = slide.elementOverrides || {};
     onUpdate({ elementOverrides: { ...current, [key]: { ...current[key], ...u } } });
   };
+  const batchUpdateOverrides = (updates: Record<ElementKey, Partial<ElementOverride>>) => {
+    const current = slide.elementOverrides || {};
+    const merged = { ...current };
+    for (const [key, u] of Object.entries(updates)) {
+      merged[key as ElementKey] = { ...merged[key as ElementKey], ...u };
+    }
+    onUpdate({ elementOverrides: merged });
+  };
 
   const updateImage = (u: Partial<SlideImage>) => {
     const currentImage = (slide.image || { mode: "upload", url: "" }) as SlideImage;
