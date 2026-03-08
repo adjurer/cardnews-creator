@@ -261,8 +261,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         ...elementStyle(slide, "highlight"), ...highlightStyle,
         margin: 0,
         display: "inline-block",
-        width: highlightOvr.boxWidth ? `${highlightOvr.boxWidth}%` : "fit-content",
-        maxWidth: "100%",
+        width: highlightOvr.boxWidth ? `${highlightOvr.boxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.highlight}</span>
     );
