@@ -325,7 +325,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Title-body / Title-image */}
         {(slide.layoutType === "title-body" || slide.layoutType === "title-image") && slide.type !== "cover" && (
-            <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: isExport ? "12px" : "6px" }}>
             {renderHighlight()}
             {renderTitle()}
             {renderSubtitle()}
