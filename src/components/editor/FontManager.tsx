@@ -85,19 +85,20 @@ export function FontManager({ titleFont, bodyFont, onSetTitleFont, onSetBodyFont
         폰트 파일 업로드 (.otf, .ttf, .woff2)
       </button>
 
-      {/* Title font */}
-      <div className="space-y-1.5">
-        <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">제목 폰트</span>
-        <div className="space-y-1 max-h-[180px] overflow-y-auto scrollbar-thin">
-          {allFonts.map(f => <FontCard key={`t-${f.id}`} font={f} isTitle />)}
+      {/* Title & Body fonts side by side */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">제목 폰트</span>
+          <div className="space-y-1 max-h-[280px] overflow-y-auto scrollbar-thin">
+            {allFonts.map(f => <FontCard key={`t-${f.id}`} font={f} isTitle />)}
+          </div>
         </div>
-      </div>
 
-      {/* Body font */}
-      <div className="space-y-1.5">
-        <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">본문 폰트</span>
-        <div className="space-y-1 max-h-[180px] overflow-y-auto scrollbar-thin">
-          {allFonts.map(f => <FontCard key={`b-${f.id}`} font={f} isTitle={false} />)}
+        <div className="space-y-1.5">
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">본문 폰트</span>
+          <div className="space-y-1 max-h-[280px] overflow-y-auto scrollbar-thin">
+            {allFonts.map(f => <FontCard key={`b-${f.id}`} font={f} isTitle={false} />)}
+          </div>
         </div>
       </div>
 
