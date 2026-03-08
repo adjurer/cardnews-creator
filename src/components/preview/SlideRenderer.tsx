@@ -277,7 +277,9 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         ...titleStyle, ...elementStyle(slide, "title"),
         fontWeight: typo.titleWeight ?? defaultWeight ?? 700,
         margin: 0, padding: 0,
-        display: "inline-block", width: "fit-content", maxWidth: titleMaxW,
+        display: "inline-block",
+        width: titleOvr.boxWidth ? `${titleOvr.boxWidth}%` : "fit-content",
+        maxWidth: titleBoxWidth < 100 ? `${titleBoxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.title}</h2>
     );
