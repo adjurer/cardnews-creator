@@ -198,6 +198,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
           const dir = slide.image?.overlayDirection ?? "center";
           const overlayBlur = slide.image?.overlayBlur ?? 0;
           const blurDir = slide.image?.overlayBlurDirection ?? "center";
+          const blurRange = slide.image?.overlayBlurRange ?? [0, 30];
           const colorStr = `rgba(0,0,0,${overlayOpacity})`;
           let bg: string;
           if (dir === "center") {
@@ -206,18 +207,15 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
             bg = OVERLAY_GRADIENT_MAP[dir].replace(/COLOR/g, colorStr);
           }
 
-          // Blur mask: short range (30% for edges, 50% for center)
-          const BLUR_MASK_MAP: Record<OverlayDirection, string> = {
-            "top-left": "linear-gradient(135deg, white 0%, transparent 30%)",
-            "top-center": "linear-gradient(180deg, white 0%, transparent 30%)",
-            "top-right": "linear-gradient(225deg, white 0%, transparent 30%)",
-            "center-left": "linear-gradient(90deg, white 0%, transparent 30%)",
-            "center": "radial-gradient(ellipse at center, white 0%, transparent 50%)",
-            "center-right": "linear-gradient(270deg, white 0%, transparent 30%)",
-            "bottom-left": "linear-gradient(45deg, white 0%, transparent 30%)",
-            "bottom-center": "linear-gradient(0deg, white 0%, transparent 30%)",
-            "bottom-right": "linear-gradient(315deg, white 0%, transparent 30%)",
+          const DEG_MAP: Record<OverlayDirection, string> = {
+            "top-left": "135deg", "top-center": "180deg", "top-right": "225deg",
+            "center-left": "90deg", "center": "", "center-right": "270deg",
+            "bottom-left": "45deg", "bottom-center": "0deg", "bottom-right": "315deg",
           };
+
+          const blurMask = blurDir === "center"
+            ? `radial-gradient(ellipse at center, white ${blurRange[0]}%, transparent ${blurRange[1]}%)`
+            : `linear-gradient(${DEG_MAP[blurDir]}, white ${blurRange[0]}%, transparent ${blurRange[1]}%)`;
 
           return (
             <>
@@ -227,8 +225,8 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
                   position: "absolute", inset: 0,
                   backdropFilter: `blur(${overlayBlur}px)`,
                   WebkitBackdropFilter: `blur(${overlayBlur}px)`,
-                  WebkitMaskImage: BLUR_MASK_MAP[blurDir],
-                  maskImage: BLUR_MASK_MAP[blurDir],
+                  WebkitMaskImage: blurMask,
+                  maskImage: blurMask,
                   pointerEvents: "none",
                 }} />
               )}
