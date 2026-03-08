@@ -105,19 +105,30 @@ export default function EditorPage() {
     const current = slide.elementOverrides?.[key] || {};
     const newX = (current.offsetX || 0) + dx;
     const newY = (current.offsetY || 0) + dy;
-    // Allow movement up to the margin boundary (percentage-based)
-    // marginPct is the inset %, so maxOffset allows full range minus margin
-    const marginPct = MARGIN_VALUES[marginGuide];
-    const maxOffset = marginGuide === "none" ? 200 : Math.max(100, 200 - marginPct * 2);
-    const clampedX = Math.max(-maxOffset, Math.min(maxOffset, newX));
-    const clampedY = Math.max(-maxOffset, Math.min(maxOffset, newY));
+
+    // Calculate max offset based on actual preview dimensions
+    const [w, h] = currentProject.exportPreset.size.split("x").map(Number);
+    const previewW = w * canvasScale;
+    const previewH = h * canvasScale;
+    const marginFraction = MARGIN_VALUES[marginGuide] / 100;
+
+    // Allow movement within the slide area minus margin
+    // Elements start at their natural CSS position, offset shifts from there
+    // Limit to ~45% of preview size (minus margin) so elements stay visible
+    const maxFractionX = marginGuide === "none" ? 0.45 : Math.max(0.1, 0.45 - marginFraction);
+    const maxFractionY = marginGuide === "none" ? 0.45 : Math.max(0.1, 0.45 - marginFraction);
+    const maxOffsetX = previewW * maxFractionX;
+    const maxOffsetY = previewH * maxFractionY;
+
+    const clampedX = Math.max(-maxOffsetX, Math.min(maxOffsetX, newX));
+    const clampedY = Math.max(-maxOffsetY, Math.min(maxOffsetY, newY));
     updateSlide(slide.id, {
       elementOverrides: {
         ...slide.elementOverrides,
         [key]: { ...current, offsetX: clampedX, offsetY: clampedY },
       },
     });
-  }, [currentProject, currentSlideIndex, updateSlide, marginGuide]);
+  }, [currentProject, currentSlideIndex, updateSlide, marginGuide, canvasScale]);
 
   const handleResizeElement = useCallback((key: ElementKey, dw: number, dh: number, handle: string) => {
     if (!currentProject) return;
