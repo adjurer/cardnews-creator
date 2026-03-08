@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Eye, EyeOff, Lock, Unlock, GripVertical, Type, Image as ImageIcon, Tag, Quote, ListOrdered, MousePointer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Slide, ElementKey, ElementOverride } from "@/types/project";
@@ -27,46 +27,52 @@ const ELEMENT_DEFS: { key: ElementKey; label: string; icon: any; getContent: (s:
 export function LayerPanel({ slide, selectedElement, onSelectElement, onUpdateOverride, onBatchUpdateOverrides }: Props) {
   const overrides = slide.elementOverrides || {};
   const [dragKey, setDragKey] = useState<ElementKey | null>(null);
-  const [dropIdx, setDropIdx] = useState<number | null>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+  // dropLine = insertion index (line appears BEFORE this index)
+  const [dropLine, setDropLine] = useState<number | null>(null);
 
   const visibleElements = ELEMENT_DEFS.filter(e => {
     const content = e.getContent(slide);
     return content !== undefined && content !== "";
   });
 
-  // Sort by zIndex descending (higher = top of list)
   const sorted = [...visibleElements].sort((a, b) => {
     const zA = overrides[a.key]?.zIndex ?? 0;
     const zB = overrides[b.key]?.zIndex ?? 0;
     return zB - zA;
   });
 
-  const handleDragStart = useCallback((key: ElementKey) => {
+  const handleDragStart = useCallback((e: React.DragEvent, key: ElementKey) => {
     setDragKey(key);
+    e.dataTransfer.effectAllowed = "move";
   }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent, idx: number) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
-    setDropIdx(idx);
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    setDropLine(e.clientY < midY ? idx : idx + 1);
   }, []);
 
-  const handleDrop = useCallback((targetIdx: number) => {
-    if (dragKey === null) return;
+  const handleDrop = useCallback(() => {
+    if (dragKey === null || dropLine === null) {
+      setDragKey(null);
+      setDropLine(null);
+      return;
+    }
     const fromIdx = sorted.findIndex(e => e.key === dragKey);
+    let targetIdx = dropLine;
+    if (fromIdx < targetIdx) targetIdx -= 1;
     if (fromIdx === targetIdx || fromIdx < 0) {
       setDragKey(null);
-      setDropIdx(null);
+      setDropLine(null);
       return;
     }
 
-    // Reorder the array
     const newOrder = [...sorted];
     const [moved] = newOrder.splice(fromIdx, 1);
     newOrder.splice(targetIdx, 0, moved);
 
-    // Batch assign new zIndex values: top of list gets highest
     const batch: Record<string, Partial<ElementOverride>> = {};
     newOrder.forEach((el, i) => {
       batch[el.key] = { zIndex: (newOrder.length - 1 - i) * 10 };
@@ -74,13 +80,21 @@ export function LayerPanel({ slide, selectedElement, onSelectElement, onUpdateOv
     onBatchUpdateOverrides(batch as Record<ElementKey, Partial<ElementOverride>>);
 
     setDragKey(null);
-    setDropIdx(null);
-  }, [dragKey, sorted, onUpdateOverride]);
+    setDropLine(null);
+  }, [dragKey, dropLine, sorted, onBatchUpdateOverrides]);
 
   const handleDragEnd = useCallback(() => {
     setDragKey(null);
-    setDropIdx(null);
+    setDropLine(null);
   }, []);
+
+  const handleDragLeave = useCallback(() => {
+    setDropLine(null);
+  }, []);
+
+  const DropIndicator = () => (
+    <div className="h-[2px] bg-primary rounded-full mx-2 my-[-1px] relative z-10" />
+  );
 
   return (
     <div className="space-y-1">
@@ -88,53 +102,56 @@ export function LayerPanel({ slide, selectedElement, onSelectElement, onUpdateOv
         <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">레이어</span>
         <span className="text-[9px] text-muted-foreground">{sorted.length}개 요소</span>
       </div>
-      <div ref={listRef}>
+      <div onDragLeave={handleDragLeave}>
         {sorted.map((el, idx) => {
           const ovr = overrides[el.key] || {};
           const isSelected = selectedElement === el.key;
           const isHidden = ovr.hidden;
           const isLocked = ovr.locked;
           const isDragging = dragKey === el.key;
-          const isDropTarget = dropIdx === idx && dragKey !== el.key;
           const Icon = el.icon;
+          const showLineBefore = dropLine === idx && dragKey !== null && dragKey !== el.key;
 
           return (
-            <div
-              key={el.key}
-              draggable
-              onDragStart={() => handleDragStart(el.key)}
-              onDragOver={(e) => handleDragOver(e, idx)}
-              onDrop={() => handleDrop(idx)}
-              onDragEnd={handleDragEnd}
-              onClick={() => onSelectElement(isSelected ? null : el.key)}
-              className={cn(
-                "flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-all group text-[11px] border border-transparent",
-                isSelected ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-surface hover:text-foreground",
-                isHidden && "opacity-40",
-                isDragging && "opacity-30",
-                isDropTarget && "border-primary/50 bg-primary/5"
-              )}
-            >
-              <GripVertical className="w-3 h-3 shrink-0 opacity-40 group-hover:opacity-100 cursor-grab active:cursor-grabbing" />
-              <Icon className="w-3 h-3 shrink-0" />
-              <span className="flex-1 truncate font-medium">{el.label}</span>
+            <div key={el.key}>
+              {showLineBefore && <DropIndicator />}
+              <div
+                draggable
+                onDragStart={(e) => handleDragStart(e, el.key)}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDrop={handleDrop}
+                onDragEnd={handleDragEnd}
+                onClick={() => onSelectElement(isSelected ? null : el.key)}
+                className={cn(
+                  "flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors group text-[11px]",
+                  isSelected ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-surface hover:text-foreground",
+                  isHidden && "opacity-40",
+                  isDragging && "opacity-30",
+                )}
+              >
+                <GripVertical className="w-3 h-3 shrink-0 opacity-40 group-hover:opacity-100 cursor-grab active:cursor-grabbing" />
+                <Icon className="w-3 h-3 shrink-0" />
+                <span className="flex-1 truncate font-medium">{el.label}</span>
 
-              <button
-                onClick={(e) => { e.stopPropagation(); onUpdateOverride(el.key, { locked: !isLocked }); }}
-                className={cn("w-5 h-5 flex items-center justify-center rounded hover:bg-muted/50",
-                  isLocked ? "text-warning" : "text-muted-foreground/40 opacity-0 group-hover:opacity-100"
-                )}
-              >
-                {isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); onUpdateOverride(el.key, { hidden: !isHidden }); }}
-                className={cn("w-5 h-5 flex items-center justify-center rounded hover:bg-muted/50",
-                  isHidden ? "text-destructive" : "text-muted-foreground/40 opacity-0 group-hover:opacity-100"
-                )}
-              >
-                {isHidden ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-              </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onUpdateOverride(el.key, { locked: !isLocked }); }}
+                  className={cn("w-5 h-5 flex items-center justify-center rounded hover:bg-muted/50",
+                    isLocked ? "text-warning" : "text-muted-foreground/40 opacity-0 group-hover:opacity-100"
+                  )}
+                >
+                  {isLocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onUpdateOverride(el.key, { hidden: !isHidden }); }}
+                  className={cn("w-5 h-5 flex items-center justify-center rounded hover:bg-muted/50",
+                    isHidden ? "text-destructive" : "text-muted-foreground/40 opacity-0 group-hover:opacity-100"
+                  )}
+                >
+                  {isHidden ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                </button>
+              </div>
+              {/* Show line after last item */}
+              {idx === sorted.length - 1 && dropLine === sorted.length && dragKey !== null && <DropIndicator />}
             </div>
           );
         })}
