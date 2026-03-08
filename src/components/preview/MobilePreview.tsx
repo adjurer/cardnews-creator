@@ -13,9 +13,10 @@ interface Props {
   exportSize: ExportSize;
   onElementSelect?: (key: ElementKey | null) => void;
   onUpdateElementOffset?: (key: ElementKey, dx: number, dy: number) => void;
+  onResizeElement?: (key: ElementKey, dw: number, dh: number, handle: string) => void;
 }
 
-export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize, onElementSelect, onUpdateElementOffset }: Props) {
+export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize, onElementSelect, onUpdateElementOffset, onResizeElement }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { selectedElement, setSelectedElement, showGrid, showSafeArea, showRuler, gridSize, toggleGrid, toggleSafeArea, toggleRuler } = useUiStore();
 
@@ -113,6 +114,7 @@ export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize,
             selectedElement={selectedElement}
             onSelectElement={handleElementSelect}
             onUpdateOffset={handleUpdateOffset}
+            onResizeElement={onResizeElement}
             showGrid={showGrid}
             showSafeArea={showSafeArea}
             gridSize={gridSize}
