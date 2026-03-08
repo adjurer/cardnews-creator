@@ -355,9 +355,10 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         return (
           <div data-element="logo" onClick={eClick("logo")} style={{
             ...posStyle,
+            width: logoW,
             cursor: onElementClick ? "pointer" : undefined,
           }}>
-            <img src={logo.url} alt="Logo" style={{ width: logoW, height: "auto", display: "block", pointerEvents: "none" }} />
+            <img src={logo.url} alt="Logo" style={{ width: "100%", height: "auto", display: "block", pointerEvents: "none" }} />
           </div>
         );
       })()}
