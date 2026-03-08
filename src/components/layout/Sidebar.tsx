@@ -24,9 +24,9 @@ export function Sidebar() {
   const nextTheme = THEME_CYCLE[(THEME_CYCLE.findIndex(t => t.mode === mode) + 1) % THEME_CYCLE.length];
 
   return (
-    <div className="flex flex-col items-center w-[56px] min-w-[56px] bg-sidebar border-r border-sidebar-border py-4 gap-1">
-      {/* Traffic lights placeholder */}
-      <div className="flex flex-col gap-1.5 mb-6 items-center">
+    <div className="flex items-center h-11 min-h-[44px] bg-sidebar border-b border-sidebar-border px-3 gap-1 shrink-0">
+      {/* Traffic lights */}
+      <div className="flex gap-1.5 items-center mr-3">
         <div className="w-3 h-3 rounded-full bg-destructive/70" />
         <div className="w-3 h-3 rounded-full bg-warning/70" />
         <div className="w-3 h-3 rounded-full bg-success/70" />
@@ -40,7 +40,7 @@ export function Sidebar() {
             key={i}
             onClick={() => navigate(item.path)}
             className={cn(
-              "w-10 h-10 rounded-lg flex items-center justify-center transition-all",
+              "h-8 px-3 rounded-lg flex items-center gap-1.5 transition-all text-xs font-medium",
               "hover:bg-sidebar-accent",
               isActive
                 ? "bg-sidebar-accent text-sidebar-primary"
@@ -48,7 +48,8 @@ export function Sidebar() {
             )}
             title={item.label}
           >
-            <item.icon className="w-5 h-5" />
+            <item.icon className="w-4 h-4" />
+            <span className="hidden sm:inline">{item.label}</span>
           </button>
         );
       })}
@@ -58,10 +59,10 @@ export function Sidebar() {
       {/* Theme toggle */}
       <button
         onClick={() => setMode(nextTheme.mode)}
-        className="w-10 h-10 rounded-lg flex items-center justify-center transition-all hover:bg-sidebar-accent text-sidebar-foreground"
+        className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:bg-sidebar-accent text-sidebar-foreground"
         title={`테마: ${currentTheme.label} → ${nextTheme.label}`}
       >
-        <currentTheme.icon className="w-5 h-5" />
+        <currentTheme.icon className="w-4 h-4" />
       </button>
     </div>
   );
