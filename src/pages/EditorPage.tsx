@@ -34,6 +34,7 @@ export default function EditorPage() {
   } = useProjectStore();
   const { exportDialogOpen, setExportDialogOpen, selectedElement, setSelectedElement, marginGuide } = useUiStore();
   const [regenerating, setRegenerating] = useState(false);
+  const [aiProcessing, setAiProcessing] = useState(false);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const [canvasScale, setCanvasScale] = useState(1);
 
