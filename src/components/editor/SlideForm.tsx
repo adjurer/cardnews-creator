@@ -15,7 +15,7 @@ import {
   Upload, Sparkles, Search, Image as ImageIcon,
   Type, Palette, LayoutTemplate, Layers, TypeIcon,
   AlignLeft, AlignCenter, AlignRight, Minus, Plus, Bold,
-  LayoutGrid, X, Star, ChevronDown, ChevronRight
+  LayoutGrid, X, Star, ChevronDown, ChevronRight, BookMarked
 } from "lucide-react";
 
 interface Props {
