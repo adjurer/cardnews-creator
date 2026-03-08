@@ -481,7 +481,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
                   </div>
                   <button onClick={() => logoInputRef.current?.click()} className="text-[10px] text-primary hover:underline">변경</button>
                 </div>
-                <Range label="크기" value={slide.logo.width ?? 60} min={20} max={200} step={5} onChange={v => onUpdate({ logo: { ...slide.logo!, width: v } })} unit="px" />
+                <Range label="가로 크기" value={slide.logo.width ?? 60} min={20} max={500} step={5} onChange={v => onUpdate({ logo: { ...slide.logo!, width: v } })} unit="px" />
                 <Range label="투명도" value={slide.logo.opacity ?? 1} min={0.1} max={1} step={0.05} onChange={v => onUpdate({ logo: { ...slide.logo!, opacity: v } })} />
                 <Range label="여백" value={slide.logo.margin ?? 24} min={8} max={80} step={4} onChange={v => onUpdate({ logo: { ...slide.logo!, margin: v } })} unit="px" />
                 <div>
