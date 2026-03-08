@@ -260,7 +260,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
                 <img src={imageUrl} alt="" style={{
                   width: "100%", height: "auto", maxHeight: isExport ? "500px" : "40%", objectFit: "cover",
                   transform: `scale(${imgScale})`,
-                  filter: slide.image?.brightness !== undefined && slide.image.brightness !== 1 ? `brightness(${slide.image.brightness})` : undefined,
+                  filter: imageFilter,
                 }} />
               </div>
             )}
