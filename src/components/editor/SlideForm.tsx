@@ -68,8 +68,57 @@ function Section({ title, icon: Icon, defaultOpen = true, children, badge }: {
     </div>
   );
 }
+/* ── AI Image Generator ── */
+function AiImageGenerator({ defaultPrompt, aiPrompt, setAiPrompt, inputCls, onGenerated }: {
+  defaultPrompt: string; aiPrompt: string; setAiPrompt: (v: string) => void;
+  inputCls: string; onGenerated: (url: string, prompt: string) => void;
+}) {
+  const [generating, setGenerating] = useState(false);
 
-export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSelectElement, exportSize }: Props) {
+  const handleGenerate = async () => {
+    const prompt = aiPrompt.trim() || defaultPrompt;
+    if (!prompt || generating) return;
+    setGenerating(true);
+    try {
+      const result = await generateSlideImage(prompt, "generate");
+      onGenerated(result.imageUrl, prompt);
+    } catch (e: any) {
+      console.error("AI image error:", e);
+      const { toast } = await import("sonner");
+      toast.error(e.message || "이미지 생성에 실패했습니다");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <input
+        value={aiPrompt}
+        onChange={(e) => setAiPrompt(e.target.value)}
+        placeholder={defaultPrompt || "이미지 프롬프트 입력"}
+        className={inputCls}
+      />
+      <p className="text-[9px] text-muted-foreground">비워두면 슬라이드 텍스트가 프롬프트로 사용됩니다</p>
+      <button
+        onClick={handleGenerate}
+        disabled={generating}
+        className="w-full py-2 rounded-lg bg-primary/15 text-primary text-xs font-medium hover:bg-primary/25 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+      >
+        {generating ? (
+          <>
+            <span className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            생성 중...
+          </>
+        ) : (
+          "AI 이미지 생성"
+        )}
+      </button>
+    </div>
+  );
+}
+
+
   const [imageTab, setImageTab] = useState<ImageTab>("upload");
   const [aiPrompt, setAiPrompt] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
