@@ -87,7 +87,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
   };
 
   const imageUrl = slide.image?.url;
-  const overlayOpacity = slide.image?.overlayOpacity ?? 0.5;
+  const overlayOpacity = slide.image?.overlayOpacity ?? 0;
   const imgScale = slide.image?.scale ?? 1;
   const imgBorderRadius = slide.image?.borderRadius ?? 0;
   const [imageAspect, setImageAspect] = useState(1);
