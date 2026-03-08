@@ -172,14 +172,15 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     return (
       <>
         <div data-element="image" onClick={eClick("image")} style={{
-          ...elementStyle(slide, "image"),
           position: "absolute", inset: 0,
           backgroundImage: `url("${imageUrl}")`,
           backgroundPosition: `${50 + (slide.image?.posX || 0)}% ${50 + (slide.image?.posY || 0)}%`,
           backgroundSize: `${bgSizeW}% ${bgSizeH}%`,
+          backgroundRepeat: "no-repeat",
           borderRadius: imgBorderRadius,
           filter: imageFilter,
           cursor: onElementClick ? "pointer" : undefined,
+          zIndex: getOverride(slide, "image").zIndex,
         }} />
         <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayOpacity})`, pointerEvents: "none" }} />
       </>
