@@ -394,7 +394,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
                 ...elementStyle(slide, "cta"),
                 display: "inline-block", padding: isExport ? "16px 40px" : "10px 24px",
                 background: accentColor, color: bg,
-                borderRadius: "999px", fontWeight: 600, fontSize: bodySize,
+                borderRadius: "999px", fontWeight: 600, fontSize: ctaSize,
                 cursor: onElementClick ? "pointer" : undefined,
               }}>{slide.cta}</div>
             )}
