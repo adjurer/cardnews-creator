@@ -197,6 +197,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         {(() => {
           const dir = slide.image?.overlayDirection ?? "center";
           const overlayBlur = slide.image?.overlayBlur ?? 0;
+          const blurDir = slide.image?.overlayBlurDirection ?? "center";
           const colorStr = `rgba(0,0,0,${overlayOpacity})`;
           let bg: string;
           if (dir === "center") {
@@ -204,14 +205,40 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
           } else {
             bg = OVERLAY_GRADIENT_MAP[dir].replace(/COLOR/g, colorStr);
           }
+
+          // Blur mask gradient: white = blurred, black = clear
+          const BLUR_MASK_MAP: Record<OverlayDirection, string> = {
+            "top-left": "linear-gradient(135deg, white 0%, transparent 70%)",
+            "top-center": "linear-gradient(180deg, white 0%, transparent 70%)",
+            "top-right": "linear-gradient(225deg, white 0%, transparent 70%)",
+            "center-left": "linear-gradient(90deg, white 0%, transparent 70%)",
+            "center": "white",
+            "center-right": "linear-gradient(270deg, white 0%, transparent 70%)",
+            "bottom-left": "linear-gradient(45deg, white 0%, transparent 70%)",
+            "bottom-center": "linear-gradient(0deg, white 0%, transparent 70%)",
+            "bottom-right": "linear-gradient(315deg, white 0%, transparent 70%)",
+          };
+
           return (
-            <div style={{
-              position: "absolute", inset: 0,
-              background: bg,
-              backdropFilter: overlayBlur > 0 ? `blur(${overlayBlur}px)` : undefined,
-              WebkitBackdropFilter: overlayBlur > 0 ? `blur(${overlayBlur}px)` : undefined,
-              pointerEvents: "none",
-            }} />
+            <>
+              {/* Color overlay layer */}
+              <div style={{
+                position: "absolute", inset: 0,
+                background: bg,
+                pointerEvents: "none",
+              }} />
+              {/* Blur layer with directional mask */}
+              {overlayBlur > 0 && (
+                <div style={{
+                  position: "absolute", inset: 0,
+                  backdropFilter: `blur(${overlayBlur}px)`,
+                  WebkitBackdropFilter: `blur(${overlayBlur}px)`,
+                  WebkitMaskImage: BLUR_MASK_MAP[blurDir],
+                  maskImage: BLUR_MASK_MAP[blurDir],
+                  pointerEvents: "none",
+                }} />
+              )}
+            </>
           );
         })()}
       </>
