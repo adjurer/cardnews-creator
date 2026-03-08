@@ -47,7 +47,7 @@ const GRADIENT_PRESETS = [
 type EditorTab = "text" | "style" | "layout" | "image" | "layers" | "font";
 type ImageTab = "upload" | "ai" | "search";
 
-export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSelectElement }: Props) {
+export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSelectElement, exportSize }: Props) {
   const [editorTab, setEditorTab] = useState<EditorTab>("text");
   const [imageTab, setImageTab] = useState<ImageTab>("upload");
   const [aiPrompt, setAiPrompt] = useState("");
