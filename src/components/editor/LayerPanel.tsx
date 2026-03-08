@@ -8,6 +8,7 @@ interface Props {
   selectedElement: ElementKey | null;
   onSelectElement: (key: ElementKey | null) => void;
   onUpdateOverride: (key: ElementKey, updates: Partial<ElementOverride>) => void;
+  onBatchUpdateOverrides: (updates: Record<ElementKey, Partial<ElementOverride>>) => void;
 }
 
 const ELEMENT_DEFS: { key: ElementKey; label: string; icon: any; getContent: (s: Slide) => string | undefined }[] = [
