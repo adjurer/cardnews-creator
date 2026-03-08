@@ -261,8 +261,9 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
       <span data-element="highlight" onClick={eClick("highlight")} style={{
         ...elementStyle(slide, "highlight"), ...highlightStyle,
         margin: 0,
-        display: "inline-block", width: "fit-content",
-        maxWidth: highlightOvr.boxWidth ? `${highlightOvr.boxWidth}%` : "100%",
+        display: "inline-block",
+        width: highlightOvr.boxWidth ? `${highlightOvr.boxWidth}%` : "fit-content",
+        maxWidth: "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.highlight}</span>
     );
@@ -276,7 +277,9 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         ...titleStyle, ...elementStyle(slide, "title"),
         fontWeight: typo.titleWeight ?? defaultWeight ?? 700,
         margin: 0, padding: 0,
-        display: "inline-block", width: "fit-content", maxWidth: titleMaxW,
+        display: "inline-block",
+        width: titleOvr.boxWidth ? `${titleOvr.boxWidth}%` : "fit-content",
+        maxWidth: titleBoxWidth < 100 ? `${titleBoxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.title}</h2>
     );
@@ -289,8 +292,9 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         ...elementStyle(slide, "subtitle"),
         fontSize: subtitleSize, color: secondaryText, lineHeight: 1.5,
         margin: 0, padding: 0,
-        display: "inline-block", width: "fit-content",
-        maxWidth: getOverride(slide, "subtitle").boxWidth ? `${getOverride(slide, "subtitle").boxWidth}%` : "100%",
+        display: "inline-block",
+        width: getOverride(slide, "subtitle").boxWidth ? `${getOverride(slide, "subtitle").boxWidth}%` : "fit-content",
+        maxWidth: "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.subtitle}</p>
     );
@@ -303,8 +307,9 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         ...bodyStyle, ...elementStyle(slide, "body"),
         whiteSpace: "pre-wrap",
         margin: 0, padding: 0,
-        display: "inline-block", width: "fit-content",
-        maxWidth: getOverride(slide, "body").boxWidth ? `${getOverride(slide, "body").boxWidth}%` : "100%",
+        display: "inline-block",
+        width: getOverride(slide, "body").boxWidth ? `${getOverride(slide, "body").boxWidth}%` : "fit-content",
+        maxWidth: "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.body}</p>
     );
@@ -321,11 +326,13 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     return (
       <div data-element="cta" onClick={eClick("cta")} style={{
         ...elementStyle(slide, "cta"),
-        display: "inline-block", width: "fit-content",
-        maxWidth: ctaOvr.boxWidth ? `${ctaOvr.boxWidth}%` : "100%",
+        display: "inline-block",
+        width: ctaOvr.boxWidth ? `${ctaOvr.boxWidth}%` : "fit-content",
+        maxWidth: "100%",
         padding: ctaPad,
         background: ctaBg, color: ctaOvr.color || bg,
         borderRadius: ctaRadius, fontWeight: ctaOvr.fontWeight || 600, fontSize: ctaSize,
+        textAlign: "center",
         margin: 0,
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.cta}</div>

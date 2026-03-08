@@ -409,7 +409,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
       </Section>
 
       {/* ═══ 5. TEXT STYLE ═══ */}
-      <Section title="텍스트 스타일" icon={Bold} defaultOpen={false}>
+      <Section title="텍스트 스타일" icon={Bold} defaultOpen={!!selectedElement}>
         {/* Dynamic typography — based on selected element */}
         {(() => {
           const el = selectedElement;
@@ -442,7 +442,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
           const cfg = sizeConfig[el];
           const elOverride = slide.elementOverrides?.[el] || {};
           const isTitleLevel = el === "title" || el === "highlight";
-          const hasBox = el === "highlight" || el === "cta";
+          const hasBox = true; // All elements can have box styling
 
           return (
             <div className="space-y-2">
