@@ -206,28 +206,22 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
             bg = OVERLAY_GRADIENT_MAP[dir].replace(/COLOR/g, colorStr);
           }
 
-          // Blur mask gradient: white = blurred, black = clear
+          // Blur mask: short range (30% for edges, 50% for center)
           const BLUR_MASK_MAP: Record<OverlayDirection, string> = {
-            "top-left": "linear-gradient(135deg, white 0%, transparent 70%)",
-            "top-center": "linear-gradient(180deg, white 0%, transparent 70%)",
-            "top-right": "linear-gradient(225deg, white 0%, transparent 70%)",
-            "center-left": "linear-gradient(90deg, white 0%, transparent 70%)",
-            "center": "white",
-            "center-right": "linear-gradient(270deg, white 0%, transparent 70%)",
-            "bottom-left": "linear-gradient(45deg, white 0%, transparent 70%)",
-            "bottom-center": "linear-gradient(0deg, white 0%, transparent 70%)",
-            "bottom-right": "linear-gradient(315deg, white 0%, transparent 70%)",
+            "top-left": "linear-gradient(135deg, white 0%, transparent 30%)",
+            "top-center": "linear-gradient(180deg, white 0%, transparent 30%)",
+            "top-right": "linear-gradient(225deg, white 0%, transparent 30%)",
+            "center-left": "linear-gradient(90deg, white 0%, transparent 30%)",
+            "center": "radial-gradient(ellipse at center, white 0%, transparent 50%)",
+            "center-right": "linear-gradient(270deg, white 0%, transparent 30%)",
+            "bottom-left": "linear-gradient(45deg, white 0%, transparent 30%)",
+            "bottom-center": "linear-gradient(0deg, white 0%, transparent 30%)",
+            "bottom-right": "linear-gradient(315deg, white 0%, transparent 30%)",
           };
 
           return (
             <>
-              {/* Color overlay layer */}
-              <div style={{
-                position: "absolute", inset: 0,
-                background: bg,
-                pointerEvents: "none",
-              }} />
-              {/* Blur layer with directional mask */}
+              {/* Blur layer first (underneath overlay) */}
               {overlayBlur > 0 && (
                 <div style={{
                   position: "absolute", inset: 0,
@@ -238,6 +232,12 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
                   pointerEvents: "none",
                 }} />
               )}
+              {/* Color overlay layer on top */}
+              <div style={{
+                position: "absolute", inset: 0,
+                background: bg,
+                pointerEvents: "none",
+              }} />
             </>
           );
         })()}
