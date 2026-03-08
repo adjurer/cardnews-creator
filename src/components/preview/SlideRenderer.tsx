@@ -242,7 +242,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         ...elementStyle(slide, "category"),
         fontSize: catSize, color: accentColor, fontWeight: 600,
         letterSpacing: "0.05em", textTransform: "uppercase",
-        marginBottom: isExport ? "16px" : "8px",
+        margin: 0, padding: 0,
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.category}</span>
     );
@@ -253,7 +253,8 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     return (
       <span data-element="highlight" onClick={eClick("highlight")} style={{
         ...elementStyle(slide, "highlight"), ...highlightStyle,
-        marginBottom: "12px", cursor: onElementClick ? "pointer" : undefined,
+        margin: 0,
+        cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.highlight}</span>
     );
   };
@@ -262,7 +263,8 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     <h2 data-element="title" onClick={eClick("title")} style={{
       ...titleStyle, ...elementStyle(slide, "title"),
       fontWeight: typo.titleWeight ?? defaultWeight ?? 700,
-      marginBottom: "12px", cursor: onElementClick ? "pointer" : undefined,
+      margin: 0, padding: 0,
+      cursor: onElementClick ? "pointer" : undefined,
     }}>{slide.title}</h2>
   );
 
@@ -272,7 +274,8 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
       <p data-element="subtitle" onClick={eClick("subtitle")} style={{
         ...elementStyle(slide, "subtitle"),
         fontSize: subtitleSize, color: secondaryText, lineHeight: 1.5,
-        marginBottom: "12px", cursor: onElementClick ? "pointer" : undefined,
+        margin: 0, padding: 0,
+        cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.subtitle}</p>
     );
   };
@@ -283,6 +286,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
       <p data-element="body" onClick={eClick("body")} style={{
         ...bodyStyle, ...elementStyle(slide, "body"),
         whiteSpace: "pre-wrap",
+        margin: 0, padding: 0,
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.body}</p>
     );
@@ -293,7 +297,8 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     return (
       <div data-element="sourceLabel" onClick={eClick("sourceLabel")} style={{
         ...elementStyle(slide, "sourceLabel"),
-        marginTop: "auto", paddingTop: "12px", cursor: onElementClick ? "pointer" : undefined,
+        marginTop: "auto", padding: 0,
+        cursor: onElementClick ? "pointer" : undefined,
       }}>
         <span style={{ fontSize: sourceLabelSize, color: secondaryText }}>{slide.sourceLabel}</span>
       </div>
@@ -304,14 +309,14 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     <div style={containerStyle} className={className}>
       {renderImage()}
 
-      <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", padding: basePadding, justifyContent: justifyMap[contentAlign], overflow: "hidden" }}
+      <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", padding: basePadding, justifyContent: justifyMap[contentAlign], overflow: "hidden", gap: isExport ? "16px" : "8px" }}
         className={textAlignClass}>
 
         {renderCategory()}
 
         {/* Center-title / Cover */}
         {(slide.layoutType === "center-title" || slide.type === "cover") && (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", gap: isExport ? "12px" : "6px" }}>
             {renderHighlight()}
             {renderTitle(800)}
             {renderSubtitle()}
@@ -320,7 +325,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Title-body / Title-image */}
         {(slide.layoutType === "title-body" || slide.layoutType === "title-image") && slide.type !== "cover" && (
-            <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: isExport ? "12px" : "6px" }}>
             {renderHighlight()}
             {renderTitle()}
             {renderSubtitle()}
@@ -339,7 +344,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Bullet list */}
         {slide.layoutType === "bullet-list" && (
-            <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: isExport ? "12px" : "6px" }}>
             {renderTitle()}
             {shouldShow("showBullets") && !isHidden(slide, "bullets") && (
               <ul data-element="bullets" onClick={eClick("bullets")} style={{ ...elementStyle(slide, "bullets"), listStyle: "none", padding: 0, margin: 0, cursor: onElementClick ? "pointer" : undefined }}>
