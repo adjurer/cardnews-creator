@@ -89,6 +89,30 @@ export default function EditorPage() {
     });
   }, [currentProject, currentSlideIndex, updateSlide]);
 
+  const handleResizeElement = useCallback((key: ElementKey, dw: number, dh: number, handle: string) => {
+    if (!currentProject) return;
+    const slide = currentProject.slides[currentSlideIndex];
+
+    // For text elements, resize adjusts typography/position
+    if (key === "image") {
+      const img = slide.image || { mode: "upload" as const, url: "" };
+      const currentScale = img.scale ?? 1;
+      const scaleDelta = (handle.includes("e") || handle.includes("w")) ? dw * 0.005 : dh * 0.005;
+      updateSlide(slide.id, { image: { ...img, scale: Math.max(0.3, Math.min(3, currentScale + scaleDelta)) } });
+    } else {
+      // For text elements, adjust box padding as proxy for size
+      const current = slide.elementOverrides?.[key] || {};
+      const currentPadding = current.boxPadding ?? 0;
+      const paddingDelta = Math.round(dh * 0.3);
+      updateSlide(slide.id, {
+        elementOverrides: {
+          ...slide.elementOverrides,
+          [key]: { ...current, boxPadding: Math.max(0, currentPadding + paddingDelta) },
+        },
+      });
+    }
+  }, [currentProject, currentSlideIndex, updateSlide]);
+
   if (!currentProject) {
     return (
       <div className="h-full flex items-center justify-center">

@@ -114,6 +114,7 @@ export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize,
             selectedElement={selectedElement}
             onSelectElement={handleElementSelect}
             onUpdateOffset={handleUpdateOffset}
+            onResizeElement={onResizeElement}
             showGrid={showGrid}
             showSafeArea={showSafeArea}
             gridSize={gridSize}
