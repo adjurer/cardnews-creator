@@ -5,10 +5,10 @@ import { useUiStore } from "@/store/useUiStore";
 import { MobilePreview } from "@/components/preview/MobilePreview";
 import { SlideForm } from "@/components/editor/SlideForm";
 import { ExportDialog } from "@/components/export/ExportDialog";
-import { regenerateSlide } from "@/lib/ai/aiService";
+import { SlideStrip } from "@/components/editor/SlideStrip";
 import {
-  ArrowLeft, Save, RefreshCw, Download, ChevronLeft, ChevronRight,
-  Plus, Trash2, Copy, MoveUp, MoveDown, Check, AlertCircle, Loader2, Sparkles
+  ArrowLeft, Save, RefreshCw, Download, Plus, Trash2, Copy,
+  MoveUp, MoveDown, Check, AlertCircle, Loader2, Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -60,36 +60,13 @@ export default function EditorPage() {
 
   const handleRegenerateSlide = async () => {
     if (!currentProject || regenerating) return;
-    const slide = currentProject.slides[currentSlideIndex];
     setRegenerating(true);
-    try {
-      const updates = await regenerateSlide(
-        slide,
-        currentProject.title,
-        currentProject.slides,
-        "rewrite"
-      );
-      updateSlide(slide.id, updates);
-      toast.success("슬라이드가 다시 생성되었습니다");
-    } catch (e: any) {
-      toast.error(e.message || "슬라이드 재생성에 실패했습니다");
-    } finally {
-      setRegenerating(false);
-    }
-  };
-
-  const handleRegenerateAll = () => {
-    // Re-generate entire project by going back to creation flow
-    if (!currentProject) return;
-    const source = {
-      sourceType: currentProject.sourceType,
-      content: currentProject.sourceInput || currentProject.slides.map(s => `${s.title}. ${s.body || ""}`).join("\n"),
-      title: currentProject.title,
-    };
-    sessionStorage.setItem("generation-source", JSON.stringify(source));
-    useProjectStore.getState().setGenerationStatus("generating");
-    useProjectStore.getState().setGenerationStep(0);
-    navigate("/generate");
+    // Mock regeneration
+    await new Promise(r => setTimeout(r, 1000));
+    const slide = currentProject.slides[currentSlideIndex];
+    updateSlide(slide.id, { title: slide.title + " (개선됨)" });
+    toast.success("슬라이드가 개선되었습니다");
+    setRegenerating(false);
   };
 
   if (!currentProject) {
@@ -113,7 +90,7 @@ export default function EditorPage() {
         <button onClick={() => navigate("/dashboard")} className="p-1.5 rounded-md hover:bg-surface text-muted-foreground hover:text-foreground">
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <h2 className="text-sm font-medium text-foreground truncate max-w-[180px]">{currentProject.title}</h2>
+        <h2 className="text-sm font-medium text-foreground truncate max-w-[200px]">{currentProject.title}</h2>
 
         <span className="text-[10px] text-muted-foreground ml-1">
           {saveStatus === "saved" && <span className="flex items-center gap-1 text-success"><Check className="w-3 h-3" />저장됨</span>}
@@ -126,13 +103,9 @@ export default function EditorPage() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-surface hover:bg-muted text-foreground border border-border">
             <Save className="w-3.5 h-3.5" /> 저장
           </button>
-          <button onClick={handleRegenerateAll}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-surface hover:bg-muted text-foreground border border-border">
-            <RefreshCw className="w-3.5 h-3.5" /> 다시 생성
-          </button>
           <button onClick={() => setExportDialogOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-primary text-primary-foreground hover:opacity-90">
-            <Download className="w-3.5 h-3.5" /> 내보내기 (PNG)
+            <Download className="w-3.5 h-3.5" /> 내보내기
           </button>
         </div>
       </div>
@@ -140,70 +113,41 @@ export default function EditorPage() {
       {/* Main */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left: Editor */}
-        <div className="flex-1 overflow-auto p-4 scrollbar-thin">
-          {/* Slide nav */}
-          <div className="flex items-center justify-between mb-3">
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+          {/* Slide strip */}
+          <SlideStrip
+            slides={currentProject.slides}
+            currentIndex={currentSlideIndex}
+            onSelect={setCurrentSlideIndex}
+            onAdd={() => addSlide()}
+            onDelete={(id) => { deleteSlide(id); toast.success("삭제됨"); }}
+            onDuplicate={(id) => duplicateSlide(id)}
+            onMove={moveSlide}
+            themePreset={currentProject.themePreset}
+          />
+
+          {/* Slide actions bar */}
+          <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-muted-foreground uppercase">{currentSlide.type}</span>
-              <button onClick={() => setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))} disabled={currentSlideIndex === 0}
-                className="p-1 rounded-md hover:bg-surface text-muted-foreground disabled:opacity-30">
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="text-xs font-medium text-foreground tabular-nums">{currentSlideIndex + 1} / {totalSlides}</span>
-              <button onClick={() => setCurrentSlideIndex(Math.min(totalSlides - 1, currentSlideIndex + 1))} disabled={currentSlideIndex === totalSlides - 1}
-                className="p-1 rounded-md hover:bg-surface text-muted-foreground disabled:opacity-30">
-                <ChevronRight className="w-4 h-4" />
-              </button>
+              <span className="text-[10px] font-semibold text-primary uppercase">{currentSlide.type}</span>
+              <span className="text-xs text-muted-foreground tabular-nums">{currentSlideIndex + 1} / {totalSlides}</span>
             </div>
             <div className="flex items-center gap-0.5">
-              <button onClick={() => addSlide()} title="추가" className="p-1.5 rounded-md hover:bg-surface text-muted-foreground hover:text-foreground">
-                <Plus className="w-3.5 h-3.5" />
+              <button onClick={handleRegenerateSlide} disabled={regenerating}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] text-muted-foreground hover:text-primary hover:bg-surface disabled:opacity-50">
+                {regenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                AI 개선
               </button>
-              <button onClick={() => duplicateSlide(currentSlide.id)} title="복제" className="p-1.5 rounded-md hover:bg-surface text-muted-foreground hover:text-foreground">
-                <Copy className="w-3.5 h-3.5" />
-              </button>
-              {currentSlideIndex > 0 && (
-                <button onClick={() => moveSlide(currentSlideIndex, currentSlideIndex - 1)} title="위로" className="p-1.5 rounded-md hover:bg-surface text-muted-foreground hover:text-foreground">
-                  <MoveUp className="w-3.5 h-3.5" />
-                </button>
-              )}
-              {currentSlideIndex < totalSlides - 1 && (
-                <button onClick={() => moveSlide(currentSlideIndex, currentSlideIndex + 1)} title="아래로" className="p-1.5 rounded-md hover:bg-surface text-muted-foreground hover:text-foreground">
-                  <MoveDown className="w-3.5 h-3.5" />
-                </button>
-              )}
-              {totalSlides > 1 && (
-                <button onClick={() => { deleteSlide(currentSlide.id); toast.success("삭제됨"); }} title="삭제"
-                  className="p-1.5 rounded-md hover:bg-destructive/20 text-muted-foreground hover:text-destructive">
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              )}
             </div>
           </div>
 
           {/* Form */}
-          <SlideForm
-            slide={currentSlide}
-            onUpdate={(updates) => updateSlide(currentSlide.id, updates)}
-            projectTheme={currentProject.themePreset}
-          />
-
-          {/* Bottom actions */}
-          <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
-            <button
-              onClick={handleRegenerateSlide}
-              disabled={regenerating}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-surface border border-border disabled:opacity-50"
-            >
-              {regenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-              슬라이드 개선
-            </button>
-            {totalSlides > 1 && (
-              <button onClick={() => { deleteSlide(currentSlide.id); toast.success("삭제됨"); }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-destructive">
-                <Trash2 className="w-3.5 h-3.5" /> 슬라이드 삭제
-              </button>
-            )}
+          <div className="flex-1 overflow-auto p-4 scrollbar-thin">
+            <SlideForm
+              slide={currentSlide}
+              onUpdate={(updates) => updateSlide(currentSlide.id, updates)}
+              projectTheme={currentProject.themePreset}
+            />
           </div>
         </div>
 
