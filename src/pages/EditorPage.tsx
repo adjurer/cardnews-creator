@@ -152,7 +152,6 @@ export default function EditorPage() {
         const newSize = Math.max(8, Math.min(40, currentSize + delta));
         updateSlide(slide.id, { typography: { ...typo, bodySize: newSize } });
       }
-      }
     }
   }, [currentProject, currentSlideIndex, updateSlide]);
 
