@@ -443,7 +443,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
               <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="검색어 입력" className={inputCls} />
               <div className="grid grid-cols-4 gap-1.5">
                 {MOCK_IMAGE_RESULTS.map((url, i) => (
-                  <button key={i} onClick={() => onUpdate({ image: { mode: "search", url } as SlideImage })}
+                  <button key={i} onClick={() => updateImage({ mode: "search", url })}
                     className={cn("aspect-square rounded-lg overflow-hidden border-2 transition-all",
                       slide.image?.url === url ? "border-primary" : "border-transparent hover:border-muted-foreground/30"
                     )}><img src={url} alt="" className="w-full h-full object-cover" /></button>
