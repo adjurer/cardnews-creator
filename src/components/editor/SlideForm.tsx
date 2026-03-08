@@ -420,14 +420,14 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
           }
           
           const sizeConfig: Record<string, { field: keyof SlideTypography; fallback: number; min: number; max: number }> = {
-            title:       { field: "titleSize",       fallback: 28, min: 14, max: 60 },
-            highlight:   { field: "highlightSize",   fallback: typo.bodySize ?? 16, min: 10, max: 48 },
-            subtitle:    { field: "subtitleSize",     fallback: (typo.bodySize ?? 16) + 2, min: 10, max: 48 },
-            category:    { field: "categorySize",     fallback: 12, min: 8, max: 32 },
-            body:        { field: "bodySize",          fallback: 16, min: 8, max: 40 },
-            bullets:     { field: "bulletSize",        fallback: (typo.bodySize ?? 16) - 1, min: 8, max: 36 },
-            cta:         { field: "ctaSize",           fallback: typo.bodySize ?? 16, min: 10, max: 40 },
-            sourceLabel: { field: "sourceLabelSize",   fallback: 11, min: 8, max: 24 },
+            title:       { field: "titleSize",       fallback: 28, min: 14, max: 80 },
+            highlight:   { field: "highlightSize",   fallback: typo.bodySize ?? 16, min: 10, max: 80 },
+            subtitle:    { field: "subtitleSize",     fallback: (typo.bodySize ?? 16) + 2, min: 10, max: 60 },
+            category:    { field: "categorySize",     fallback: 12, min: 8, max: 48 },
+            body:        { field: "bodySize",          fallback: 16, min: 8, max: 60 },
+            bullets:     { field: "bulletSize",        fallback: (typo.bodySize ?? 16) - 1, min: 8, max: 48 },
+            cta:         { field: "ctaSize",           fallback: typo.bodySize ?? 16, min: 10, max: 80 },
+            sourceLabel: { field: "sourceLabelSize",   fallback: 11, min: 8, max: 36 },
           };
 
           const defaultLineHeight: Record<string, number> = {
@@ -442,6 +442,7 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
           const cfg = sizeConfig[el];
           const elOverride = slide.elementOverrides?.[el] || {};
           const isTitleLevel = el === "title" || el === "highlight";
+          const hasBox = el === "highlight" || el === "cta";
 
           return (
             <div className="space-y-2">
@@ -453,14 +454,24 @@ export function SlideForm({ slide, onUpdate, projectTheme, selectedElement, onSe
               {cfg && (
                 <Range label="크기" value={(typo as any)[cfg.field] ?? cfg.fallback} min={cfg.min} max={cfg.max} step={1} onChange={v => updateTypo({ [cfg.field]: v })} unit="px" />
               )}
-              {/* Per-element weight */}
-              <Range label="굵기" value={elOverride.fontWeight ?? (isTitleLevel ? (typo.titleWeight ?? 700) : (typo.bodyWeight ?? 400))} min={100} max={900} step={100} onChange={v => updateOverride(el, { fontWeight: v })} />
+              {/* Per-element weight — step 1 for variable fonts */}
+              <Range label="굵기" value={elOverride.fontWeight ?? (isTitleLevel ? (typo.titleWeight ?? 700) : (typo.bodyWeight ?? 400))} min={100} max={900} step={1} onChange={v => updateOverride(el, { fontWeight: v })} />
               {/* Per-element color */}
               <ColorInput label="색상" value={elOverride.color || colors.textColor || "#f0f6fc"} onChange={v => updateOverride(el, { color: v })} />
               {/* Per-element line height */}
               <Range label="줄간격" value={elOverride.lineHeight ?? defaultLineHeight[el] ?? 1.5} min={0.8} max={3.0} step={0.05} onChange={v => updateOverride(el, { lineHeight: v })} />
               {/* Per-element letter spacing */}
               <Range label="자간" value={elOverride.letterSpacing ?? defaultLetterSpacing[el] ?? 0} min={-0.1} max={0.3} step={0.01} onChange={v => updateOverride(el, { letterSpacing: v })} unit="em" />
+              {/* Box controls for highlight & CTA */}
+              {hasBox && (
+                <div className="space-y-2 pt-2 border-t border-border">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold block">박스</span>
+                  <Range label="내부 여백" value={elOverride.boxPadding ?? (el === "cta" ? 10 : 4)} min={0} max={40} step={1} onChange={v => updateOverride(el, { boxPadding: v })} unit="px" />
+                  <Range label="모서리" value={elOverride.boxRadius ?? (el === "cta" ? 999 : 4)} min={0} max={999} step={1} onChange={v => updateOverride(el, { boxRadius: v })} unit="px" />
+                  <ColorInput label="배경색" value={elOverride.boxBg || colors.accentColor || "#39d2c0"} onChange={v => updateOverride(el, { boxBg: v })} />
+                  <Range label="배경 투명도" value={elOverride.boxBgOpacity ?? 1} min={0} max={1} step={0.05} onChange={v => updateOverride(el, { boxBgOpacity: v })} />
+                </div>
+              )}
             </div>
           );
         })()}
