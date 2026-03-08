@@ -124,7 +124,7 @@ export default function EditorPage() {
       const img = slide.image || { mode: "upload" as const, url: "" };
       const currentScale = img.scale ?? 1;
       const delta = (handle.includes("e") || handle.includes("w")) ? dw * 0.002 : dh * 0.002;
-      updateSlide(slide.id, { image: { ...img, scale: Math.max(0.3, Math.min(3, currentScale + delta)) } });
+      updateSlide(slide.id, { image: { ...img, scale: Math.max(1, Math.min(3, currentScale + delta)) } });
     } else if (key === "title" || key === "highlight" || key === "subtitle" || key === "category") {
       const currentSize = typo.titleSize ?? 28;
       // Use vertical delta for font size, ~1px font change per 2px content-space drag
