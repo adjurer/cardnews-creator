@@ -9,15 +9,23 @@ interface Props {
   onUpdate: (updates: Partial<SlideImage>) => void;
 }
 
+interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
   const [imgNaturalSize, setImgNaturalSize] = useState({ w: 0, h: 0 });
+  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
   const scaleRef = useRef(image.scale ?? 1);
   scaleRef.current = image.scale ?? 1;
 
   const [expW, expH] = exportSize.split("x").map(Number);
-  const frameAspect = expW / expH; // e.g. 0.8 for 1080x1350
+  const frameAspect = expW / expH;
   const imgW = imgNaturalSize.w || 1;
   const imgH = imgNaturalSize.h || 1;
   const imgAspect = imgW / imgH;
@@ -26,32 +34,20 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
   const posY = image.posY ?? 0;
   const scale = image.scale ?? 1;
 
-  // --- Viewport calculation ---
-  // Must match SlideRenderer's background-size: cover logic exactly
-  // 
-  // SlideRenderer uses:
-  //   baseBgW = imageAspect > frameAspect ? (imageAspect / frameAspect) * 100 : 100
-  //   baseBgH = imageAspect > frameAspect ? 100 : (frameAspect / imageAspect) * 100
-  //   backgroundSize: `${baseBgW * scale}% ${baseBgH * scale}%`
-  //
-  // This means the image is displayed as (baseBgW * scale)% of frame width and (baseBgH * scale)% of frame height.
-  // The visible portion of the IMAGE is: 100 / (baseBgW * scale) of image width, 100 / (baseBgH * scale) of image height.
-
+  // Must match SlideRenderer background-size: cover logic
   const baseBgW = imgAspect > frameAspect ? (imgAspect / frameAspect) * 100 : 100;
   const baseBgH = imgAspect > frameAspect ? 100 : (frameAspect / imgAspect) * 100;
   const bgW = baseBgW * scale;
   const bgH = baseBgH * scale;
 
-  // Viewport size as % of the original image
+  // Visible region in image-space (%)
   const vpWImg = Math.max(0.01, Math.min(100, (100 / bgW) * 100));
   const vpHImg = Math.max(0.01, Math.min(100, (100 / bgH) * 100));
 
-  // Position: posX/posY range is -50..50, maps to background-position 0..100%
-  // background-position determines which part of the image is centered
-  const pX = (50 + posX) / 100; // 0..1
-  const pY = (50 + posY) / 100; // 0..1
+  // Position mapping from renderer range (-50..50)
+  const pX = (50 + posX) / 100;
+  const pY = (50 + posY) / 100;
 
-  // Viewport left/top in image-space %
   const maxLeftOffset = Math.max(0, 100 - vpWImg);
   const maxTopOffset = Math.max(0, 100 - vpHImg);
   const vpLeftImg = pX * maxLeftOffset;
@@ -62,7 +58,25 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
     setImgNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
   }, []);
 
-  // Native wheel for non-passive preventDefault
+  // Track real preview container size (important for object-contain letterbox cases)
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const updateSize = () => {
+      const rect = el.getBoundingClientRect();
+      setContainerSize({ w: rect.width, h: rect.height });
+    };
+
+    updateSize();
+
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(el);
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Wheel zoom
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -77,24 +91,57 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
     return () => el.removeEventListener("wheel", handler);
   }, [onUpdate]);
 
+  // Real rendered image rect inside object-contain container
+  const containerW = containerSize.w || 1;
+  const containerH = containerSize.h || 1;
+  const containerAspect = containerW / containerH;
+
+  let imageRect: Rect = { x: 0, y: 0, w: containerW, h: containerH };
+  if (containerAspect > imgAspect) {
+    const renderedW = containerH * imgAspect;
+    imageRect = {
+      x: (containerW - renderedW) / 2,
+      y: 0,
+      w: renderedW,
+      h: containerH,
+    };
+  } else {
+    const renderedH = containerW / imgAspect;
+    imageRect = {
+      x: 0,
+      y: (containerH - renderedH) / 2,
+      w: containerW,
+      h: renderedH,
+    };
+  }
+
+  const vpLeftPx = imageRect.x + (vpLeftImg / 100) * imageRect.w;
+  const vpTopPx = imageRect.y + (vpTopImg / 100) * imageRect.h;
+  const vpWPx = (vpWImg / 100) * imageRect.w;
+  const vpHPx = (vpHImg / 100) * imageRect.h;
+
+  const clipTop = (vpTopPx / containerH) * 100;
+  const clipRight = 100 - ((vpLeftPx + vpWPx) / containerW) * 100;
+  const clipBottom = 100 - ((vpTopPx + vpHPx) / containerH) * 100;
+  const clipLeft = (vpLeftPx / containerW) * 100;
+
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragging(true);
 
-    const container = containerRef.current;
-    if (!container) return;
-
-    const rect = container.getBoundingClientRect();
     const startX = e.clientX;
     const startY = e.clientY;
     const startVpLeft = vpLeftImg;
     const startVpTop = vpTopImg;
 
+    const dragW = Math.max(1, imageRect.w);
+    const dragH = Math.max(1, imageRect.h);
+
     const onMove = (ev: MouseEvent) => {
-      // dx/dy as % of the container (which displays the full image)
-      const dx = ((ev.clientX - startX) / rect.width) * 100;
-      const dy = ((ev.clientY - startY) / rect.height) * 100;
+      // Convert cursor delta to image-space percentages (not container-space)
+      const dx = ((ev.clientX - startX) / dragW) * 100;
+      const dy = ((ev.clientY - startY) / dragH) * 100;
 
       const maxLeft = Math.max(0.0001, 100 - vpWImg);
       const maxTop = Math.max(0.0001, 100 - vpHImg);
@@ -102,7 +149,6 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
       const newVpLeft = Math.max(0, Math.min(100 - vpWImg, startVpLeft + dx));
       const newVpTop = Math.max(0, Math.min(100 - vpHImg, startVpTop + dy));
 
-      // Convert viewport position back to posX/posY (-50..50)
       const newX = maxLeft <= 0.001 ? 0 : (newVpLeft / maxLeft) * 100 - 50;
       const newY = maxTop <= 0.001 ? 0 : (newVpTop / maxTop) * 100 - 50;
 
@@ -117,22 +163,13 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
     };
+
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
-  }, [onUpdate, vpHImg, vpLeftImg, vpTopImg, vpWImg]);
+  }, [imageRect.h, imageRect.w, onUpdate, vpHImg, vpLeftImg, vpTopImg, vpWImg]);
 
   const handleReset = () => onUpdate({ posX: 0, posY: 0, scale: 1 });
-
   const loaded = imgNaturalSize.w > 0;
-
-  // For clip-path on the bright image overlay
-  const rightInsetImg = 100 - (vpLeftImg + vpWImg);
-  const bottomInsetImg = 100 - (vpTopImg + vpHImg);
-
-  // --- Calculate viewport box dimensions that PRESERVE export aspect ratio ---
-  // The container displays the full image with object-contain.
-  // We need to find where the image actually renders within the container,
-  // then position the viewport box accordingly.
 
   return (
     <div className="space-y-1.5">
@@ -159,31 +196,32 @@ export function ImageCropPreview({ image, exportSize = "1080x1350", onUpdate }: 
 
       <div
         ref={containerRef}
-        className="relative rounded-lg overflow-hidden bg-card border border-border mx-auto"
-        style={{ aspectRatio: `${imgW}/${imgH}`, maxHeight: "220px", maxWidth: "100%" }}
+        className="relative rounded-lg overflow-hidden bg-card border border-border mx-auto w-full"
+        style={{
+          aspectRatio: `${imgW}/${imgH}`,
+          maxHeight: "220px",
+          maxWidth: `${220 * imgAspect}px`,
+        }}
       >
-        {/* Dimmed full image */}
         <img src={image.url} alt="" draggable={false} onLoad={handleImgLoad}
           className="w-full h-full object-contain pointer-events-none opacity-30" />
 
         {loaded && (
           <>
-            {/* Bright clip of visible region - uses image-space percentages */}
             <img src={image.url} alt="" draggable={false}
               className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-              style={{ clipPath: `inset(${vpTopImg}% ${rightInsetImg}% ${bottomInsetImg}% ${vpLeftImg}%)` }}
+              style={{ clipPath: `inset(${clipTop}% ${clipRight}% ${clipBottom}% ${clipLeft}%)` }}
             />
 
-            {/* Viewport frame - positioned in image-space % with export aspect ratio */}
             <ViewportFrame
               exportW={expW}
               exportH={expH}
-              vpLeftImg={vpLeftImg}
-              vpTopImg={vpTopImg}
-              vpWImg={vpWImg}
-              vpHImg={vpHImg}
               dragging={dragging}
               onMouseDown={handleMouseDown}
+              leftPx={vpLeftPx}
+              topPx={vpTopPx}
+              widthPx={vpWPx}
+              heightPx={vpHPx}
             />
           </>
         )}
@@ -204,21 +242,21 @@ function gcd(a: number, b: number): number {
 function ViewportFrame({
   exportW,
   exportH,
-  vpLeftImg,
-  vpTopImg,
-  vpWImg,
-  vpHImg,
   dragging,
   onMouseDown,
+  leftPx,
+  topPx,
+  widthPx,
+  heightPx,
 }: {
   exportW: number;
   exportH: number;
-  vpLeftImg: number;
-  vpTopImg: number;
-  vpWImg: number;
-  vpHImg: number;
   dragging: boolean;
   onMouseDown: (e: React.MouseEvent) => void;
+  leftPx: number;
+  topPx: number;
+  widthPx: number;
+  heightPx: number;
 }) {
   const g = gcd(exportW, exportH);
   const ratioLabel = `${exportW / g}:${exportH / g}`;
@@ -231,10 +269,10 @@ function ViewportFrame({
         dragging ? "cursor-grabbing" : "cursor-grab hover:border-primary/80"
       )}
       style={{
-        left: `${vpLeftImg}%`,
-        top: `${vpTopImg}%`,
-        width: `${vpWImg}%`,
-        height: `${vpHImg}%`,
+        left: `${leftPx}px`,
+        top: `${topPx}px`,
+        width: `${widthPx}px`,
+        height: `${heightPx}px`,
       }}
     >
       {["-top-0.5 -left-0.5", "-top-0.5 -right-0.5", "-bottom-0.5 -left-0.5", "-bottom-0.5 -right-0.5"].map((pos, i) => (
@@ -250,3 +288,4 @@ function ViewportFrame({
     </div>
   );
 }
+
