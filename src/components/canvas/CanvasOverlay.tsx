@@ -30,7 +30,7 @@ const HANDLE_CURSORS: Record<ResizeHandle, string> = {
 
 export function CanvasOverlay({
   containerRef, selectedElement, onSelectElement, onUpdateOffset,
-  onResizeElement, showGrid, showSafeArea, gridSize, locked = {}, canvasScale = 1,
+  onResizeElement, showGrid, showSafeArea, gridSize, locked = {}, canvasScale = 1, marginInset = 0,
 }: Props) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [elements, setElements] = useState<ElementRect[]>([]);
