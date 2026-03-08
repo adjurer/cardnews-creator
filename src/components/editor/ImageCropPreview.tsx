@@ -247,7 +247,10 @@ function ViewportFrame({
       </div>
       {/* Aspect ratio indicator */}
       <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[7px] text-primary/60 whitespace-nowrap">
-        {exportAspect < 1 ? `${Math.round(exportAspect * 10)}:${10}` : exportAspect === 1 ? "1:1" : `${10}:${Math.round(10 / exportAspect)}`}
+        {expW && expH ? (() => {
+          const g = gcd(expW, expH);
+          return `${expW / g}:${expH / g}`;
+        })() : ""}
       </div>
     </div>
   );
