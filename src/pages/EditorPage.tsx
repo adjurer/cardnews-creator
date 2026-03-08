@@ -2,17 +2,18 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useProjectStore } from "@/store/useProjectStore";
 import { useUiStore } from "@/store/useUiStore";
+import { useFontStore } from "@/store/useFontStore";
 import { MobilePreview } from "@/components/preview/MobilePreview";
 import { SlideForm } from "@/components/editor/SlideForm";
 import { ExportDialog } from "@/components/export/ExportDialog";
 import { SlideStrip } from "@/components/editor/SlideStrip";
 import {
-  ArrowLeft, Save, RefreshCw, Download, Plus, Trash2, Copy,
-  MoveUp, MoveDown, Check, AlertCircle, Loader2, Sparkles
+  ArrowLeft, Save, Download, Check, AlertCircle, Loader2, Sparkles
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { debounce } from "@/lib/utils/helpers";
+import type { ElementKey, ElementOverride } from "@/types/project";
 
 export default function EditorPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -23,8 +24,11 @@ export default function EditorPage() {
     updateSlide, addSlide, deleteSlide, moveSlide, duplicateSlide,
     undo, redo,
   } = useProjectStore();
-  const { exportDialogOpen, setExportDialogOpen } = useUiStore();
+  const { exportDialogOpen, setExportDialogOpen, selectedElement, setSelectedElement } = useUiStore();
   const [regenerating, setRegenerating] = useState(false);
+
+  // Load fonts on mount
+  useEffect(() => { useFontStore.getState().loadFonts(); }, []);
 
   useEffect(() => {
     if (projectId) openProject(projectId);
@@ -47,27 +51,43 @@ export default function EditorPage() {
         if (e.key === "z" && e.shiftKey) { e.preventDefault(); redo(); }
         if (e.key === "e") { e.preventDefault(); setExportDialogOpen(true); }
       }
-      if (e.key === "ArrowLeft" && !e.metaKey && !["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName || "")) {
-        setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1));
-      }
-      if (e.key === "ArrowRight" && !e.metaKey && !["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName || "")) {
-        if (currentProject) setCurrentSlideIndex(Math.min(currentProject.slides.length - 1, currentSlideIndex + 1));
+      // Escape to deselect
+      if (e.key === "Escape") setSelectedElement(null);
+
+      if (!selectedElement && !e.metaKey && !["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName || "")) {
+        if (e.key === "ArrowLeft") setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1));
+        if (e.key === "ArrowRight" && currentProject) setCurrentSlideIndex(Math.min(currentProject.slides.length - 1, currentSlideIndex + 1));
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [currentSlideIndex, currentProject]);
+  }, [currentSlideIndex, currentProject, selectedElement]);
 
   const handleRegenerateSlide = async () => {
     if (!currentProject || regenerating) return;
     setRegenerating(true);
-    // Mock regeneration
     await new Promise(r => setTimeout(r, 1000));
     const slide = currentProject.slides[currentSlideIndex];
     updateSlide(slide.id, { title: slide.title + " (개선됨)" });
     toast.success("슬라이드가 개선되었습니다");
     setRegenerating(false);
   };
+
+  const handleElementSelect = useCallback((key: ElementKey | null) => {
+    setSelectedElement(key);
+  }, [setSelectedElement]);
+
+  const handleUpdateElementOffset = useCallback((key: ElementKey, dx: number, dy: number) => {
+    if (!currentProject) return;
+    const slide = currentProject.slides[currentSlideIndex];
+    const current = slide.elementOverrides?.[key] || {};
+    updateSlide(slide.id, {
+      elementOverrides: {
+        ...slide.elementOverrides,
+        [key]: { ...current, offsetX: (current.offsetX || 0) + dx, offsetY: (current.offsetY || 0) + dy },
+      },
+    });
+  }, [currentProject, currentSlideIndex, updateSlide]);
 
   if (!currentProject) {
     return (
@@ -99,6 +119,11 @@ export default function EditorPage() {
         </span>
 
         <div className="flex items-center gap-1 ml-auto">
+          <button onClick={handleRegenerateSlide} disabled={regenerating}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-surface hover:bg-muted text-foreground border border-border disabled:opacity-50">
+            {regenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+            AI 개선
+          </button>
           <button onClick={() => { saveCurrentProject(); toast.success("저장되었습니다"); }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-surface hover:bg-muted text-foreground border border-border">
             <Save className="w-3.5 h-3.5" /> 저장
@@ -126,19 +151,18 @@ export default function EditorPage() {
             themePreset={currentProject.themePreset}
           />
 
-          {/* Slide actions bar */}
+          {/* Slide info bar */}
           <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-semibold text-primary uppercase">{currentSlide.type}</span>
               <span className="text-xs text-muted-foreground tabular-nums">{currentSlideIndex + 1} / {totalSlides}</span>
             </div>
-            <div className="flex items-center gap-0.5">
-              <button onClick={handleRegenerateSlide} disabled={regenerating}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] text-muted-foreground hover:text-primary hover:bg-surface disabled:opacity-50">
-                {regenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                AI 개선
-              </button>
-            </div>
+            {selectedElement && (
+              <div className="flex items-center gap-1">
+                <span className="text-[9px] bg-primary/15 text-primary px-2 py-0.5 rounded font-medium">{selectedElement} 선택됨</span>
+                <button onClick={() => setSelectedElement(null)} className="text-[9px] text-muted-foreground hover:text-foreground">ESC</button>
+              </div>
+            )}
           </div>
 
           {/* Form */}
@@ -147,17 +171,21 @@ export default function EditorPage() {
               slide={currentSlide}
               onUpdate={(updates) => updateSlide(currentSlide.id, updates)}
               projectTheme={currentProject.themePreset}
+              selectedElement={selectedElement}
+              onSelectElement={handleElementSelect}
             />
           </div>
         </div>
 
         {/* Right: Preview */}
-        <div className="w-[360px] shrink-0 border-l border-border bg-background flex items-center justify-center p-6 overflow-hidden">
+        <div className="w-[380px] shrink-0 border-l border-border bg-background flex items-center justify-center p-6 overflow-hidden">
           <MobilePreview
             slides={currentProject.slides}
             currentIndex={currentSlideIndex}
             onIndexChange={setCurrentSlideIndex}
             exportSize={currentProject.exportPreset.size}
+            onElementSelect={handleElementSelect}
+            onUpdateElementOffset={handleUpdateElementOffset}
           />
         </div>
       </div>

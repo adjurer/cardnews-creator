@@ -1,5 +1,5 @@
 import { THEME_MAP } from "@/lib/themes";
-import type { Slide } from "@/types/project";
+import type { Slide, ElementKey, ElementOverride } from "@/types/project";
 
 interface Props {
   slide: Slide;
@@ -7,6 +7,8 @@ interface Props {
   height?: number;
   className?: string;
   isExport?: boolean;
+  selectedElement?: ElementKey | null;
+  onElementClick?: (key: ElementKey) => void;
 }
 
 const GRADIENT_MAP: Record<string, string> = {
@@ -18,7 +20,27 @@ const GRADIENT_MAP: Record<string, string> = {
   "purple-haze": "linear-gradient(135deg, rgba(120,50,180,0.2) 0%, rgba(0,0,0,0.6) 100%)",
 };
 
-export function SlideRenderer({ slide, width = 1080, height = 1350, className, isExport }: Props) {
+function getOverride(slide: Slide, key: ElementKey): ElementOverride {
+  return slide.elementOverrides?.[key] || {};
+}
+
+function isHidden(slide: Slide, key: ElementKey): boolean {
+  return getOverride(slide, key).hidden === true;
+}
+
+function elementStyle(slide: Slide, key: ElementKey): React.CSSProperties {
+  const ovr = getOverride(slide, key);
+  return {
+    position: "relative",
+    transform: ovr.offsetX || ovr.offsetY ? `translate(${ovr.offsetX || 0}px, ${ovr.offsetY || 0}px)` : undefined,
+    backgroundColor: ovr.boxBg ? `${ovr.boxBg}${Math.round((ovr.boxBgOpacity ?? 1) * 255).toString(16).padStart(2, "0")}` : undefined,
+    padding: ovr.boxPadding ? `${ovr.boxPadding}px` : undefined,
+    borderRadius: ovr.boxRadius ? `${ovr.boxRadius}px` : undefined,
+    zIndex: ovr.zIndex,
+  };
+}
+
+export function SlideRenderer({ slide, width = 1080, height = 1350, className, isExport, selectedElement, onElementClick }: Props) {
   const theme = THEME_MAP[slide.themePreset];
   const typo = slide.typography || {};
   const colors = slide.colors || {};
@@ -34,8 +56,10 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
   const paddingY = pos.contentPaddingY ?? 8;
   const titleBoxWidth = pos.titleBoxWidth ?? 100;
   const contentAlign = pos.contentAlign || "center";
-
   const gradient = GRADIENT_MAP[colors.gradientPreset || "none"] || "";
+
+  const titleFamily = typo.titleFontFamily || "'Pretendard Variable', 'Pretendard', system-ui, sans-serif";
+  const bodyFamily = typo.bodyFontFamily || "'Pretendard Variable', 'Pretendard', system-ui, sans-serif";
 
   const containerStyle: React.CSSProperties = {
     width: isExport ? width : "100%",
@@ -47,7 +71,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     overflow: "hidden",
     display: "flex",
     flexDirection: "column",
-    fontFamily: "'Pretendard Variable', 'Pretendard', system-ui, sans-serif",
+    fontFamily: bodyFamily,
     borderRadius: colors.containerRadius ? `${colors.containerRadius}px` : undefined,
     border: colors.borderEnabled ? `1px solid ${colors.borderColor || theme.border}` : undefined,
     boxShadow: colors.shadowIntensity
@@ -63,21 +87,53 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
   const textAlignClass = slide.textAlign === "left" ? "text-left" : slide.textAlign === "right" ? "text-right" : "text-center";
   const justifyMap = { start: "flex-start", center: "center", end: "flex-end" };
 
-  // Font sizes - responsive or export
   const titleSize = isExport ? `${(typo.titleSize ?? 28) * 1.5}px` : `clamp(16px, 4.5vw, ${typo.titleSize ?? 28}px)`;
   const subtitleSize = isExport ? `${(typo.bodySize ?? 16) * 1.3}px` : `clamp(11px, 3vw, ${(typo.bodySize ?? 16) + 2}px)`;
   const bodySize = isExport ? `${(typo.bodySize ?? 16) * 1.5}px` : `clamp(10px, 2.8vw, ${typo.bodySize ?? 16}px)`;
   const bulletSize = isExport ? `${(typo.bodySize ?? 16) * 1.4}px` : `clamp(10px, 2.6vw, ${(typo.bodySize ?? 16) - 1}px)`;
   const catSize = isExport ? "16px" : "clamp(8px, 2vw, 12px)";
-
   const basePadding = isExport ? `${paddingY * 6}px ${paddingX * 6}px` : `${paddingY}% ${paddingX}%`;
+
+  const shouldShow = (key: keyof typeof vis) => vis[key] !== false;
+
+  const eClick = (key: ElementKey) => (e: React.MouseEvent) => {
+    if (onElementClick) { e.stopPropagation(); onElementClick(key); }
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: titleSize,
+    fontWeight: typo.titleWeight ?? 700,
+    lineHeight: typo.titleLineHeight ?? 1.3,
+    letterSpacing: typo.titleLetterSpacing ? `${typo.titleLetterSpacing}em` : undefined,
+    maxWidth: titleBoxWidth < 100 ? `${titleBoxWidth}%` : undefined,
+    color: textColor,
+    fontFamily: titleFamily,
+  };
+
+  const bodyStyle: React.CSSProperties = {
+    fontSize: bodySize,
+    fontWeight: typo.bodyWeight ?? 400,
+    lineHeight: typo.bodyLineHeight ?? 1.7,
+    letterSpacing: typo.bodyLetterSpacing ? `${typo.bodyLetterSpacing}em` : undefined,
+    color: secondaryText,
+    fontFamily: bodyFamily,
+  };
+
+  const highlightStyle: React.CSSProperties = {
+    display: "inline-block", padding: "2px 10px", borderRadius: "4px",
+    background: colors.highlightBg || accentColor,
+    color: colors.highlightText || bg,
+    fontWeight: 700, fontSize: subtitleSize,
+  };
 
   const renderImage = () => {
     if (!imageUrl) return null;
+    if (isHidden(slide, "image")) return null;
     if (slide.layoutType === "image-overlay") {
       return (
         <>
-          <div style={{
+          <div data-element="image" onClick={eClick("image")} style={{
+            ...elementStyle(slide, "image"),
             position: "absolute", inset: 0,
             backgroundImage: `url(${imageUrl})`,
             backgroundSize: "cover",
@@ -88,41 +144,77 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
               slide.image?.blur ? `blur(${slide.image.blur}px)` : "",
               slide.image?.brightness !== undefined && slide.image.brightness !== 1 ? `brightness(${slide.image.brightness})` : "",
             ].filter(Boolean).join(" ") || undefined,
+            cursor: onElementClick ? "pointer" : undefined,
           }} />
-          <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayOpacity})` }} />
+          <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayOpacity})`, pointerEvents: "none" }} />
         </>
       );
     }
     return null;
   };
 
-  const shouldShow = (key: keyof typeof vis) => vis[key] !== false;
-
-  const titleStyle: React.CSSProperties = {
-    fontSize: titleSize,
-    fontWeight: typo.titleWeight ?? 700,
-    lineHeight: typo.titleLineHeight ?? 1.3,
-    letterSpacing: typo.titleLetterSpacing ? `${typo.titleLetterSpacing}em` : undefined,
-    maxWidth: titleBoxWidth < 100 ? `${titleBoxWidth}%` : undefined,
-    color: textColor,
+  const renderCategory = () => {
+    if (!slide.category || !shouldShow("showCategory") || isHidden(slide, "category")) return null;
+    return (
+      <span data-element="category" onClick={eClick("category")} style={{
+        ...elementStyle(slide, "category"),
+        fontSize: catSize, color: accentColor, fontWeight: 600,
+        letterSpacing: "0.05em", textTransform: "uppercase",
+        marginBottom: isExport ? "16px" : "8px",
+        cursor: onElementClick ? "pointer" : undefined,
+      }}>{slide.category}</span>
+    );
   };
 
-  const bodyStyle: React.CSSProperties = {
-    fontSize: bodySize,
-    fontWeight: typo.bodyWeight ?? 400,
-    lineHeight: typo.bodyLineHeight ?? 1.7,
-    letterSpacing: typo.bodyLetterSpacing ? `${typo.bodyLetterSpacing}em` : undefined,
-    color: secondaryText,
+  const renderHighlight = () => {
+    if (!slide.highlight || !shouldShow("showHighlight") || isHidden(slide, "highlight")) return null;
+    return (
+      <span data-element="highlight" onClick={eClick("highlight")} style={{
+        ...elementStyle(slide, "highlight"), ...highlightStyle,
+        marginBottom: "12px", cursor: onElementClick ? "pointer" : undefined,
+      }}>{slide.highlight}</span>
+    );
   };
 
-  const highlightStyle: React.CSSProperties = {
-    display: "inline-block",
-    padding: "2px 10px",
-    borderRadius: "4px",
-    background: colors.highlightBg || accentColor,
-    color: colors.highlightText || bg,
-    fontWeight: 700,
-    fontSize: subtitleSize,
+  const renderTitle = (extraWeight?: number) => (
+    <h2 data-element="title" onClick={eClick("title")} style={{
+      ...titleStyle, ...elementStyle(slide, "title"),
+      fontWeight: extraWeight ?? typo.titleWeight ?? 700,
+      marginBottom: "12px", cursor: onElementClick ? "pointer" : undefined,
+    }}>{slide.title}</h2>
+  );
+
+  const renderSubtitle = () => {
+    if (!slide.subtitle || !shouldShow("showSubtitle") || isHidden(slide, "subtitle")) return null;
+    return (
+      <p data-element="subtitle" onClick={eClick("subtitle")} style={{
+        ...elementStyle(slide, "subtitle"),
+        fontSize: subtitleSize, color: secondaryText, lineHeight: 1.5,
+        marginBottom: "12px", cursor: onElementClick ? "pointer" : undefined,
+      }}>{slide.subtitle}</p>
+    );
+  };
+
+  const renderBody = () => {
+    if (!slide.body || !shouldShow("showBody") || isHidden(slide, "body")) return null;
+    return (
+      <p data-element="body" onClick={eClick("body")} style={{
+        ...bodyStyle, ...elementStyle(slide, "body"),
+        cursor: onElementClick ? "pointer" : undefined,
+      }}>{slide.body}</p>
+    );
+  };
+
+  const renderSourceLabel = () => {
+    if (!slide.sourceLabel || slide.layoutType === "quote" || !shouldShow("showSourceLabel") || isHidden(slide, "sourceLabel")) return null;
+    return (
+      <div data-element="sourceLabel" onClick={eClick("sourceLabel")} style={{
+        ...elementStyle(slide, "sourceLabel"),
+        marginTop: "auto", paddingTop: "12px", cursor: onElementClick ? "pointer" : undefined,
+      }}>
+        <span style={{ fontSize: isExport ? "14px" : "clamp(8px, 2vw, 11px)", color: secondaryText }}>{slide.sourceLabel}</span>
+      </div>
+    );
   };
 
   return (
@@ -132,41 +224,26 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
       <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", padding: basePadding, justifyContent: justifyMap[contentAlign] }}
         className={textAlignClass}>
 
-        {/* Category */}
-        {slide.category && shouldShow("showCategory") && (
-          <span style={{ fontSize: catSize, color: accentColor, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: isExport ? "16px" : "8px" }}>
-            {slide.category}
-          </span>
-        )}
+        {renderCategory()}
 
         {/* Center-title / Cover */}
         {(slide.layoutType === "center-title" || slide.type === "cover") && (
           <div style={{ display: "flex", flexDirection: "column", justifyContent: justifyMap[contentAlign], alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", flex: contentAlign === "center" ? 1 : undefined }}>
-            {slide.highlight && shouldShow("showHighlight") && (
-              <span style={{ ...highlightStyle, marginBottom: "12px" }}>{slide.highlight}</span>
-            )}
-            <h1 style={{ ...titleStyle, fontWeight: typo.titleWeight ?? 800, marginBottom: "12px" }}>{slide.title}</h1>
-            {slide.subtitle && shouldShow("showSubtitle") && (
-              <p style={{ fontSize: subtitleSize, color: secondaryText, lineHeight: 1.5 }}>{slide.subtitle}</p>
-            )}
+            {renderHighlight()}
+            {renderTitle(800)}
+            {renderSubtitle()}
           </div>
         )}
 
-        {/* Title-body */}
+        {/* Title-body / Title-image */}
         {(slide.layoutType === "title-body" || slide.layoutType === "title-image") && slide.type !== "cover" && (
           <div style={{ display: "flex", flexDirection: "column", justifyContent: justifyMap[contentAlign], flex: contentAlign === "center" ? 1 : undefined }}>
-            {slide.highlight && shouldShow("showHighlight") && (
-              <span style={{ ...highlightStyle, marginBottom: "12px" }}>{slide.highlight}</span>
-            )}
-            <h2 style={{ ...titleStyle, marginBottom: "16px" }}>{slide.title}</h2>
-            {slide.subtitle && shouldShow("showSubtitle") && (
-              <p style={{ fontSize: subtitleSize, color: secondaryText, lineHeight: 1.5, marginBottom: "12px" }}>{slide.subtitle}</p>
-            )}
-            {slide.body && shouldShow("showBody") && (
-              <p style={bodyStyle}>{slide.body}</p>
-            )}
-            {slide.layoutType === "title-image" && imageUrl && (
-              <div style={{ marginTop: "20px", borderRadius: imgBorderRadius, overflow: "hidden" }}>
+            {renderHighlight()}
+            {renderTitle()}
+            {renderSubtitle()}
+            {renderBody()}
+            {slide.layoutType === "title-image" && imageUrl && !isHidden(slide, "image") && (
+              <div data-element="image" onClick={eClick("image")} style={{ ...elementStyle(slide, "image"), marginTop: "20px", borderRadius: imgBorderRadius, overflow: "hidden", cursor: onElementClick ? "pointer" : undefined }}>
                 <img src={imageUrl} alt="" style={{
                   width: "100%", height: "auto", maxHeight: isExport ? "500px" : "40%", objectFit: "cover",
                   transform: `scale(${imgScale})`,
@@ -180,15 +257,14 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         {/* Bullet list */}
         {slide.layoutType === "bullet-list" && (
           <div style={{ display: "flex", flexDirection: "column", justifyContent: justifyMap[contentAlign], flex: contentAlign === "center" ? 1 : undefined }}>
-            <h2 style={{ ...titleStyle, marginBottom: "24px" }}>{slide.title}</h2>
-            {shouldShow("showBullets") && (
-              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+            {renderTitle()}
+            {shouldShow("showBullets") && !isHidden(slide, "bullets") && (
+              <ul data-element="bullets" onClick={eClick("bullets")} style={{ ...elementStyle(slide, "bullets"), listStyle: "none", padding: 0, margin: 0, cursor: onElementClick ? "pointer" : undefined }}>
                 {slide.bullets?.map((b, i) => (
                   <li key={i} style={{ fontSize: bulletSize, color: secondaryText, lineHeight: 1.6, padding: "8px 0", borderBottom: `1px solid ${colors.borderColor || theme.border}`, display: "flex", alignItems: "center", gap: "12px" }}>
                     <span style={{ color: accentColor, fontWeight: 700, fontSize: isExport ? "18px" : "clamp(10px, 2.5vw, 14px)", minWidth: "24px" }}>
                       {String(i + 1).padStart(2, "0")}
-                    </span>
-                    {b}
+                    </span>{b}
                   </li>
                 ))}
               </ul>
@@ -200,11 +276,16 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         {slide.layoutType === "quote" && (
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center" }}>
             <span style={{ fontSize: isExport ? "80px" : "clamp(30px, 10vw, 60px)", color: accentColor, lineHeight: 1, marginBottom: "16px" }}>"</span>
-            <p style={{ ...titleStyle, fontWeight: 600, fontStyle: "italic", maxWidth: "90%", lineHeight: 1.5 }}>
-              {slide.body || slide.title}
-            </p>
+            <p data-element="body" onClick={eClick("body")} style={{
+              ...titleStyle, ...elementStyle(slide, "body"),
+              fontWeight: 600, fontStyle: "italic", maxWidth: "90%", lineHeight: 1.5,
+              cursor: onElementClick ? "pointer" : undefined,
+            }}>{slide.body || slide.title}</p>
             {slide.sourceLabel && shouldShow("showSourceLabel") && (
-              <span style={{ ...bodyStyle, marginTop: "20px" }}>— {slide.sourceLabel}</span>
+              <span data-element="sourceLabel" onClick={eClick("sourceLabel")} style={{
+                ...bodyStyle, ...elementStyle(slide, "sourceLabel"),
+                marginTop: "20px", cursor: onElementClick ? "pointer" : undefined,
+              }}>— {slide.sourceLabel}</span>
             )}
           </div>
         )}
@@ -212,14 +293,12 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         {/* Timeline */}
         {slide.layoutType === "timeline" && (
           <div style={{ display: "flex", flexDirection: "column", justifyContent: justifyMap[contentAlign], flex: contentAlign === "center" ? 1 : undefined }}>
-            <h2 style={{ ...titleStyle, marginBottom: "24px" }}>{slide.title}</h2>
+            {renderTitle()}
             {slide.bullets?.map((b, i) => (
               <div key={i} style={{ display: "flex", gap: "16px", marginBottom: "16px" }}>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                   <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: accentColor }} />
-                  {i < (slide.bullets?.length || 0) - 1 && (
-                    <div style={{ width: "2px", flex: 1, background: theme.border, marginTop: "4px" }} />
-                  )}
+                  {i < (slide.bullets?.length || 0) - 1 && <div style={{ width: "2px", flex: 1, background: theme.border, marginTop: "4px" }} />}
                 </div>
                 <p style={{ fontSize: bulletSize, color: secondaryText, lineHeight: 1.5, paddingBottom: "8px" }}>{b}</p>
               </div>
@@ -230,15 +309,15 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         {/* CTA */}
         {slide.layoutType === "cta" && (
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center" }}>
-            <h2 style={{ ...titleStyle, fontWeight: 800, marginBottom: "20px" }}>{slide.title}</h2>
-            {slide.cta && shouldShow("showCta") && (
-              <div style={{
+            {renderTitle(800)}
+            {slide.cta && shouldShow("showCta") && !isHidden(slide, "cta") && (
+              <div data-element="cta" onClick={eClick("cta")} style={{
+                ...elementStyle(slide, "cta"),
                 display: "inline-block", padding: isExport ? "16px 40px" : "10px 24px",
                 background: accentColor, color: bg,
                 borderRadius: "999px", fontWeight: 600, fontSize: bodySize,
-              }}>
-                {slide.cta}
-              </div>
+                cursor: onElementClick ? "pointer" : undefined,
+              }}>{slide.cta}</div>
             )}
           </div>
         )}
@@ -246,24 +325,13 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         {/* Image overlay content */}
         {slide.layoutType === "image-overlay" && slide.type !== "cover" && (
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-            {slide.highlight && shouldShow("showHighlight") && (
-              <span style={{ ...highlightStyle, marginBottom: "12px", alignSelf: "flex-start" }}>{slide.highlight}</span>
-            )}
-            <h2 style={{ ...titleStyle, marginBottom: "12px" }}>{slide.title}</h2>
-            {slide.body && shouldShow("showBody") && (
-              <p style={bodyStyle}>{slide.body}</p>
-            )}
+            {renderHighlight()}
+            {renderTitle()}
+            {renderBody()}
           </div>
         )}
 
-        {/* Source label */}
-        {slide.sourceLabel && slide.layoutType !== "quote" && shouldShow("showSourceLabel") && (
-          <div style={{ marginTop: "auto", paddingTop: "12px" }}>
-            <span style={{ fontSize: isExport ? "14px" : "clamp(8px, 2vw, 11px)", color: secondaryText }}>
-              {slide.sourceLabel}
-            </span>
-          </div>
-        )}
+        {renderSourceLabel()}
       </div>
     </div>
   );
