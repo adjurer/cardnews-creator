@@ -33,15 +33,6 @@ export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize,
 
   const [w, h] = exportSize.split("x").map(Number);
 
-  const handleElementSelect = useCallback((key: ElementKey | null) => {
-    setSelectedElement(key);
-    onElementSelect?.(key);
-  }, [setSelectedElement, onElementSelect]);
-
-  const handleUpdateOffset = useCallback((key: ElementKey, dx: number, dy: number) => {
-    onUpdateElementOffset?.(key, dx, dy);
-  }, [onUpdateElementOffset]);
-
   const lockedMap: Record<string, boolean> = {};
   if (slide.elementOverrides) {
     Object.entries(slide.elementOverrides).forEach(([k, v]) => {
