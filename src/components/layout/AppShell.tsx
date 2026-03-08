@@ -3,7 +3,7 @@ import { Sidebar } from "./Sidebar";
 
 export function AppShell() {
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
+    <div className="flex flex-col h-screen w-full overflow-hidden bg-background">
       <Sidebar />
       <main className="flex-1 overflow-hidden">
         <Outlet />
