@@ -297,7 +297,8 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     return (
       <div data-element="sourceLabel" onClick={eClick("sourceLabel")} style={{
         ...elementStyle(slide, "sourceLabel"),
-        marginTop: "auto", paddingTop: "12px", cursor: onElementClick ? "pointer" : undefined,
+        marginTop: "auto", padding: 0,
+        cursor: onElementClick ? "pointer" : undefined,
       }}>
         <span style={{ fontSize: sourceLabelSize, color: secondaryText }}>{slide.sourceLabel}</span>
       </div>
