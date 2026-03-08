@@ -144,8 +144,15 @@ export default function EditorPage() {
         const newSize = Math.max(12, Math.min(72, currentSize + delta));
         updateSlide(slide.id, { typography: { ...typo, titleSize: newSize } });
       }
+    } else if (key === "subtitle") {
+      const currentSize = typo.subtitleSize ?? ((typo.bodySize ?? 16) + 2);
+      const delta = Math.round(dh * 0.5);
+      if (delta !== 0) {
+        const newSize = Math.max(10, Math.min(48, currentSize + delta));
+        updateSlide(slide.id, { typography: { ...typo, subtitleSize: newSize } });
+      }
     } else {
-      // subtitle, category, body, bullets, cta, sourceLabel → bodySize
+      // category, body, bullets, cta, sourceLabel → bodySize
       const currentSize = typo.bodySize ?? 16;
       const delta = Math.round(dh * 0.5);
       if (delta !== 0) {
