@@ -210,6 +210,7 @@ export default function EditorPage() {
             exportSize={currentProject.exportPreset.size}
             onElementSelect={handleElementSelect}
             onUpdateElementOffset={handleUpdateElementOffset}
+            onResizeElement={handleResizeElement}
           />
         </div>
       </div>
