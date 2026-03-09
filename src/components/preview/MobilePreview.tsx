@@ -182,6 +182,7 @@ export function MobilePreview({ slides, currentIndex, onIndexChange, exportSize,
             height={h}
             selectedElement={selectedElement}
             onElementClick={handleElementSelect}
+            marginInsetPct={marginPct}
           />
 
           <CanvasOverlay
