@@ -444,7 +444,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* CTA */}
         {slide.layoutType === "cta" && (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", gap: isExport ? "14px" : "8px" }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", width: "100%", gap: isExport ? "14px" : "8px" }}>
             {renderTitle(800)}
             {renderCta()}
           </div>
