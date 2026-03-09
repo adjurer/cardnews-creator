@@ -318,11 +318,17 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     const ctaBg = ctaOvr.boxBg
       ? `${ctaOvr.boxBg}${Math.round((ctaOvr.boxBgOpacity ?? 1) * 255).toString(16).padStart(2, "0")}`
       : accentColor;
+
+    // CTA는 배경이 있는 "버튼"이라 기본 폭이 100%면 정렬 변화가 눈에 안 보일 수 있어 기본값은 fit-content로 둠
+    const alignSelf = slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center";
+    const ctaWidth = ctaOvr.boxWidth !== undefined ? `${ctaOvr.boxWidth}%` : "fit-content";
+
     return (
       <div data-element="cta" onClick={eClick("cta")} style={{
         ...elementStyle(slide, "cta"),
         display: "inline-block",
-        width: ctaOvr.boxWidth ? `${ctaOvr.boxWidth}%` : "100%",
+        width: ctaWidth,
+        alignSelf,
         padding: ctaPad,
         background: ctaBg, color: ctaOvr.color || bg,
         borderRadius: ctaRadius, fontWeight: ctaOvr.fontWeight || 600, fontSize: ctaSize,
