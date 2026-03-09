@@ -480,13 +480,14 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         const logo = slide.logo!;
         const logoPos = logo.position || "top-left";
         const marginVal = logo.margin ?? 24;
-        // Use content padding as minimum so logo stays inside guidelines
-        const marginPctX = paddingX;
-        const marginPctY = paddingY;
-        const marginXPx = (marginPctX / 100) * width;
-        const marginYPx = (marginPctY / 100) * height;
-        const effectiveMarginX = Math.max(marginVal, marginXPx);
-        const effectiveMarginY = Math.max(marginVal, marginYPx);
+        // Keep logo inside: content padding + preview margin guide + small anti-alias safety
+        const guideXPx = (marginInsetPct / 100) * width;
+        const guideYPx = (marginInsetPct / 100) * height;
+        const marginXPx = (paddingX / 100) * width;
+        const marginYPx = (paddingY / 100) * height;
+        const safetyPx = 1;
+        const effectiveMarginX = Math.max(marginVal, marginXPx, guideXPx) + safetyPx;
+        const effectiveMarginY = Math.max(marginVal, marginYPx, guideYPx) + safetyPx;
         const marginH = isExport ? `${effectiveMarginX}px` : `${(effectiveMarginX / width) * 100}%`;
         const marginV = isExport ? `${effectiveMarginY}px` : `${(effectiveMarginY / height) * 100}%`;
         const logoW = isExport ? `${logo.width ?? 60}px` : `${((logo.width ?? 60) / width) * 100}%`;
