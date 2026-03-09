@@ -345,7 +345,9 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     return (
       <div data-element="sourceLabel" onClick={eClick("sourceLabel")} style={{
         ...elementStyle(slide, "sourceLabel"),
-        marginTop: "auto", padding: 0,
+        // 콘텐츠 정렬(상/중/하)을 방해하지 않도록, 하단 정렬일 때만 아래로 밀어둠
+        marginTop: contentAlign === "end" ? "auto" : undefined,
+        padding: 0,
         display: "inline-block", width: "fit-content", maxWidth: "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>
