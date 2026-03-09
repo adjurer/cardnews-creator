@@ -461,7 +461,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Image overlay content */}
         {slide.layoutType === "image-overlay" && slide.type !== "cover" && (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", width: "100%", gap: isExport ? "12px" : "6px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: hAlignItems, width: "100%", gap: isExport ? "12px" : "6px" }}>
             {renderHighlight()}
             {renderTitle()}
             {renderBody()}
