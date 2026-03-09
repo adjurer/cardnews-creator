@@ -52,7 +52,7 @@ function elementStyle(slide: Slide, key: ElementKey): React.CSSProperties {
   };
 }
 
-export function SlideRenderer({ slide, width = 1080, height = 1350, className, isExport, selectedElement, onElementClick }: Props) {
+export function SlideRenderer({ slide, width = 1080, height = 1350, className, isExport, selectedElement, onElementClick, marginInsetPct = 0 }: Props) {
   const theme = THEME_MAP[slide.themePreset];
   const typo = slide.typography || {};
   const colors = slide.colors || {};
