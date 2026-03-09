@@ -414,8 +414,10 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Quote */}
         {slide.layoutType === "quote" && (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center" }}>
-            <span style={{ fontSize: isExport ? "80px" : "clamp(30px, 10vw, 60px)", color: accentColor, lineHeight: 1, marginBottom: "16px" }}>"</span>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: hAlignItems, width: "100%" }}>
+            <span style={{ fontSize: isExport ? "80px" : "clamp(30px, 10vw, 60px)", color: accentColor, lineHeight: 1, marginBottom: "16px" }}>
+              "
+            </span>
             <p data-element="body" onClick={eClick("body")} style={{
               ...titleStyle, ...elementStyle(slide, "body"),
               fontWeight: 600, fontStyle: "italic", maxWidth: "90%", lineHeight: 1.5,
