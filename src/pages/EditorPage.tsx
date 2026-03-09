@@ -173,6 +173,19 @@ export default function EditorPage() {
       return;
     }
 
+    // Logo resize: adjust logo.width directly
+    if (key === "logo") {
+      const logo = slide.logo;
+      if (!logo) return;
+      const currentW = logo.width ?? 60;
+      const delta = (handle.includes("e") || handle.includes("w")) ? dw : dh;
+      const newW = Math.max(20, Math.min(300, Math.round(currentW + delta)));
+      if (newW !== currentW) {
+        updateSlide(slide.id, { logo: { ...logo, width: newW } });
+      }
+      return;
+    }
+
     const sizeMap: Record<string, { field: string; fallback: number; min: number; max: number }> = {
       title:       { field: "titleSize",       fallback: 28, min: 14, max: 80 },
       highlight:   { field: "highlightSize",   fallback: typo.bodySize ?? 16, min: 10, max: 80 },
