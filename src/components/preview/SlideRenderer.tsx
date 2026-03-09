@@ -477,9 +477,17 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
       {/* Logo overlay */}
       {slide.logo?.url && !isHidden(slide, "logo") && (() => {
         const logo = slide.logo!;
-        const pos = logo.position || "top-left";
+        const logoPos = logo.position || "top-left";
         const marginVal = logo.margin ?? 24;
-        const margin = isExport ? `${marginVal}px` : `${(marginVal / width) * 100}%`;
+        // Use content padding as minimum so logo stays inside guidelines
+        const marginPctX = paddingX;
+        const marginPctY = paddingY;
+        const marginXPx = (marginPctX / 100) * width;
+        const marginYPx = (marginPctY / 100) * height;
+        const effectiveMarginX = Math.max(marginVal, marginXPx);
+        const effectiveMarginY = Math.max(marginVal, marginYPx);
+        const marginH = isExport ? `${effectiveMarginX}px` : `${(effectiveMarginX / width) * 100}%`;
+        const marginV = isExport ? `${effectiveMarginY}px` : `${(effectiveMarginY / height) * 100}%`;
         const logoW = isExport ? `${logo.width ?? 60}px` : `${((logo.width ?? 60) / width) * 100}%`;
 
         const ovr = getOverride(slide, "logo");
@@ -488,8 +496,8 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
           zIndex: 10,
           opacity: logo.opacity ?? 1,
           transform: ovr.offsetX || ovr.offsetY ? `translate(${ovr.offsetX || 0}px, ${ovr.offsetY || 0}px)` : undefined,
-          ...(pos.includes("top") ? { top: margin } : { bottom: margin }),
-          ...(pos.includes("left") ? { left: margin } : pos.includes("right") ? { right: margin } : { left: "50%", transform: `translateX(-50%)${ovr.offsetX || ovr.offsetY ? ` translate(${ovr.offsetX || 0}px, ${ovr.offsetY || 0}px)` : ""}` }),
+          ...(logoPos.includes("top") ? { top: marginV } : { bottom: marginV }),
+          ...(logoPos.includes("left") ? { left: marginH } : logoPos.includes("right") ? { right: marginH } : { left: "50%", transform: `translateX(-50%)${ovr.offsetX || ovr.offsetY ? ` translate(${ovr.offsetX || 0}px, ${ovr.offsetY || 0}px)` : ""}` }),
         };
 
         return (
