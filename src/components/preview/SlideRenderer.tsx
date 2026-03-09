@@ -131,6 +131,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
   const textAlignClass = slide.textAlign === "left" ? "text-left" : slide.textAlign === "right" ? "text-right" : "text-center";
   const justifyMap = { start: "flex-start", center: "center", end: "flex-end" };
+  const hAlignItems: React.CSSProperties["alignItems"] = slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center";
 
   const titleSize = isExport ? `${(typo.titleSize ?? 28) * 1.5}px` : `${typo.titleSize ?? 28}px`;
   const subtitleSize = isExport ? `${(typo.subtitleSize ?? (typo.bodySize ?? 16) + 2) * 1.3}px` : `${typo.subtitleSize ?? ((typo.bodySize ?? 16) + 2)}px`;
@@ -344,7 +345,9 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     return (
       <div data-element="sourceLabel" onClick={eClick("sourceLabel")} style={{
         ...elementStyle(slide, "sourceLabel"),
-        marginTop: "auto", padding: 0,
+        // 콘텐츠 정렬(상/중/하)을 방해하지 않도록, 하단 정렬일 때만 아래로 밀어둠
+        marginTop: contentAlign === "end" ? "auto" : undefined,
+        padding: 0,
         display: "inline-block", width: "fit-content", maxWidth: "100%",
         cursor: onElementClick ? "pointer" : undefined,
       }}>
@@ -357,7 +360,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     <div style={containerStyle} className={className}>
       {renderImage()}
 
-      <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", padding: basePadding, justifyContent: justifyMap[contentAlign], textAlign: slide.textAlign, overflow: "hidden", gap: 0 }}
+      <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", padding: basePadding, justifyContent: justifyMap[contentAlign], alignItems: hAlignItems, textAlign: slide.textAlign, overflow: "hidden", gap: 0 }}
         className={textAlignClass}>
 
         {renderCategory()}
@@ -413,8 +416,10 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Quote */}
         {slide.layoutType === "quote" && (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center" }}>
-            <span style={{ fontSize: isExport ? "80px" : "clamp(30px, 10vw, 60px)", color: accentColor, lineHeight: 1, marginBottom: "16px" }}>"</span>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: hAlignItems, width: "100%" }}>
+            <span style={{ fontSize: isExport ? "80px" : "clamp(30px, 10vw, 60px)", color: accentColor, lineHeight: 1, marginBottom: "16px" }}>
+              "
+            </span>
             <p data-element="body" onClick={eClick("body")} style={{
               ...titleStyle, ...elementStyle(slide, "body"),
               fontWeight: 600, fontStyle: "italic", maxWidth: "90%", lineHeight: 1.5,
@@ -450,7 +455,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* CTA */}
         {slide.layoutType === "cta" && (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", width: "100%", gap: isExport ? "14px" : "8px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: hAlignItems, width: "100%", gap: isExport ? "14px" : "8px" }}>
             {renderTitle(800)}
             {renderCta()}
           </div>
@@ -458,7 +463,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Image overlay content */}
         {slide.layoutType === "image-overlay" && slide.type !== "cover" && (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", width: "100%", gap: isExport ? "12px" : "6px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: hAlignItems, width: "100%", gap: isExport ? "12px" : "6px" }}>
             {renderHighlight()}
             {renderTitle()}
             {renderBody()}
