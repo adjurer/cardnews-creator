@@ -131,6 +131,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
   const textAlignClass = slide.textAlign === "left" ? "text-left" : slide.textAlign === "right" ? "text-right" : "text-center";
   const justifyMap = { start: "flex-start", center: "center", end: "flex-end" };
+  const hAlignItems: React.CSSProperties["alignItems"] = slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center";
 
   const titleSize = isExport ? `${(typo.titleSize ?? 28) * 1.5}px` : `${typo.titleSize ?? 28}px`;
   const subtitleSize = isExport ? `${(typo.subtitleSize ?? (typo.bodySize ?? 16) + 2) * 1.3}px` : `${typo.subtitleSize ?? ((typo.bodySize ?? 16) + 2)}px`;
