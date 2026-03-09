@@ -326,7 +326,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         padding: ctaPad,
         background: ctaBg, color: ctaOvr.color || bg,
         borderRadius: ctaRadius, fontWeight: ctaOvr.fontWeight || 600, fontSize: ctaSize,
-        textAlign: "center",
+        textAlign: "inherit",
         margin: 0,
         cursor: onElementClick ? "pointer" : undefined,
       }}>{slide.cta}</div>
