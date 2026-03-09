@@ -388,10 +388,10 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Bullet list */}
         {slide.layoutType === "bullet-list" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", width: "100%", gap: 0 }}>
             {renderTitle()}
             {shouldShow("showBullets") && !isHidden(slide, "bullets") && (
-              <ul data-element="bullets" onClick={eClick("bullets")} style={{ ...elementStyle(slide, "bullets"), listStyle: "none", padding: 0, margin: 0, cursor: onElementClick ? "pointer" : undefined }}>
+              <ul data-element="bullets" onClick={eClick("bullets")} style={{ ...elementStyle(slide, "bullets"), listStyle: "none", padding: 0, margin: 0, width: "100%", cursor: onElementClick ? "pointer" : undefined }}>
                 {slide.bullets?.map((b, i) => (
                   <li key={i} style={{ fontSize: bulletSize, color: secondaryText, lineHeight: 1.6, padding: "8px 0", borderBottom: `1px solid ${colors.borderColor || theme.border}`, display: "flex", alignItems: "center", gap: "12px" }}>
                     <span style={{ color: accentColor, fontWeight: 700, fontSize: isExport ? "18px" : "clamp(10px, 2.5vw, 14px)", minWidth: "24px" }}>
