@@ -16,6 +16,7 @@ interface Props {
   isExport?: boolean;
   selectedElement?: ElementKey | null;
   onElementClick?: (key: ElementKey) => void;
+  marginInsetPct?: number; // preview margin guide inset percentage
 }
 
 const GRADIENT_MAP: Record<string, string> = {
