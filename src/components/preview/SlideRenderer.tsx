@@ -351,14 +351,14 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     <div style={containerStyle} className={className}>
       {renderImage()}
 
-      <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", padding: basePadding, justifyContent: justifyMap[contentAlign], overflow: "hidden", gap: 0 }}
+      <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", padding: basePadding, justifyContent: justifyMap[contentAlign], textAlign: slide.textAlign, overflow: "hidden", gap: 0 }}
         className={textAlignClass}>
 
         {renderCategory()}
 
         {/* Center-title / Cover */}
         {(slide.layoutType === "center-title" || slide.type === "cover") && (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", gap: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", width: "100%", gap: 0 }}>
             {renderHighlight()}
             {renderTitle(800)}
             {renderSubtitle()}
@@ -368,7 +368,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Title-body / Title-image */}
         {(slide.layoutType === "title-body" || slide.layoutType === "title-image") && slide.type !== "cover" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", width: "100%", gap: 0 }}>
             {renderHighlight()}
             {renderTitle()}
             {renderSubtitle()}
@@ -388,10 +388,10 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Bullet list */}
         {slide.layoutType === "bullet-list" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", width: "100%", gap: 0 }}>
             {renderTitle()}
             {shouldShow("showBullets") && !isHidden(slide, "bullets") && (
-              <ul data-element="bullets" onClick={eClick("bullets")} style={{ ...elementStyle(slide, "bullets"), listStyle: "none", padding: 0, margin: 0, cursor: onElementClick ? "pointer" : undefined }}>
+              <ul data-element="bullets" onClick={eClick("bullets")} style={{ ...elementStyle(slide, "bullets"), listStyle: "none", padding: 0, margin: 0, width: "100%", cursor: onElementClick ? "pointer" : undefined }}>
                 {slide.bullets?.map((b, i) => (
                   <li key={i} style={{ fontSize: bulletSize, color: secondaryText, lineHeight: 1.6, padding: "8px 0", borderBottom: `1px solid ${colors.borderColor || theme.border}`, display: "flex", alignItems: "center", gap: "12px" }}>
                     <span style={{ color: accentColor, fontWeight: 700, fontSize: isExport ? "18px" : "clamp(10px, 2.5vw, 14px)", minWidth: "24px" }}>
@@ -427,7 +427,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Timeline */}
         {slide.layoutType === "timeline" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: isExport ? "12px" : "6px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", width: "100%", gap: isExport ? "12px" : "6px" }}>
             {renderTitle()}
             {slide.bullets?.map((b, i) => (
               <div key={i} style={{ display: "flex", gap: "16px", marginBottom: "16px" }}>
@@ -444,7 +444,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* CTA */}
         {slide.layoutType === "cta" && (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", gap: isExport ? "14px" : "8px" }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", width: "100%", gap: isExport ? "14px" : "8px" }}>
             {renderTitle(800)}
             {renderCta()}
           </div>
@@ -452,7 +452,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
 
         {/* Image overlay content */}
         {slide.layoutType === "image-overlay" && slide.type !== "cover" && (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: isExport ? "12px" : "6px" }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", alignItems: slide.textAlign === "left" ? "flex-start" : slide.textAlign === "right" ? "flex-end" : "center", width: "100%", gap: isExport ? "12px" : "6px" }}>
             {renderHighlight()}
             {renderTitle()}
             {renderBody()}
