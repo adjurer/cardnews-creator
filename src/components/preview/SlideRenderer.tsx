@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { THEME_MAP } from "@/lib/themes";
 import type { Slide, ElementKey, ElementOverride, SlideLogo, OverlayDirection } from "@/types/project";
 
+/** Convert literal \n sequences to real newlines */
+const nl = (text: string | undefined): string | undefined =>
+  text ? text.replace(/\\n/g, "\n") : text;
+
 const DEG_MAP: Record<OverlayDirection, string> = {
   "top-left": "135deg", "top-center": "180deg", "top-right": "225deg",
   "center-left": "90deg", "center": "", "center-right": "270deg",
@@ -252,7 +256,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         margin: 0, padding: 0,
         display: "block", width: getOverride(slide, "category").boxWidth ? `${getOverride(slide, "category").boxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
-      }}>{slide.category}</span>
+      }}>{nl(slide.category)}</span>
     );
   };
 
@@ -265,7 +269,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         display: "inline-block",
         width: highlightOvr.boxWidth ? `${highlightOvr.boxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
-      }}>{slide.highlight}</span>
+      }}>{nl(slide.highlight)}</span>
     );
   };
 
@@ -280,7 +284,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         display: "block",
         width: titleOvr.boxWidth ? `${titleOvr.boxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
-      }}>{slide.title}</h2>
+      }}>{nl(slide.title)}</h2>
     );
   };
 
@@ -294,7 +298,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         display: "block",
         width: getOverride(slide, "subtitle").boxWidth ? `${getOverride(slide, "subtitle").boxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
-      }}>{slide.subtitle}</p>
+      }}>{nl(slide.subtitle)}</p>
     );
   };
 
@@ -308,7 +312,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         display: "block",
         width: getOverride(slide, "body").boxWidth ? `${getOverride(slide, "body").boxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
-      }}>{slide.body}</p>
+      }}>{nl(slide.body)}</p>
     );
   };
 
@@ -337,7 +341,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         textAlign: "inherit",
         margin: 0,
         cursor: onElementClick ? "pointer" : undefined,
-      }}>{slide.cta}</div>
+      }}>{nl(slide.cta)}</div>
     );
   };
 
