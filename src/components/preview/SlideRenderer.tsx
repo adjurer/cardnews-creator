@@ -284,7 +284,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         display: "block",
         width: titleOvr.boxWidth ? `${titleOvr.boxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
-      }}>{slide.title}</h2>
+      }}>{nl(slide.title)}</h2>
     );
   };
 
