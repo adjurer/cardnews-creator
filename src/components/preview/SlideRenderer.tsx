@@ -174,6 +174,9 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     letterSpacing: typo.bodyLetterSpacing ? `${typo.bodyLetterSpacing}em` : undefined,
     color: secondaryText,
     fontFamily: bodyFamily,
+    wordBreak: "keep-all",
+    overflowWrap: "break-word",
+    whiteSpace: "pre-wrap",
   };
 
   const highlightOvr = getOverride(slide, "highlight");
