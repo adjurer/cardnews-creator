@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { THEME_MAP } from "@/lib/themes";
 import type { Slide, ElementKey, ElementOverride, SlideLogo, OverlayDirection } from "@/types/project";
 
+/** Convert literal \n sequences to real newlines */
+const nl = (text: string | undefined): string | undefined =>
+  text ? text.replace(/\\n/g, "\n") : text;
+
 const DEG_MAP: Record<OverlayDirection, string> = {
   "top-left": "135deg", "top-center": "180deg", "top-right": "225deg",
   "center-left": "90deg", "center": "", "center-right": "270deg",
