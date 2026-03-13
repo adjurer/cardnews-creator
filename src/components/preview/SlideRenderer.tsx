@@ -298,7 +298,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         display: "block",
         width: getOverride(slide, "subtitle").boxWidth ? `${getOverride(slide, "subtitle").boxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
-      }}>{slide.subtitle}</p>
+      }}>{nl(slide.subtitle)}</p>
     );
   };
 
