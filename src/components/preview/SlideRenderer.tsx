@@ -341,7 +341,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         textAlign: "inherit",
         margin: 0,
         cursor: onElementClick ? "pointer" : undefined,
-      }}>{slide.cta}</div>
+      }}>{nl(slide.cta)}</div>
     );
   };
 
