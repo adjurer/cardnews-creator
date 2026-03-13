@@ -55,11 +55,11 @@ serve(async (req) => {
     let userPrompt: string;
 
     if (mode === "rewrite") {
-      systemPrompt = `당신은 인스타그램 카드뉴스 편집 전문가입니다.
+      systemPrompt = `당신은 인스타그램 카드뉴스 카피라이터입니다.
 현재 슬라이드의 내용을 더 좋게 다시 작성합니다.
-- 한국어로 작성
-- 모바일 가독성 우선
-- 한 슬라이드에 적절한 양의 텍스트
+- 제목은 15자 이내, 본문은 80자 이내, 불릿은 각 15자 이내
+- 군더더기 없는 개조식/명사형 문체 선호
+- 모바일 가독성 우선: 짧고 임팩트 있게
 - 기존 type과 layoutType은 유지`;
 
       userPrompt = `프로젝트: ${projectTitle}
