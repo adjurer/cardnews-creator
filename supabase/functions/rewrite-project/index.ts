@@ -62,14 +62,17 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `당신은 인스타그램 카드뉴스 편집 전문가입니다.
+    const systemPrompt = `당신은 인스타그램 카드뉴스 카피라이터입니다.
 사용자의 요청에 따라 전체 프로젝트의 슬라이드를 재구성합니다.
 
-규칙:
-- 한국어로 작성
+글쓰기 원칙:
+- 제목 15자 이내, 본문 80자 이내, 불릿 각 15자 이내
+- 군더더기 없는 개조식/명사형 문체 선호
 - 모바일 가독성 우선
-- 각 슬라이드에 적절한 type과 layoutType 지정
-- 첫 장은 cover, 마지막 장은 cta 유지
+
+구조 규칙:
+- 첫 장은 cover(layoutType: center-title), 마지막 장은 cta(layoutType: cta) 유지
+- list 타입은 layoutType: bullet-list, quote는 layoutType: quote
 - 요청에 슬라이드 수 변경이 있으면 반영
 - 요청에 톤 변경이 있으면 전체에 일관되게 적용
 - category는 영어 대문자`;
