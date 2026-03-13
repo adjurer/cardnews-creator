@@ -162,6 +162,9 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     maxWidth: titleBoxWidth < 100 ? `${titleBoxWidth}%` : undefined,
     color: textColor,
     fontFamily: titleFamily,
+    wordBreak: "keep-all",
+    overflowWrap: "break-word",
+    whiteSpace: "pre-wrap",
   };
 
   const bodyStyle: React.CSSProperties = {
@@ -171,6 +174,9 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     letterSpacing: typo.bodyLetterSpacing ? `${typo.bodyLetterSpacing}em` : undefined,
     color: secondaryText,
     fontFamily: bodyFamily,
+    wordBreak: "keep-all",
+    overflowWrap: "break-word",
+    whiteSpace: "pre-wrap",
   };
 
   const highlightOvr = getOverride(slide, "highlight");
@@ -365,7 +371,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     <div style={containerStyle} className={className}>
       {renderImage()}
 
-      <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", padding: basePadding, justifyContent: justifyMap[contentAlign], alignItems: hAlignItems, textAlign: slide.textAlign, overflow: "hidden", gap: 0 }}
+      <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", padding: basePadding, justifyContent: justifyMap[contentAlign], alignItems: hAlignItems, textAlign: slide.textAlign, overflow: "hidden", gap: 0, wordBreak: "keep-all", overflowWrap: "break-word" }}
         className={textAlignClass}>
 
         {renderCategory()}

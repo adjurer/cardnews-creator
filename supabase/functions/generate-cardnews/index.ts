@@ -72,19 +72,32 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `당신은 인스타그램용 카드뉴스 전문 작성자입니다.
+    const systemPrompt = `당신은 인스타그램용 카드뉴스 전문 작성자이자 카피라이터입니다.
 사용자가 제공한 텍스트/URL/뉴스를 분석하여 6~8장의 카드뉴스 슬라이드를 생성합니다.
 
-규칙:
-- 첫 장(cover): 강한 훅이 되는 제목, 카테고리 라벨 포함
-- 두 번째 장(summary): 전체 내용 요약 (목차 또는 핵심 요약)
-- 중간 장(detail/list/quote): 핵심 정보를 1장 1메시지로 분해
-- 마지막 장(cta): 결론 또는 행동 유도
-- 모든 텍스트는 한국어
-- 한 슬라이드에 텍스트가 너무 많지 않게 (모바일 가독성 우선)
-- category는 영어 대문자로 (예: AI & INSIGHT, TECH & GADGET, TREND)
+## 글쓰기 원칙 (매우 중요!)
+- 카드뉴스는 "짧고 임팩트 있는 카피"가 핵심입니다
+- 제목(title): 최대 15자 이내. 핵심 키워드만. 긴 문장 절대 금지
+- 부제(subtitle): 최대 20자 이내. 제목을 보충하는 한 줄
+- 하이라이트(highlight): 핵심 수치나 팩트 한 줄 (예: "전년 대비 23% 감소")
+- 본문(body): 2~3문장 이내, 총 80자 이내. 군더더기 없이 핵심만
+- 불릿(bullets): 각 항목 15자 이내, 최대 3~4개
+- CTA: 10자 이내의 행동 유도 문구
+- 모든 텍스트에서 "~입니다", "~합니다" 같은 장황한 서술체 최소화
+- 명사형/개조식 문체 선호 (예: "집값 하락세 본격화" > "집값이 하락세로 접어들었습니다")
+
+## 구조 규칙
+- 첫 장(cover): 강한 훅이 되는 제목 + category 라벨. body/bullets 불필요
+- 두 번째 장(summary): 핵심 3줄 요약. layoutType은 "title-body"
+- 중간 장(detail/list): 1장 1메시지. list는 bullets 활용, detail은 body 활용
+- 마지막 장(cta): 결론 + CTA 버튼 문구
+- category는 영어 대문자로 (예: AI & INSIGHT, ECONOMY & HOUSING)
 - 각 슬라이드에 적절한 layoutType 지정
-- themePreset은 내용에 맞게 선택 (기술=cyan-accent, 트렌드=editorial-dark, 따뜻한 주제=warm-neutral, 미니멀=dark-minimal)`;
+- cover 슬라이드의 layoutType은 반드시 "center-title"
+- list 슬라이드의 layoutType은 반드시 "bullet-list"
+- quote 슬라이드의 layoutType은 반드시 "quote"
+- cta 슬라이드의 layoutType은 반드시 "cta"
+- themePreset: 기술=cyan-accent, 트렌드=editorial-dark, 따뜻한=warm-neutral, 미니멀=dark-minimal`;
 
     const userPrompt = title
       ? `제목: ${title}\n소스 타입: ${sourceType}\n\n내용:\n${content}`
@@ -97,7 +110,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-2.5-pro",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
