@@ -162,6 +162,9 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
     maxWidth: titleBoxWidth < 100 ? `${titleBoxWidth}%` : undefined,
     color: textColor,
     fontFamily: titleFamily,
+    wordBreak: "keep-all",
+    overflowWrap: "break-word",
+    whiteSpace: "pre-wrap",
   };
 
   const bodyStyle: React.CSSProperties = {
