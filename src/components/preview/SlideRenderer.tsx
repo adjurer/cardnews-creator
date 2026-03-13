@@ -269,7 +269,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         display: "inline-block",
         width: highlightOvr.boxWidth ? `${highlightOvr.boxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
-      }}>{slide.highlight}</span>
+      }}>{nl(slide.highlight)}</span>
     );
   };
 
