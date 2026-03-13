@@ -312,7 +312,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         display: "block",
         width: getOverride(slide, "body").boxWidth ? `${getOverride(slide, "body").boxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
-      }}>{slide.body}</p>
+      }}>{nl(slide.body)}</p>
     );
   };
 
