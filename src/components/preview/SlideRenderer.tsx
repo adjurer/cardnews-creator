@@ -256,7 +256,7 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         margin: 0, padding: 0,
         display: "block", width: getOverride(slide, "category").boxWidth ? `${getOverride(slide, "category").boxWidth}%` : "100%",
         cursor: onElementClick ? "pointer" : undefined,
-      }}>{slide.category}</span>
+      }}>{nl(slide.category)}</span>
     );
   };
 
