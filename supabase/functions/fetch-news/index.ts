@@ -72,17 +72,18 @@ async function fetchRssFeed(url: string, category: string, limit: number = 5): P
       // Skip feed-level titles
       if (cleanTitle === "Google 뉴스" || cleanTitle.length < 5) continue;
       
-      const date = rss.pubDate 
-        ? new Date(rss.pubDate).toISOString().split("T")[0]
-        : new Date().toISOString().split("T")[0];
+      const pubDateObj = rss.pubDate ? new Date(rss.pubDate) : new Date();
+      const date = pubDateObj.toISOString().split("T")[0];
+      const time = `${String(pubDateObj.getHours()).padStart(2,"0")}:${String(pubDateObj.getMinutes()).padStart(2,"0")}`;
 
       items.push({
         id: `news-${category}-${i}`,
         title: cleanTitle,
         source,
         date,
+        time,
         category,
-        summary: cleanTitle, // Google News RSS doesn't provide real summaries
+        summary: cleanTitle,
         link: rss.link,
       });
     }
