@@ -72,8 +72,8 @@ async function fetchRssFeed(url: string, category: string, limit: number = 5): P
     for (let i = 1; i < Math.min(titles.length, limit + 1); i++) {
       const { cleanTitle, source } = extractSourceFromTitle(titles[i]);
       
-      // Clean description (remove HTML tags)
-      const rawDesc = descriptions[i] || "";
+      // Clean description: strip all HTML, decode entities, extract plain text
+      const rawDesc = descriptions[i] || descriptions[i - 1] || "";
       const cleanDesc = rawDesc.replace(/<[^>]+>/g, "").replace(/&[a-z]+;/gi, " ").trim();
       
       const date = pubDates[i - 1] 
