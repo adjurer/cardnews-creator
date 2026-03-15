@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, FileText, Link, Newspaper, Rss, BookOpen } from "lucide-react";
+import { ArrowLeft, FileText, Link, Newspaper, Rss, BookOpen, Loader2, RefreshCw } from "lucide-react";
 import { useProjectStore } from "@/store/useProjectStore";
-import { MOCK_NEWS, MOCK_FEEDS, MOCK_EXAMPLES } from "@/mocks/data";
+import { MOCK_FEEDS, MOCK_EXAMPLES } from "@/mocks/data";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import type { SourceType } from "@/types/project";
 
 type Tab = "text" | "example" | "news" | "feed" | "url";
@@ -26,6 +27,37 @@ export default function CreateProjectPage() {
   const [selectedFeedEntries, setSelectedFeedEntries] = useState<string[]>([]);
   const [selectedExample, setSelectedExample] = useState<string | null>(null);
 
+  // Live news state
+  const [liveNews, setLiveNews] = useState<Array<{
+    id: string; title: string; source: string; date: string; category: string; summary: string;
+  }>>([]);
+  const [newsLoading, setNewsLoading] = useState(false);
+  const [newsError, setNewsError] = useState<string | null>(null);
+
+  const fetchLiveNews = async () => {
+    setNewsLoading(true);
+    setNewsError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("fetch-news", {
+        body: { limit: 5 },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      setLiveNews(data.news || []);
+    } catch (e: any) {
+      console.error("Failed to fetch news:", e);
+      setNewsError("뉴스를 불러오지 못했습니다. 다시 시도해주세요.");
+    } finally {
+      setNewsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "news" && liveNews.length === 0 && !newsLoading) {
+      fetchLiveNews();
+    }
+  }, [activeTab]);
+
   const canGenerate = () => {
     switch (activeTab) {
       case "text": return textInput.trim().length > 10;
@@ -43,7 +75,7 @@ export default function CreateProjectPage() {
       case "url":
         return { sourceType: "url", content: `URL에서 추출한 내용입니다. ${urlInput}에서 가져온 기사의 핵심 내용을 요약하면 다음과 같습니다. AI 기술의 발전으로 콘텐츠 제작 방식이 근본적으로 변화하고 있습니다.` };
       case "news": {
-        const items = MOCK_NEWS.filter(n => selectedNews.includes(n.id));
+        const items = liveNews.filter(n => selectedNews.includes(n.id));
         return { sourceType: "news", content: items.map(n => `${n.title}. ${n.summary}`).join("\n"), title: items[0]?.title };
       }
       case "feed": {
@@ -129,7 +161,32 @@ export default function CreateProjectPage() {
 
           {activeTab === "news" && (
             <div className="space-y-2 max-h-[320px] overflow-auto scrollbar-thin">
-              {MOCK_NEWS.map(news => (
+              {newsLoading && (
+                <div className="flex items-center justify-center py-12 text-muted-foreground">
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                  <span className="text-sm">실시간 뉴스를 불러오는 중...</span>
+                </div>
+              )}
+              {newsError && (
+                <div className="flex flex-col items-center gap-3 py-12">
+                  <p className="text-sm text-destructive">{newsError}</p>
+                  <button onClick={fetchLiveNews} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+                    <RefreshCw className="w-3.5 h-3.5" /> 다시 시도
+                  </button>
+                </div>
+              )}
+              {!newsLoading && !newsError && liveNews.length === 0 && (
+                <div className="text-center py-12 text-sm text-muted-foreground">뉴스가 없습니다.</div>
+              )}
+              {!newsLoading && liveNews.length > 0 && (
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] text-muted-foreground">실시간 뉴스 · {liveNews.length}건</span>
+                  <button onClick={fetchLiveNews} className="flex items-center gap-1 text-[10px] text-primary hover:text-primary/80 transition-colors">
+                    <RefreshCw className="w-3 h-3" /> 새로고침
+                  </button>
+                </div>
+              )}
+              {liveNews.map(news => (
                 <label
                   key={news.id}
                   className={cn(
@@ -146,7 +203,7 @@ export default function CreateProjectPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-medium">{news.category}</span>
-                      <span className="text-[10px] text-muted-foreground">{news.source}</span>
+                      <span className="text-[10px] text-muted-foreground">{news.source} · {news.date}</span>
                     </div>
                     <h3 className="text-sm font-medium text-foreground">{news.title}</h3>
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">{news.summary}</p>
