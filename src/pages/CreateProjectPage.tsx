@@ -29,7 +29,7 @@ export default function CreateProjectPage() {
 
   // Live news state
   const [liveNews, setLiveNews] = useState<Array<{
-    id: string; title: string; source: string; date: string; category: string; summary: string;
+    id: string; title: string; source: string; date: string; time?: string; category: string; summary: string;
   }>>([]);
   const [newsLoading, setNewsLoading] = useState(false);
   const [newsError, setNewsError] = useState<string | null>(null);
