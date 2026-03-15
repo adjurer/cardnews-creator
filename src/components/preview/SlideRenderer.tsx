@@ -428,9 +428,9 @@ export function SlideRenderer({ slide, width = 1080, height = 1350, className, i
         {/* Quote */}
         {slide.layoutType === "quote" && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: hAlignItems, width: "100%" }}>
-            <span style={{ fontSize: isExport ? "80px" : "clamp(30px, 10vw, 60px)", color: accentColor, lineHeight: 1, marginBottom: "16px" }}>
-              "
-            </span>
+            <svg width={isExport ? "64" : "40"} height={isExport ? "48" : "30"} viewBox="0 0 64 48" fill="none" style={{ marginBottom: isExport ? "20px" : "12px" }}>
+              <path d="M0 48V28.8C0 20.27 1.87 13.33 5.6 8C9.33 2.67 14.93 0 22.4 0v11.2c-4.27 0-7.2 1.6-8.8 4.8h8.8V48H0Zm35.2 0V28.8c0-8.53 1.87-15.47 5.6-20.8C44.53 2.67 50.13 0 57.6 0v11.2c-4.27 0-7.2 1.6-8.8 4.8h8.8V48H35.2Z" fill={accentColor} />
+            </svg>
             <p data-element="body" onClick={eClick("body")} style={{
               ...titleStyle, ...elementStyle(slide, "body"),
               fontWeight: 600, fontStyle: "italic", maxWidth: "90%", lineHeight: 1.5,
