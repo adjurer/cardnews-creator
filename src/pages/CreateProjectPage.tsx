@@ -75,7 +75,7 @@ export default function CreateProjectPage() {
       case "url":
         return { sourceType: "url", content: `URL에서 추출한 내용입니다. ${urlInput}에서 가져온 기사의 핵심 내용을 요약하면 다음과 같습니다. AI 기술의 발전으로 콘텐츠 제작 방식이 근본적으로 변화하고 있습니다.` };
       case "news": {
-        const items = MOCK_NEWS.filter(n => selectedNews.includes(n.id));
+        const items = liveNews.filter(n => selectedNews.includes(n.id));
         return { sourceType: "news", content: items.map(n => `${n.title}. ${n.summary}`).join("\n"), title: items[0]?.title };
       }
       case "feed": {
