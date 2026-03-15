@@ -27,6 +27,37 @@ export default function CreateProjectPage() {
   const [selectedFeedEntries, setSelectedFeedEntries] = useState<string[]>([]);
   const [selectedExample, setSelectedExample] = useState<string | null>(null);
 
+  // Live news state
+  const [liveNews, setLiveNews] = useState<Array<{
+    id: string; title: string; source: string; date: string; category: string; summary: string;
+  }>>([]);
+  const [newsLoading, setNewsLoading] = useState(false);
+  const [newsError, setNewsError] = useState<string | null>(null);
+
+  const fetchLiveNews = async () => {
+    setNewsLoading(true);
+    setNewsError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("fetch-news", {
+        body: { limit: 5 },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      setLiveNews(data.news || []);
+    } catch (e: any) {
+      console.error("Failed to fetch news:", e);
+      setNewsError("뉴스를 불러오지 못했습니다. 다시 시도해주세요.");
+    } finally {
+      setNewsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "news" && liveNews.length === 0 && !newsLoading) {
+      fetchLiveNews();
+    }
+  }, [activeTab]);
+
   const canGenerate = () => {
     switch (activeTab) {
       case "text": return textInput.trim().length > 10;
