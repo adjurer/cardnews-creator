@@ -25,11 +25,14 @@ const CATEGORY_FEEDS: Record<string, string> = {
 };
 
 function extractTextFromXml(xml: string, tag: string): string[] {
-  const regex = new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([^\\]]*?)\\]\\]><\\/${tag}>|<${tag}[^>]*>([^<]*?)<\\/${tag}>`, "gi");
+  const regex = new RegExp(`<${tag}[^>]*>(.*?)<\\/${tag}>`, "gis");
   const results: string[] = [];
   let match;
   while ((match = regex.exec(xml)) !== null) {
-    results.push(match[1] || match[2] || "");
+    let val = match[1].trim();
+    // Strip CDATA wrapper
+    val = val.replace(/^<!\[CDATA\[([\s\S]*?)\]\]>$/, "$1");
+    results.push(val);
   }
   return results;
 }
