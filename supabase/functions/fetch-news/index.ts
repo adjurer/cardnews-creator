@@ -62,32 +62,18 @@ async function fetchRssFeed(url: string, category: string, limit: number = 5): P
     }
 
     const xml = await response.text();
-    
-    const titles = extractTextFromXml(xml, "title");
-    const links = extractTextFromXml(xml, "link");
-    const pubDates = extractTextFromXml(xml, "pubDate");
-    const descriptions = extractTextFromXml(xml, "description");
+    const rssItems = extractItems(xml);
 
-    // Skip first title/link (feed title)
     const items: NewsItem[] = [];
-    for (let i = 1; i < Math.min(titles.length, limit + 1); i++) {
-      const { cleanTitle, source } = extractSourceFromTitle(titles[i]);
+    for (let i = 0; i < Math.min(rssItems.length, limit); i++) {
+      const rss = rssItems[i];
+      const { cleanTitle, source } = extractSourceFromTitle(rss.title);
       
-      // Clean description: strip all HTML, decode entities, extract plain text
-      const rawDesc = descriptions[i] || descriptions[i - 1] || "";
-      const cleanDesc = rawDesc
-        .replace(/<[^>]+>/g, " ")
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/&[a-z]+;/gi, " ")
-        .replace(/\s+/g, " ")
-        .trim();
+      // Skip feed-level titles
+      if (cleanTitle === "Google 뉴스" || cleanTitle.length < 5) continue;
       
-      const date = pubDates[i - 1] 
-        ? new Date(pubDates[i - 1]).toISOString().split("T")[0]
+      const date = rss.pubDate 
+        ? new Date(rss.pubDate).toISOString().split("T")[0]
         : new Date().toISOString().split("T")[0];
 
       items.push({
@@ -96,8 +82,8 @@ async function fetchRssFeed(url: string, category: string, limit: number = 5): P
         source,
         date,
         category,
-        summary: cleanDesc.slice(0, 120) || cleanTitle,
-        link: links[i] || "",
+        summary: cleanTitle, // Google News RSS doesn't provide real summaries
+        link: rss.link,
       });
     }
 
