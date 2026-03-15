@@ -203,7 +203,7 @@ export default function CreateProjectPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-medium">{news.category}</span>
-                      <span className="text-[10px] text-muted-foreground">{news.source} · {news.date}</span>
+                      <span className="text-[10px] text-muted-foreground">{news.source} · {news.date} {news.time || ""}</span>
                     </div>
                     <h3 className="text-sm font-medium text-foreground">{news.title}</h3>
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">{news.summary}</p>
