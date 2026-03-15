@@ -24,17 +24,18 @@ const CATEGORY_FEEDS: Record<string, string> = {
   "사회": "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx1YlY4U0FtdHZHZ0pMVWlnQVAB?hl=ko&gl=KR&ceid=KR:ko",
 };
 
-function extractTextFromXml(xml: string, tag: string): string[] {
-  const regex = new RegExp(`<${tag}[^>]*>(.*?)<\\/${tag}>`, "gis");
-  const results: string[] = [];
+function extractItems(xml: string): Array<{ title: string; link: string; pubDate: string }> {
+  const items: Array<{ title: string; link: string; pubDate: string }> = [];
+  const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
   let match;
-  while ((match = regex.exec(xml)) !== null) {
-    let val = match[1].trim();
-    // Strip CDATA wrapper
-    val = val.replace(/^<!\[CDATA\[([\s\S]*?)\]\]>$/, "$1");
-    results.push(val);
+  while ((match = itemRegex.exec(xml)) !== null) {
+    const block = match[1];
+    const title = block.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/i)?.[1]?.trim() || "";
+    const link = block.match(/<link>([\s\S]*?)<\/link>/i)?.[1]?.trim() || "";
+    const pubDate = block.match(/<pubDate>([\s\S]*?)<\/pubDate>/i)?.[1]?.trim() || "";
+    items.push({ title, link, pubDate });
   }
-  return results;
+  return items;
 }
 
 function extractSourceFromTitle(title: string): { cleanTitle: string; source: string } {
