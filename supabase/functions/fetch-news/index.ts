@@ -74,7 +74,16 @@ async function fetchRssFeed(url: string, category: string, limit: number = 5): P
       
       // Clean description: strip all HTML, decode entities, extract plain text
       const rawDesc = descriptions[i] || descriptions[i - 1] || "";
-      const cleanDesc = rawDesc.replace(/<[^>]+>/g, "").replace(/&[a-z]+;/gi, " ").trim();
+      const cleanDesc = rawDesc
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&[a-z]+;/gi, " ")
+        .replace(/\s+/g, " ")
+        .trim();
       
       const date = pubDates[i - 1] 
         ? new Date(pubDates[i - 1]).toISOString().split("T")[0]
