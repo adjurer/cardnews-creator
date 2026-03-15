@@ -81,8 +81,9 @@ async function fetchRssFeed(url: string, category: string, limit: number = 5): P
         title: cleanTitle,
         source,
         date,
+        time,
         category,
-        summary: cleanTitle, // Google News RSS doesn't provide real summaries
+        summary: cleanTitle,
         link: rss.link,
       });
     }
