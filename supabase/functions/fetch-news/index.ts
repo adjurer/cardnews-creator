@@ -17,24 +17,7 @@ interface NewsItem {
   link: string;
 }
 
-// Portal-specific search URL builders
-const PORTAL_SEARCH: Record<string, (query: string) => string> = {
-  google: (query: string) =>
-    `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR:ko`,
-  naver: (query: string) =>
-    `https://news.google.com/rss/search?q=${encodeURIComponent(query)}+site:naver.com&hl=ko&gl=KR&ceid=KR:ko`,
-  daum: (query: string) =>
-    `https://news.google.com/rss/search?q=${encodeURIComponent(query)}+site:daum.net&hl=ko&gl=KR&ceid=KR:ko`,
-};
-
-// Default headline feeds per portal
-const PORTAL_HEADLINES: Record<string, string> = {
-  google: "https://news.google.com/rss?hl=ko&gl=KR&ceid=KR:ko",
-  naver: "https://news.google.com/rss/search?q=site:naver.com&hl=ko&gl=KR&ceid=KR:ko",
-  daum: "https://news.google.com/rss/search?q=site:daum.net&hl=ko&gl=KR&ceid=KR:ko",
-};
-
-function extractItems(xml: string): Array<{ title: string; link: string; pubDate: string }> {
+function extractRssItems(xml: string): Array<{ title: string; link: string; pubDate: string }> {
   const items: Array<{ title: string; link: string; pubDate: string }> = [];
   const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
   let match;
@@ -59,33 +42,46 @@ function extractSourceFromTitle(title: string): { cleanTitle: string; source: st
   return { cleanTitle: title, source: "뉴스" };
 }
 
-async function fetchRssFeed(url: string, category: string, limit: number = 10): Promise<NewsItem[]> {
+// Source name filters by portal - used to highlight/prioritize portal-relevant sources
+const PORTAL_SOURCE_KEYWORDS: Record<string, string[]> = {
+  naver: ["네이버", "naver"],
+  daum: ["다음", "daum", "카카오"],
+  google: [],
+};
+
+async function fetchNews(query: string | null, portal: string, limit: number): Promise<NewsItem[]> {
+  // Build RSS URL - always use Google News RSS for reliability
+  const url = query
+    ? `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR:ko`
+    : `https://news.google.com/rss?hl=ko&gl=KR&ceid=KR:ko`;
+
+  const category = query || "헤드라인";
+
   try {
     const response = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; CardNewsBot/1.0)" },
+      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" },
     });
-    
+
     if (!response.ok) {
-      console.error(`RSS fetch failed for ${category}: ${response.status}`);
+      console.error(`RSS fetch failed: ${response.status}`);
       return [];
     }
 
     const xml = await response.text();
-    const rssItems = extractItems(xml);
-
+    const rssItems = extractRssItems(xml);
     const items: NewsItem[] = [];
-    for (let i = 0; i < Math.min(rssItems.length, limit); i++) {
+
+    for (let i = 0; i < Math.min(rssItems.length, limit * 2); i++) {
       const rss = rssItems[i];
       const { cleanTitle, source } = extractSourceFromTitle(rss.title);
-      
       if (cleanTitle === "Google 뉴스" || cleanTitle.length < 5) continue;
-      
+
       const pubDateObj = rss.pubDate ? new Date(rss.pubDate) : new Date();
       const date = pubDateObj.toISOString().split("T")[0];
-      const time = `${String(pubDateObj.getHours()).padStart(2,"0")}:${String(pubDateObj.getMinutes()).padStart(2,"0")}`;
+      const time = `${String(pubDateObj.getHours()).padStart(2, "0")}:${String(pubDateObj.getMinutes()).padStart(2, "0")}`;
 
       items.push({
-        id: `news-${category}-${i}`,
+        id: `${portal}-${i}`,
         title: cleanTitle,
         source,
         date,
@@ -94,11 +90,14 @@ async function fetchRssFeed(url: string, category: string, limit: number = 10): 
         summary: cleanTitle,
         link: rss.link,
       });
+
+      if (items.length >= limit) break;
     }
 
+    console.log(`Fetched ${items.length} news items for portal=${portal}, query=${query || "headlines"}`);
     return items;
   } catch (e) {
-    console.error(`Error fetching RSS for ${category}:`, e);
+    console.error("News fetch error:", e);
     return [];
   }
 }
@@ -110,28 +109,11 @@ serve(async (req) => {
 
   try {
     const { query, portal, limit } = await req.json().catch(() => ({ query: null, portal: "google", limit: 10 }));
-    
+
     const selectedPortal = portal || "google";
     const perFeed = limit || 10;
 
-    let feedUrl: string;
-    let category: string;
-
-    if (query && query.trim()) {
-      // Keyword search mode
-      const searchBuilder = PORTAL_SEARCH[selectedPortal] || PORTAL_SEARCH.google;
-      feedUrl = searchBuilder(query.trim());
-      category = query.trim();
-    } else {
-      // Headlines mode
-      feedUrl = PORTAL_HEADLINES[selectedPortal] || PORTAL_HEADLINES.google;
-      category = "헤드라인";
-    }
-
-    const news = await fetchRssFeed(feedUrl, category, perFeed);
-
-    // Sort by date descending
-    news.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const news = await fetchNews(query, selectedPortal, perFeed);
 
     return new Response(JSON.stringify({ news, fetchedAt: new Date().toISOString() }), {
       status: 200,
