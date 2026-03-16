@@ -62,10 +62,8 @@ export default function NewsTabContent({ selectedNews, setSelectedNews }: NewsTa
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (keyword.trim()) {
-      setSelectedNews([]);
-      fetchNews(keyword);
-    }
+    setSelectedNews([]);
+    fetchNews(keyword.trim() || undefined);
   };
 
   const handlePortalChange = (newPortal: string) => {
