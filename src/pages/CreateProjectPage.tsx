@@ -132,57 +132,10 @@ export default function CreateProjectPage() {
           )}
 
           {activeTab === "news" && (
-            <div className="space-y-2 max-h-[320px] overflow-auto scrollbar-thin">
-              {newsLoading && (
-                <div className="flex items-center justify-center py-12 text-muted-foreground">
-                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                  <span className="text-sm">실시간 뉴스를 불러오는 중...</span>
-                </div>
-              )}
-              {newsError && (
-                <div className="flex flex-col items-center gap-3 py-12">
-                  <p className="text-sm text-destructive">{newsError}</p>
-                  <button onClick={fetchLiveNews} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
-                    <RefreshCw className="w-3.5 h-3.5" /> 다시 시도
-                  </button>
-                </div>
-              )}
-              {!newsLoading && !newsError && liveNews.length === 0 && (
-                <div className="text-center py-12 text-sm text-muted-foreground">뉴스가 없습니다.</div>
-              )}
-              {!newsLoading && liveNews.length > 0 && (
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] text-muted-foreground">실시간 뉴스 · {liveNews.length}건</span>
-                  <button onClick={fetchLiveNews} className="flex items-center gap-1 text-[10px] text-primary hover:text-primary/80 transition-colors">
-                    <RefreshCw className="w-3 h-3" /> 새로고침
-                  </button>
-                </div>
-              )}
-              {liveNews.map(news => (
-                <label
-                  key={news.id}
-                  className={cn(
-                    "flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all",
-                    selectedNews.includes(news.id) ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
-                  )}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedNews.includes(news.id)}
-                    onChange={() => setSelectedNews(prev => prev.includes(news.id) ? prev.filter(id => id !== news.id) : [...prev, news.id])}
-                    className="mt-0.5 accent-primary"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-medium">{news.category}</span>
-                      <span className="text-[10px] text-muted-foreground">{news.source} · {news.date} {news.time || ""}</span>
-                    </div>
-                    <h3 className="text-sm font-medium text-foreground">{news.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5 truncate">{news.summary}</p>
-                  </div>
-                </label>
-              ))}
-            </div>
+            <NewsTabContent
+              selectedNews={selectedNews}
+              setSelectedNews={setSelectedNews}
+            />
           )}
 
           {activeTab === "feed" && (
