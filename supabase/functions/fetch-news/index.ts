@@ -44,13 +44,7 @@ function extractSourceFromTitle(title: string): { cleanTitle: string; source: st
   return { cleanTitle: title, source: "뉴스" };
 }
 
-async function fetchGoogleNews(query: string | null, limit: number): Promise<NewsItem[]> {
-  const url = query
-    ? `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR:ko`
-    : `https://news.google.com/rss?hl=ko&gl=KR&ceid=KR:ko`;
-
-  const category = query || "헤드라인";
-
+async function fetchGoogleNewsRss(url: string, category: string, limit: number): Promise<NewsItem[]> {
   try {
     const response = await fetch(url, {
       headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" },
@@ -75,7 +69,7 @@ async function fetchGoogleNews(query: string | null, limit: number): Promise<New
       const time = `${String(pubDateObj.getHours()).padStart(2, "0")}:${String(pubDateObj.getMinutes()).padStart(2, "0")}`;
 
       items.push({
-        id: `google-${i}`,
+        id: `news-${i}`,
         title: cleanTitle,
         source,
         date,
@@ -87,34 +81,25 @@ async function fetchGoogleNews(query: string | null, limit: number): Promise<New
     }
     return items;
   } catch (e) {
-    console.error("Google News error:", e);
+    console.error("Google News RSS error:", e);
     return [];
   }
 }
 
-// ─── Naver News HTML Parser ───
-
-function decodeHtmlEntities(text: string): string {
-  return text
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/<[^>]*>/g, ""); // strip remaining tags
-}
+// ─── Naver News (via openapi-like search endpoint) ───
 
 async function fetchNaverNews(query: string | null, limit: number): Promise<NewsItem[]> {
-  if (!query) query = "오늘";
+  if (!query) query = "뉴스";
 
-  const url = `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(query)}&sort=1&sm=tab_smr&nso=so:dd,p:all`;
+  // Use Naver's mobile news search which returns server-rendered HTML
+  const url = `https://m.search.naver.com/search.naver?where=m_news&query=${encodeURIComponent(query)}&sort=1&sm=tab_smr`;
 
   try {
     const response = await fetch(url, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Accept-Language": "ko-KR,ko;q=0.9",
       },
     });
 
@@ -126,43 +111,51 @@ async function fetchNaverNews(query: string | null, limit: number): Promise<News
     const html = await response.text();
     const items: NewsItem[] = [];
 
-    // Extract news items using news_tit class (title + link)
-    const titleRegex = /<a[^>]*class="news_tit"[^>]*href="([^"]*)"[^>]*title="([^"]*)"/gi;
-    // Extract press/source
-    const pressRegex = /<a[^>]*class="info press"[^>]*>([^<]*)<\/a>/gi;
-    // Extract relative time info
-    const timeRegex = /<span class="info">\s*(\d+[^\s<]*전|[\d.]+\.[\d.]+\.[\d.]+[^<]*|\d{4}\.\d{2}\.\d{2}\.?[^<]*)<\/span>/gi;
+    // Parse news_tit elements: <a class="news_tit" href="LINK" title="TITLE">
+    const titleRegex = /class="news_tit"[^>]*href="([^"]*)"[^>]*title="([^"]*)"/gi;
+    // Parse info_group for source and time
+    const infoGroupRegex = /class="info_group"[^>]*>([\s\S]*?)<\/div>/gi;
+    const pressRegex = /class="info press"[^>]*>([\s\S]*?)<\/a>/gi;
+    const timeInfoRegex = /class="info"[^>]*>(\d+[^<]*전|[\d.]+\.\s*[\d.]+\.\s*[\d.]+[^<]*)<\/span>/gi;
+    // Also try to get description
+    const descRegex = /class="news_dsc"[^>]*>[\s\S]*?<a[^>]*>([\s\S]*?)<\/a>/gi;
 
     const titles: Array<{ link: string; title: string }> = [];
     let m;
     while ((m = titleRegex.exec(html)) !== null) {
-      titles.push({ link: m[1], title: decodeHtmlEntities(m[2]) });
+      const title = m[2].replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+      titles.push({ link: m[1], title });
     }
 
     const sources: string[] = [];
     while ((m = pressRegex.exec(html)) !== null) {
-      sources.push(decodeHtmlEntities(m[1]).trim());
+      sources.push(m[1].replace(/<[^>]*>/g, "").trim());
     }
 
-    const times: string[] = [];
-    while ((m = timeRegex.exec(html)) !== null) {
-      times.push(decodeHtmlEntities(m[1]).trim());
+    const timeInfos: string[] = [];
+    while ((m = timeInfoRegex.exec(html)) !== null) {
+      timeInfos.push(m[1].replace(/<[^>]*>/g, "").trim());
     }
 
+    const descriptions: string[] = [];
+    while ((m = descRegex.exec(html)) !== null) {
+      descriptions.push(m[1].replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').trim());
+    }
+
+    console.log(`Naver parse: ${titles.length} titles, ${sources.length} sources, ${timeInfos.length} times`);
+
+    const now = new Date();
     for (let i = 0; i < Math.min(titles.length, limit); i++) {
       const t = titles[i];
       if (t.title.length < 5) continue;
 
-      const rawTime = times[i] || "";
-      const now = new Date();
       let date = now.toISOString().split("T")[0];
       let time = "";
+      const rawTime = timeInfos[i] || "";
 
-      // Parse relative time like "3시간 전", "25분 전"
       const hoursAgo = rawTime.match(/(\d+)시간\s*전/);
       const minsAgo = rawTime.match(/(\d+)분\s*전/);
       const daysAgo = rawTime.match(/(\d+)일\s*전/);
-      const dateMatch = rawTime.match(/(\d{4})\.(\d{2})\.(\d{2})/);
 
       if (hoursAgo) {
         const d = new Date(now.getTime() - parseInt(hoursAgo[1]) * 3600000);
@@ -175,8 +168,6 @@ async function fetchNaverNews(query: string | null, limit: number): Promise<News
       } else if (daysAgo) {
         const d = new Date(now.getTime() - parseInt(daysAgo[1]) * 86400000);
         date = d.toISOString().split("T")[0];
-      } else if (dateMatch) {
-        date = `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
       }
 
       items.push({
@@ -185,13 +176,12 @@ async function fetchNaverNews(query: string | null, limit: number): Promise<News
         source: sources[i] || "네이버뉴스",
         date,
         time: time || undefined,
-        category: query || "헤드라인",
-        summary: t.title,
+        category: query || "뉴스",
+        summary: descriptions[i] || t.title,
         link: t.link,
       });
     }
 
-    console.log(`Naver: parsed ${items.length} items for "${query}"`);
     return items;
   } catch (e) {
     console.error("Naver News error:", e);
@@ -199,17 +189,17 @@ async function fetchNaverNews(query: string | null, limit: number): Promise<News
   }
 }
 
-// ─── Daum News HTML Parser ───
+// ─── Daum News ───
 
 async function fetchDaumNews(query: string | null, limit: number): Promise<NewsItem[]> {
-  if (!query) query = "오늘";
+  if (!query) query = "뉴스";
 
   const url = `https://search.daum.net/search?w=news&q=${encodeURIComponent(query)}&sort=recency`;
 
   try {
     const response = await fetch(url, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "ko-KR,ko;q=0.9",
       },
@@ -223,14 +213,14 @@ async function fetchDaumNews(query: string | null, limit: number): Promise<NewsI
     const html = await response.text();
     const items: NewsItem[] = [];
 
-    // Daum news titles in <a class="tit-g clamp-g" ...>
-    const titleRegex = /<a[^>]*class="[^"]*tit-g[^"]*"[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
-    const sourceRegex = /<span[^>]*class="[^"]*wrap_comm[^"]*"[^>]*>[\s\S]*?<a[^>]*>([\s\S]*?)<\/a>/gi;
+    // Daum news titles
+    const titleRegex = /class="[^"]*tit-g[^"]*"[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
+    const sourceRegex = /class="[^"]*info_cp[^"]*"[^>]*>([\s\S]*?)<\/a>/gi;
 
     const titles: Array<{ link: string; title: string }> = [];
     let m;
     while ((m = titleRegex.exec(html)) !== null) {
-      const title = decodeHtmlEntities(m[2]).trim();
+      const title = m[2].replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').trim();
       if (title.length >= 5) {
         titles.push({ link: m[1], title });
       }
@@ -238,8 +228,10 @@ async function fetchDaumNews(query: string | null, limit: number): Promise<NewsI
 
     const sources: string[] = [];
     while ((m = sourceRegex.exec(html)) !== null) {
-      sources.push(decodeHtmlEntities(m[1]).trim());
+      sources.push(m[1].replace(/<[^>]*>/g, "").trim());
     }
+
+    console.log(`Daum parse: ${titles.length} titles`);
 
     const now = new Date();
     for (let i = 0; i < Math.min(titles.length, limit); i++) {
@@ -249,13 +241,12 @@ async function fetchDaumNews(query: string | null, limit: number): Promise<NewsI
         title: t.title,
         source: sources[i] || "다음뉴스",
         date: now.toISOString().split("T")[0],
-        category: query || "헤드라인",
+        category: query || "뉴스",
         summary: t.title,
         link: t.link,
       });
     }
 
-    console.log(`Daum: parsed ${items.length} items for "${query}"`);
     return items;
   } catch (e) {
     console.error("Daum News error:", e);
@@ -286,9 +277,13 @@ serve(async (req) => {
         news = await fetchDaumNews(query, perFeed);
         break;
       case "google":
-      default:
-        news = await fetchGoogleNews(query, perFeed);
+      default: {
+        const url = query
+          ? `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR:ko`
+          : `https://news.google.com/rss?hl=ko&gl=KR&ceid=KR:ko`;
+        news = await fetchGoogleNewsRss(url, query || "헤드라인", perFeed);
         break;
+      }
     }
 
     return new Response(JSON.stringify({ news, fetchedAt: new Date().toISOString() }), {
