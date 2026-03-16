@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, FileText, Link, Newspaper, Rss, BookOpen, Loader2, RefreshCw } from "lucide-react";
+import { ArrowLeft, FileText, Link, Newspaper, Rss, BookOpen } from "lucide-react";
 import { useProjectStore } from "@/store/useProjectStore";
 import { MOCK_FEEDS, MOCK_EXAMPLES } from "@/mocks/data";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
+import NewsTabContent from "@/components/editor/NewsTabContent";
 import type { SourceType } from "@/types/project";
 
 type Tab = "text" | "example" | "news" | "feed" | "url";
