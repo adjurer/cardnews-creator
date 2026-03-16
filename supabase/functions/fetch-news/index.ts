@@ -11,17 +11,27 @@ interface NewsItem {
   title: string;
   source: string;
   date: string;
+  time?: string;
   category: string;
   summary: string;
   link: string;
 }
 
-// Google News RSS categories for Korean news
-const CATEGORY_FEEDS: Record<string, string> = {
-  "헤드라인": "https://news.google.com/rss?hl=ko&gl=KR&ceid=KR:ko",
-  "Tech": "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGRqTVhZU0FtdHZHZ0pMVWlnQVAB?hl=ko&gl=KR&ceid=KR:ko",
-  "경제": "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtdHZHZ0pMVWlnQVAB?hl=ko&gl=KR&ceid=KR:ko",
-  "사회": "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx1YlY4U0FtdHZHZ0pMVWlnQVAB?hl=ko&gl=KR&ceid=KR:ko",
+// Portal-specific search URL builders
+const PORTAL_SEARCH: Record<string, (query: string) => string> = {
+  google: (query: string) =>
+    `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR:ko`,
+  naver: (query: string) =>
+    `https://news.google.com/rss/search?q=${encodeURIComponent(query)}+site:naver.com&hl=ko&gl=KR&ceid=KR:ko`,
+  daum: (query: string) =>
+    `https://news.google.com/rss/search?q=${encodeURIComponent(query)}+site:daum.net&hl=ko&gl=KR&ceid=KR:ko`,
+};
+
+// Default headline feeds per portal
+const PORTAL_HEADLINES: Record<string, string> = {
+  google: "https://news.google.com/rss?hl=ko&gl=KR&ceid=KR:ko",
+  naver: "https://news.google.com/rss/search?q=site:naver.com&hl=ko&gl=KR&ceid=KR:ko",
+  daum: "https://news.google.com/rss/search?q=site:daum.net&hl=ko&gl=KR&ceid=KR:ko",
 };
 
 function extractItems(xml: string): Array<{ title: string; link: string; pubDate: string }> {
@@ -39,7 +49,6 @@ function extractItems(xml: string): Array<{ title: string; link: string; pubDate
 }
 
 function extractSourceFromTitle(title: string): { cleanTitle: string; source: string } {
-  // Google News titles format: "Article Title - Source Name"
   const lastDash = title.lastIndexOf(" - ");
   if (lastDash > 0) {
     return {
@@ -50,7 +59,7 @@ function extractSourceFromTitle(title: string): { cleanTitle: string; source: st
   return { cleanTitle: title, source: "뉴스" };
 }
 
-async function fetchRssFeed(url: string, category: string, limit: number = 5): Promise<NewsItem[]> {
+async function fetchRssFeed(url: string, category: string, limit: number = 10): Promise<NewsItem[]> {
   try {
     const response = await fetch(url, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; CardNewsBot/1.0)" },
@@ -69,7 +78,6 @@ async function fetchRssFeed(url: string, category: string, limit: number = 5): P
       const rss = rssItems[i];
       const { cleanTitle, source } = extractSourceFromTitle(rss.title);
       
-      // Skip feed-level titles
       if (cleanTitle === "Google 뉴스" || cleanTitle.length < 5) continue;
       
       const pubDateObj = rss.pubDate ? new Date(rss.pubDate) : new Date();
@@ -101,24 +109,31 @@ serve(async (req) => {
   }
 
   try {
-    const { categories, limit } = await req.json().catch(() => ({ categories: null, limit: 5 }));
+    const { query, portal, limit } = await req.json().catch(() => ({ query: null, portal: "google", limit: 10 }));
     
-    const selectedCategories = categories || Object.keys(CATEGORY_FEEDS);
-    const perCategory = limit || 5;
+    const selectedPortal = portal || "google";
+    const perFeed = limit || 10;
 
-    // Fetch all categories in parallel
-    const results = await Promise.all(
-      selectedCategories
-        .filter((cat: string) => CATEGORY_FEEDS[cat])
-        .map((cat: string) => fetchRssFeed(CATEGORY_FEEDS[cat], cat, perCategory))
-    );
+    let feedUrl: string;
+    let category: string;
 
-    const allNews = results.flat();
+    if (query && query.trim()) {
+      // Keyword search mode
+      const searchBuilder = PORTAL_SEARCH[selectedPortal] || PORTAL_SEARCH.google;
+      feedUrl = searchBuilder(query.trim());
+      category = query.trim();
+    } else {
+      // Headlines mode
+      feedUrl = PORTAL_HEADLINES[selectedPortal] || PORTAL_HEADLINES.google;
+      category = "헤드라인";
+    }
+
+    const news = await fetchRssFeed(feedUrl, category, perFeed);
 
     // Sort by date descending
-    allNews.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    news.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-    return new Response(JSON.stringify({ news: allNews, fetchedAt: new Date().toISOString() }), {
+    return new Response(JSON.stringify({ news, fetchedAt: new Date().toISOString() }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
