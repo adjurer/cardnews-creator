@@ -302,6 +302,10 @@ export default function EditorPage() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-surface hover:bg-muted text-foreground border border-border">
             <Save className="w-3.5 h-3.5" /> 저장
           </button>
+          <button onClick={() => setTemplateDialogOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-surface hover:bg-muted text-foreground border border-border">
+            <BookTemplate className="w-3.5 h-3.5" /> 템플릿 저장
+          </button>
           <button onClick={() => setExportDialogOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-primary text-primary-foreground hover:opacity-90">
             <Download className="w-3.5 h-3.5" /> 내보내기
