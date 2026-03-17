@@ -41,6 +41,8 @@ export default function EditorPage() {
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const [canvasScale, setCanvasScale] = useState(1);
   const [showStoryboard, setShowStoryboard] = useState(false);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [templateSaving, setTemplateSaving] = useState(false);
 
   useEffect(() => { useFontStore.getState().loadFonts(); }, []);
 
