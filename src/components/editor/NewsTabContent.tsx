@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Loader2, RefreshCw, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,29 +22,39 @@ const PORTALS = [
 interface NewsTabContentProps {
   selectedNews: string[];
   setSelectedNews: React.Dispatch<React.SetStateAction<string[]>>;
+  newsItemsRef?: React.MutableRefObject<NewsItem[]>;
 }
 
-export default function NewsTabContent({ selectedNews, setSelectedNews }: NewsTabContentProps) {
-  const [portal, setPortal] = useState("google");
+export default function NewsTabContent({ selectedNews, setSelectedNews, newsItemsRef }: NewsTabContentProps) {
+  const [portal, setPortal] = useState("naver");
   const [keyword, setKeyword] = useState("");
   const [liveNews, setLiveNews] = useState<NewsItem[]>([]);
   const [newsLoading, setNewsLoading] = useState(false);
   const [newsError, setNewsError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
 
+  // Sync items to parent ref
+  useEffect(() => {
+    if (newsItemsRef) newsItemsRef.current = liveNews;
+  }, [liveNews, newsItemsRef]);
+
   const fetchNews = async (query?: string) => {
     setNewsLoading(true);
     setNewsError(null);
     try {
-      const body: Record<string, any> = { limit: 10, portal };
+      const body: Record<string, any> = { limit: 15, portal };
       if (query && query.trim()) {
         body.query = query.trim();
       }
       const { data, error } = await supabase.functions.invoke("fetch-news", { body });
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
-      setLiveNews(data.news || []);
+      const news = data.news || [];
+      setLiveNews(news);
       setHasSearched(true);
+      if (news.length === 0 && query) {
+        setNewsError(`"${query}" 검색 결과가 없습니다. 다른 키워드를 시도해보세요.`);
+      }
     } catch (e: any) {
       console.error("Failed to fetch news:", e);
       setNewsError("뉴스를 불러오지 못했습니다. 다시 시도해주세요.");
@@ -53,11 +63,8 @@ export default function NewsTabContent({ selectedNews, setSelectedNews }: NewsTa
     }
   };
 
-  // Load headlines on first mount
   useEffect(() => {
-    if (!hasSearched && !newsLoading) {
-      fetchNews();
-    }
+    fetchNews();
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -71,14 +78,9 @@ export default function NewsTabContent({ selectedNews, setSelectedNews }: NewsTa
     setLiveNews([]);
     setSelectedNews([]);
     setHasSearched(false);
+    // Fetch with current keyword for new portal
+    setTimeout(() => fetchNews(keyword.trim() || undefined), 0);
   };
-
-  // Re-fetch when portal changes
-  useEffect(() => {
-    if (!hasSearched) {
-      fetchNews(keyword || undefined);
-    }
-  }, [portal]);
 
   return (
     <div className="space-y-3">
@@ -92,7 +94,7 @@ export default function NewsTabContent({ selectedNews, setSelectedNews }: NewsTa
               "px-3 py-1.5 rounded-lg text-xs font-medium transition-all border",
               portal === p.id
                 ? "bg-primary/10 border-primary/40 text-primary"
-                : "bg-surface border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
+                : "bg-card border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
             )}
           >
             {p.label}
@@ -108,15 +110,15 @@ export default function NewsTabContent({ selectedNews, setSelectedNews }: NewsTa
             value={keyword}
             onChange={e => setKeyword(e.target.value)}
             placeholder="키워드를 입력하세요 (예: AI, 경제, 반도체)"
-            className="w-full pl-9 pr-3 py-2 bg-surface rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 border border-border"
+            className="w-full pl-9 pr-3 py-2 bg-card rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 border border-border"
           />
         </div>
         <button
           type="submit"
-          disabled={!keyword.trim() || newsLoading}
+          disabled={newsLoading}
           className={cn(
             "px-4 py-2 rounded-lg text-sm font-medium transition-all",
-            keyword.trim() && !newsLoading
+            !newsLoading
               ? "bg-primary text-primary-foreground hover:opacity-90"
               : "bg-muted text-muted-foreground cursor-not-allowed"
           )}
@@ -133,7 +135,7 @@ export default function NewsTabContent({ selectedNews, setSelectedNews }: NewsTa
             <span className="text-sm">뉴스를 검색하는 중...</span>
           </div>
         )}
-        {newsError && (
+        {newsError && !newsLoading && (
           <div className="flex flex-col items-center gap-3 py-10">
             <p className="text-sm text-destructive">{newsError}</p>
             <button onClick={() => fetchNews(keyword || undefined)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
