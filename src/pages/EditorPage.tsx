@@ -9,13 +9,15 @@ import { ExportDialog } from "@/components/export/ExportDialog";
 import { SlideStrip } from "@/components/editor/SlideStrip";
 import { AiCommandInput } from "@/components/editor/AiCommandInput";
 import { StoryboardPanel } from "@/components/editor/StoryboardPanel";
+import TemplateSaveDialog from "@/components/editor/TemplateSaveDialog";
 import {
   ArrowLeft, Save, Download, Check, AlertCircle, Loader2, Sparkles,
-  Monitor, Square, Smartphone, Clapperboard
+  Monitor, Square, Smartphone, Clapperboard, BookTemplate
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { debounce } from "@/lib/utils/helpers";
+import { supabase } from "@/integrations/supabase/client";
 import type { ElementKey, ExportSize } from "@/types/project";
 
 const ARTBOARD_PRESETS: { size: ExportSize; label: string; icon: any; desc: string }[] = [
@@ -39,6 +41,8 @@ export default function EditorPage() {
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const [canvasScale, setCanvasScale] = useState(1);
   const [showStoryboard, setShowStoryboard] = useState(false);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [templateSaving, setTemplateSaving] = useState(false);
 
   useEffect(() => { useFontStore.getState().loadFonts(); }, []);
 
@@ -298,6 +302,10 @@ export default function EditorPage() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-surface hover:bg-muted text-foreground border border-border">
             <Save className="w-3.5 h-3.5" /> 저장
           </button>
+          <button onClick={() => setTemplateDialogOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-surface hover:bg-muted text-foreground border border-border">
+            <BookTemplate className="w-3.5 h-3.5" /> 템플릿 저장
+          </button>
           <button onClick={() => setExportDialogOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-primary text-primary-foreground hover:opacity-90">
             <Download className="w-3.5 h-3.5" /> 내보내기
@@ -385,6 +393,35 @@ export default function EditorPage() {
           onClose={() => setExportDialogOpen(false)}
         />
       )}
+
+      <TemplateSaveDialog
+        open={templateDialogOpen}
+        onClose={() => setTemplateDialogOpen(false)}
+        saving={templateSaving}
+        onSave={async (name, description) => {
+          setTemplateSaving(true);
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) { toast.error("로그인이 필요합니다"); return; }
+            const { error } = await supabase.from("card_templates").insert({
+              user_id: user.id,
+              name,
+              description: description || null,
+              slides: currentProject.slides as any,
+              theme_preset: currentProject.themePreset,
+              source_type: currentProject.sourceType,
+            });
+            if (error) throw error;
+            toast.success("템플릿이 저장되었습니다");
+            setTemplateDialogOpen(false);
+          } catch (e: any) {
+            console.error("Template save error:", e);
+            toast.error("템플릿 저장에 실패했습니다");
+          } finally {
+            setTemplateSaving(false);
+          }
+        }}
+      />
     </div>
   );
 }

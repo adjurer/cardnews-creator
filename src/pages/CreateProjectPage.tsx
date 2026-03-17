@@ -1,11 +1,13 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, FileText, Link, Newspaper, Rss, BookOpen } from "lucide-react";
+import { ArrowLeft, FileText, Link, Newspaper, Rss, BookOpen, BookTemplate } from "lucide-react";
 import { useProjectStore } from "@/store/useProjectStore";
-import { MOCK_FEEDS, MOCK_EXAMPLES } from "@/mocks/data";
+import { MOCK_EXAMPLES } from "@/mocks/data";
 import { cn } from "@/lib/utils";
 import NewsTabContent from "@/components/editor/NewsTabContent";
-import type { SourceType } from "@/types/project";
+import FeedTabContent from "@/components/editor/FeedTabContent";
+import TemplateListDialog from "@/components/editor/TemplateListDialog";
+import type { SourceType, Slide } from "@/types/project";
 
 type Tab = "text" | "example" | "news" | "feed" | "url";
 
@@ -26,9 +28,10 @@ export default function CreateProjectPage() {
   const [selectedNews, setSelectedNews] = useState<string[]>([]);
   const [selectedFeedEntries, setSelectedFeedEntries] = useState<string[]>([]);
   const [selectedExample, setSelectedExample] = useState<string | null>(null);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
 
-  // News items ref for getSourceContent
   const newsItemsRef = useRef<Array<{ id: string; title: string; source: string; date: string; time?: string; category: string; summary: string }>>([]);
+  const feedItemsRef = useRef<Array<{ id: string; title: string; source: string; date: string; time?: string; summary: string }>>([]);
 
   const canGenerate = () => {
     switch (activeTab) {
@@ -51,8 +54,8 @@ export default function CreateProjectPage() {
         return { sourceType: "news", content: items.map(n => `${n.title}. ${n.summary}`).join("\n"), title: items[0]?.title };
       }
       case "feed": {
-        const entries = MOCK_FEEDS.flatMap(f => f.entries).filter(e => selectedFeedEntries.includes(e.id));
-        return { sourceType: "feed", content: entries.map(e => `${e.title}. ${e.preview}`).join("\n"), title: entries[0]?.title };
+        const entries = feedItemsRef.current.filter(e => selectedFeedEntries.includes(e.id));
+        return { sourceType: "feed", content: entries.map(e => `${e.title}. ${e.summary}`).join("\n"), title: entries[0]?.title };
       }
       case "example": {
         const ex = MOCK_EXAMPLES.find(e => e.id === selectedExample);
@@ -135,39 +138,16 @@ export default function CreateProjectPage() {
             <NewsTabContent
               selectedNews={selectedNews}
               setSelectedNews={setSelectedNews}
+              newsItemsRef={newsItemsRef}
             />
           )}
 
           {activeTab === "feed" && (
-            <div className="space-y-5 max-h-[320px] overflow-auto scrollbar-thin">
-              {MOCK_FEEDS.map(feed => (
-                <div key={feed.id}>
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{feed.name}</h3>
-                  <div className="space-y-1.5">
-                    {feed.entries.map(entry => (
-                      <label
-                        key={entry.id}
-                        className={cn(
-                          "flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all",
-                          selectedFeedEntries.includes(entry.id) ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
-                        )}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedFeedEntries.includes(entry.id)}
-                          onChange={() => setSelectedFeedEntries(prev => prev.includes(entry.id) ? prev.filter(id => id !== entry.id) : [...prev, entry.id])}
-                          className="mt-0.5 accent-primary"
-                        />
-                        <div>
-                          <h4 className="text-sm font-medium text-foreground">{entry.title}</h4>
-                          <p className="text-xs text-muted-foreground mt-0.5">{entry.preview}</p>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <FeedTabContent
+              selectedEntries={selectedFeedEntries}
+              setSelectedEntries={setSelectedFeedEntries}
+              feedItemsRef={feedItemsRef}
+            />
           )}
 
           {activeTab === "url" && (
@@ -194,9 +174,17 @@ export default function CreateProjectPage() {
 
         {/* CTA */}
         <div className="flex items-center justify-between mt-5">
-          <button onClick={() => navigate("/dashboard")} className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground">
-            취소
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate("/dashboard")} className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground">
+              취소
+            </button>
+            <button
+              onClick={() => setTemplateDialogOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground border border-border hover:border-muted-foreground/30 transition-all"
+            >
+              <BookTemplate className="w-3.5 h-3.5" /> 템플릿 불러오기
+            </button>
+          </div>
           <button
             onClick={handleGenerate}
             disabled={!canGenerate()}
@@ -210,6 +198,24 @@ export default function CreateProjectPage() {
             카드뉴스 만들기
           </button>
         </div>
+
+        <TemplateListDialog
+          open={templateDialogOpen}
+          onClose={() => setTemplateDialogOpen(false)}
+          onLoad={(slides, themePreset, name) => {
+            // Store template data and navigate to generate
+            const templateSource = {
+              sourceType: "example" as SourceType,
+              content: slides.map((s: Slide) => `${s.title}. ${s.body || ""}`).join("\n"),
+              title: name,
+              templateSlides: slides,
+              templateTheme: themePreset,
+            };
+            sessionStorage.setItem("generation-source", JSON.stringify(templateSource));
+            setTemplateDialogOpen(false);
+            navigate("/generate");
+          }}
+        />
       </div>
     </div>
   );
