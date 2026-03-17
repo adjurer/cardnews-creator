@@ -9,13 +9,15 @@ import { ExportDialog } from "@/components/export/ExportDialog";
 import { SlideStrip } from "@/components/editor/SlideStrip";
 import { AiCommandInput } from "@/components/editor/AiCommandInput";
 import { StoryboardPanel } from "@/components/editor/StoryboardPanel";
+import TemplateSaveDialog from "@/components/editor/TemplateSaveDialog";
 import {
   ArrowLeft, Save, Download, Check, AlertCircle, Loader2, Sparkles,
-  Monitor, Square, Smartphone, Clapperboard
+  Monitor, Square, Smartphone, Clapperboard, BookTemplate
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { debounce } from "@/lib/utils/helpers";
+import { supabase } from "@/integrations/supabase/client";
 import type { ElementKey, ExportSize } from "@/types/project";
 
 const ARTBOARD_PRESETS: { size: ExportSize; label: string; icon: any; desc: string }[] = [
