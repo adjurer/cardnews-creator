@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      card_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          slides: Json
+          source_type: string | null
+          theme_preset: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          slides?: Json
+          source_type?: string | null
+          theme_preset?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          slides?: Json
+          source_type?: string | null
+          theme_preset?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       instagram_accounts: {
         Row: {
           access_token: string
