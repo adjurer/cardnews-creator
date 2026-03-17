@@ -393,6 +393,35 @@ export default function EditorPage() {
           onClose={() => setExportDialogOpen(false)}
         />
       )}
+
+      <TemplateSaveDialog
+        open={templateDialogOpen}
+        onClose={() => setTemplateDialogOpen(false)}
+        saving={templateSaving}
+        onSave={async (name, description) => {
+          setTemplateSaving(true);
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) { toast.error("로그인이 필요합니다"); return; }
+            const { error } = await supabase.from("card_templates").insert({
+              user_id: user.id,
+              name,
+              description: description || null,
+              slides: currentProject.slides as any,
+              theme_preset: currentProject.themePreset,
+              source_type: currentProject.sourceType,
+            });
+            if (error) throw error;
+            toast.success("템플릿이 저장되었습니다");
+            setTemplateDialogOpen(false);
+          } catch (e: any) {
+            console.error("Template save error:", e);
+            toast.error("템플릿 저장에 실패했습니다");
+          } finally {
+            setTemplateSaving(false);
+          }
+        }}
+      />
     </div>
   );
 }
