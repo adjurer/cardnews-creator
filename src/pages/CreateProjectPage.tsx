@@ -1,11 +1,13 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, FileText, Link, Newspaper, Rss, BookOpen } from "lucide-react";
+import { ArrowLeft, FileText, Link, Newspaper, Rss, BookOpen, BookTemplate } from "lucide-react";
 import { useProjectStore } from "@/store/useProjectStore";
-import { MOCK_FEEDS, MOCK_EXAMPLES } from "@/mocks/data";
+import { MOCK_EXAMPLES } from "@/mocks/data";
 import { cn } from "@/lib/utils";
 import NewsTabContent from "@/components/editor/NewsTabContent";
-import type { SourceType } from "@/types/project";
+import FeedTabContent from "@/components/editor/FeedTabContent";
+import TemplateListDialog from "@/components/editor/TemplateListDialog";
+import type { SourceType, Slide } from "@/types/project";
 
 type Tab = "text" | "example" | "news" | "feed" | "url";
 
