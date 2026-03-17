@@ -54,8 +54,8 @@ export default function CreateProjectPage() {
         return { sourceType: "news", content: items.map(n => `${n.title}. ${n.summary}`).join("\n"), title: items[0]?.title };
       }
       case "feed": {
-        const entries = MOCK_FEEDS.flatMap(f => f.entries).filter(e => selectedFeedEntries.includes(e.id));
-        return { sourceType: "feed", content: entries.map(e => `${e.title}. ${e.preview}`).join("\n"), title: entries[0]?.title };
+        const entries = feedItemsRef.current.filter(e => selectedFeedEntries.includes(e.id));
+        return { sourceType: "feed", content: entries.map(e => `${e.title}. ${e.summary}`).join("\n"), title: entries[0]?.title };
       }
       case "example": {
         const ex = MOCK_EXAMPLES.find(e => e.id === selectedExample);
