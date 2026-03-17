@@ -28,9 +28,10 @@ export default function CreateProjectPage() {
   const [selectedNews, setSelectedNews] = useState<string[]>([]);
   const [selectedFeedEntries, setSelectedFeedEntries] = useState<string[]>([]);
   const [selectedExample, setSelectedExample] = useState<string | null>(null);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
 
-  // News items ref for getSourceContent
   const newsItemsRef = useRef<Array<{ id: string; title: string; source: string; date: string; time?: string; category: string; summary: string }>>([]);
+  const feedItemsRef = useRef<Array<{ id: string; title: string; source: string; date: string; time?: string; summary: string }>>([]);
 
   const canGenerate = () => {
     switch (activeTab) {
