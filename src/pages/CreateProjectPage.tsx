@@ -174,9 +174,17 @@ export default function CreateProjectPage() {
 
         {/* CTA */}
         <div className="flex items-center justify-between mt-5">
-          <button onClick={() => navigate("/dashboard")} className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground">
-            취소
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate("/dashboard")} className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground">
+              취소
+            </button>
+            <button
+              onClick={() => setTemplateDialogOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground border border-border hover:border-muted-foreground/30 transition-all"
+            >
+              <BookTemplate className="w-3.5 h-3.5" /> 템플릿 불러오기
+            </button>
+          </div>
           <button
             onClick={handleGenerate}
             disabled={!canGenerate()}
@@ -190,6 +198,24 @@ export default function CreateProjectPage() {
             카드뉴스 만들기
           </button>
         </div>
+
+        <TemplateListDialog
+          open={templateDialogOpen}
+          onClose={() => setTemplateDialogOpen(false)}
+          onLoad={(slides, themePreset, name) => {
+            // Store template data and navigate to generate
+            const templateSource = {
+              sourceType: "example" as SourceType,
+              content: slides.map((s: Slide) => `${s.title}. ${s.body || ""}`).join("\n"),
+              title: name,
+              templateSlides: slides,
+              templateTheme: themePreset,
+            };
+            sessionStorage.setItem("generation-source", JSON.stringify(templateSource));
+            setTemplateDialogOpen(false);
+            navigate("/generate");
+          }}
+        />
       </div>
     </div>
   );
