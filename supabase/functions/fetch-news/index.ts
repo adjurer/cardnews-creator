@@ -40,7 +40,11 @@ function extractRssItems(xml: string): RssItem[] {
 }
 
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, "").replace(/&[^;]+;/g, " ").trim();
+  // Decode HTML entities first, then strip tags
+  const decoded = html
+    .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, " ");
+  return decoded.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
 
 function extractSourceFromTitle(title: string): { cleanTitle: string; source: string } {
