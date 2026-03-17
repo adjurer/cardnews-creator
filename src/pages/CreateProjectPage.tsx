@@ -138,39 +138,16 @@ export default function CreateProjectPage() {
             <NewsTabContent
               selectedNews={selectedNews}
               setSelectedNews={setSelectedNews}
+              newsItemsRef={newsItemsRef}
             />
           )}
 
           {activeTab === "feed" && (
-            <div className="space-y-5 max-h-[320px] overflow-auto scrollbar-thin">
-              {MOCK_FEEDS.map(feed => (
-                <div key={feed.id}>
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{feed.name}</h3>
-                  <div className="space-y-1.5">
-                    {feed.entries.map(entry => (
-                      <label
-                        key={entry.id}
-                        className={cn(
-                          "flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all",
-                          selectedFeedEntries.includes(entry.id) ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
-                        )}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedFeedEntries.includes(entry.id)}
-                          onChange={() => setSelectedFeedEntries(prev => prev.includes(entry.id) ? prev.filter(id => id !== entry.id) : [...prev, entry.id])}
-                          className="mt-0.5 accent-primary"
-                        />
-                        <div>
-                          <h4 className="text-sm font-medium text-foreground">{entry.title}</h4>
-                          <p className="text-xs text-muted-foreground mt-0.5">{entry.preview}</p>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <FeedTabContent
+              selectedEntries={selectedFeedEntries}
+              setSelectedEntries={setSelectedFeedEntries}
+              feedItemsRef={feedItemsRef}
+            />
           )}
 
           {activeTab === "url" && (
