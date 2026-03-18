@@ -256,58 +256,65 @@ export default function EditorPage() {
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-2 border-b border-border bg-card shrink-0">
-        <button onClick={() => navigate("/dashboard")} className="p-1.5 rounded-md hover:bg-surface text-muted-foreground hover:text-foreground">
+      <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-card shrink-0">
+        {/* Left: Back + Title */}
+        <button onClick={() => navigate("/dashboard")} className="p-1.5 rounded-md hover:bg-surface text-muted-foreground hover:text-foreground" title="작업 목록">
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <h2 className="text-sm font-medium text-foreground truncate max-w-[200px]">{currentProject.title}</h2>
-
-        <span className="text-[10px] text-muted-foreground ml-1">
-          {saveStatus === "saved" && <span className="flex items-center gap-1 text-success"><Check className="w-3 h-3" />저장됨</span>}
-          {saveStatus === "saving" && "저장 중..."}
-          {saveStatus === "error" && <span className="text-destructive">저장 실패</span>}
-        </span>
-
-        {/* Artboard preset switcher */}
-        <div className="flex items-center gap-0.5 ml-3 p-0.5 bg-surface rounded-lg">
-          {ARTBOARD_PRESETS.map(preset => (
-            <button key={preset.size} onClick={() => updateExportSize(preset.size)}
-              title={`${preset.label} (${preset.desc})`}
-              className={cn("flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all",
-                currentProject.exportPreset.size === preset.size
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}>
-              <preset.icon className="w-3 h-3" />
-              <span className="hidden lg:inline">{preset.desc}</span>
-            </button>
-          ))}
+        <div className="flex items-center gap-2 min-w-0">
+          <h2 className="text-sm font-semibold text-foreground truncate max-w-[180px]">{currentProject.title}</h2>
+          <span className="text-[10px] text-muted-foreground shrink-0">
+            {saveStatus === "saved" && <span className="flex items-center gap-0.5 text-success"><Check className="w-3 h-3" /></span>}
+            {saveStatus === "saving" && <Loader2 className="w-3 h-3 animate-spin" />}
+          </span>
         </div>
 
-        <div className="flex items-center gap-1 ml-auto">
-          <button onClick={() => setShowStoryboard(!showStoryboard)}
-            className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border transition-all",
-              showStoryboard
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-surface hover:bg-muted text-foreground border-border"
-            )}>
-            <Clapperboard className="w-3.5 h-3.5" /> 숏폼
-          </button>
+        {/* Center: Artboard + Slide counter */}
+        <div className="flex items-center gap-2 mx-auto">
+          <div className="flex items-center gap-0.5 p-0.5 bg-surface rounded-lg">
+            {ARTBOARD_PRESETS.map(preset => (
+              <button key={preset.size} onClick={() => updateExportSize(preset.size)}
+                title={`${preset.label} (${preset.desc})`}
+                className={cn("flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all",
+                  currentProject.exportPreset.size === preset.size
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}>
+                <preset.icon className="w-3 h-3" />
+                <span className="hidden lg:inline">{preset.desc}</span>
+              </button>
+            ))}
+          </div>
+          <span className="text-[11px] text-muted-foreground tabular-nums font-medium">
+            {currentSlideIndex + 1} / {totalSlides}
+          </span>
+        </div>
+
+        {/* Right: Actions */}
+        <div className="flex items-center gap-1 shrink-0">
           <button onClick={handleRegenerateSlide} disabled={regenerating}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-surface hover:bg-muted text-foreground border border-border disabled:opacity-50">
-            {regenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-            AI 개선
+            title="현재 슬라이드 AI 개선"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs bg-surface hover:bg-muted text-foreground border border-border disabled:opacity-50 transition-all">
+            {regenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-primary" />}
+            <span className="hidden xl:inline">다시 생성</span>
+          </button>
+          <button onClick={() => setShowStoryboard(!showStoryboard)}
+            className={cn("p-1.5 rounded-lg text-xs border transition-all",
+              showStoryboard ? "bg-primary text-primary-foreground border-primary" : "bg-surface hover:bg-muted text-foreground border-border"
+            )} title="숏폼 스토리보드">
+            <Clapperboard className="w-3.5 h-3.5" />
           </button>
           <button onClick={() => { saveCurrentProject(); toast.success("저장되었습니다"); }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-surface hover:bg-muted text-foreground border border-border">
-            <Save className="w-3.5 h-3.5" /> 저장
+            className="p-1.5 rounded-lg bg-surface hover:bg-muted text-foreground border border-border transition-all" title="저장">
+            <Save className="w-3.5 h-3.5" />
           </button>
           <button onClick={() => setTemplateDialogOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-surface hover:bg-muted text-foreground border border-border">
-            <BookTemplate className="w-3.5 h-3.5" /> 템플릿 저장
+            className="p-1.5 rounded-lg bg-surface hover:bg-muted text-foreground border border-border transition-all" title="템플릿 저장">
+            <BookTemplate className="w-3.5 h-3.5" />
           </button>
+          <div className="w-px h-5 bg-border mx-1" />
           <button onClick={() => setExportDialogOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-primary text-primary-foreground hover:opacity-90">
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:opacity-90 transition-all">
             <Download className="w-3.5 h-3.5" /> 내보내기
           </button>
         </div>
