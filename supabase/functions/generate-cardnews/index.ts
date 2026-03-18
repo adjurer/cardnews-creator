@@ -22,7 +22,7 @@ const SLIDE_SCHEMA = {
         },
         slides: {
           type: "array",
-          description: "6~8장의 슬라이드 배열",
+          description: "슬라이드 배열",
           items: {
             type: "object",
             properties: {
@@ -65,15 +65,48 @@ serve(async (req) => {
   }
 
   try {
-    const { sourceType, content, title } = await req.json();
+    const { sourceType, content, title, brief } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    // Build brief context for the prompt
+    let briefContext = "";
+    if (brief) {
+      const parts: string[] = [];
+      if (brief.projectTitle) parts.push(`프로젝트 제목: ${brief.projectTitle}`);
+      if (brief.coreMessage) parts.push(`핵심 메시지: ${brief.coreMessage}`);
+      if (brief.goal) parts.push(`목표: ${brief.goal}`);
+      if (brief.targetAudience) parts.push(`타깃 독자: ${brief.targetAudience}`);
+      if (brief.tone) parts.push(`톤앤매너: ${brief.tone}`);
+      if (brief.platform) parts.push(`게시 플랫폼: ${brief.platform}`);
+      if (brief.slideCount) parts.push(`희망 슬라이드 수: ${brief.slideCount}장`);
+      if (brief.cta) parts.push(`CTA 문구: ${brief.cta}`);
+      if (brief.brandKeywords) parts.push(`브랜드 키워드: ${brief.brandKeywords}`);
+      if (brief.memo) parts.push(`추가 메모: ${brief.memo}`);
+      if (parts.length > 0) {
+        briefContext = `\n\n## 제작 브리프\n${parts.join("\n")}`;
+      }
+    }
+
+    const slideCountInstruction = brief?.slideCount
+      ? `정확히 ${brief.slideCount}장의 슬라이드를 생성하세요.`
+      : "6~8장의 슬라이드를 생성하세요.";
+
+    const toneInstruction = brief?.tone
+      ? `톤앤매너는 "${brief.tone}" 스타일로 작성하세요.`
+      : "";
+
+    const ctaInstruction = brief?.cta
+      ? `마지막 CTA 슬라이드의 cta 필드에 "${brief.cta}"를 사용하세요.`
+      : "";
+
     const systemPrompt = `당신은 인스타그램용 카드뉴스 전문 작성자이자 카피라이터입니다.
-사용자가 제공한 텍스트/URL/뉴스를 분석하여 6~8장의 카드뉴스 슬라이드를 생성합니다.
+사용자가 제공한 텍스트/URL/뉴스를 분석하여 ${slideCountInstruction}
+${toneInstruction}
+${ctaInstruction}
 
 ## 글쓰기 원칙 (매우 중요!)
 - 카드뉴스는 "짧고 임팩트 있는 카피"가 핵심입니다
@@ -99,9 +132,7 @@ serve(async (req) => {
 - cta 슬라이드의 layoutType은 반드시 "cta"
 - themePreset: 기술=cyan-accent, 트렌드=editorial-dark, 따뜻한=warm-neutral, 미니멀=dark-minimal`;
 
-    const userPrompt = title
-      ? `제목: ${title}\n소스 타입: ${sourceType}\n\n내용:\n${content}`
-      : `소스 타입: ${sourceType}\n\n내용:\n${content}`;
+    const userPrompt = `${title ? `제목: ${title}\n` : ""}소스 타입: ${sourceType}\n\n내용:\n${content}${briefContext}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
