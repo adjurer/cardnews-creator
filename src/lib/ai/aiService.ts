@@ -10,10 +10,11 @@ export interface CardNewsGenerationResult {
 export async function generateCardNews(
   sourceType: SourceType,
   content: string,
-  title?: string
+  title?: string,
+  brief?: Record<string, any>
 ): Promise<CardNewsGenerationResult> {
   const { data, error } = await supabase.functions.invoke("generate-cardnews", {
-    body: { sourceType, content, title },
+    body: { sourceType, content, title, brief },
   });
 
   if (error) {
